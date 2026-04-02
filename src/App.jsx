@@ -3,6 +3,8 @@ import { supabase } from './supabaseClient'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts'
+import Slider from 'rc-slider'
+import 'rc-slider/assets/index.css'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const DATA_START = { date: '2026-04-02', hour: 22 }
@@ -96,7 +98,10 @@ function ThemeSwitcher({ theme, setTheme }) {
 // ── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [theme, setTheme] = useTheme()
-  const [date, setDate] = useState(todayStr())
+  const today = todayStr()
+  const [dateFrom, setDateFrom] = useState(today)
+  const [dateTo, setDateTo]     = useState(today)
+  const [hourRange, setHourRange] = useState([0, 23])
   const [rows, setRows] = useState([])
   const [operators, setOperators] = useState({})
   const [loading, setLoading] = useState(true)
@@ -107,6 +112,8 @@ export default function App() {
   const [sortDir, setSortDir] = useState('desc')
   const [shiftFilter, setShiftFilter] = useState('ALL')
   const [search, setSearch] = useState('')
+
+  const isToday = dateFrom === today && dateTo === today
 
   useEffect(() => {
     supabase
@@ -120,29 +127,40 @@ export default function App() {
           load(map)
         }
       })
-  }, [date]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dateFrom, dateTo]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const load = useCallback(async (ops = operators) => {
     setLoading(true)
     setError(null)
     try {
-      let query = supabase.from('hourly_revenue').select('refcode, hour, delta').eq('date', date)
-      if (date === DATA_START.date) {
+      let query = supabase
+        .from('hourly_revenue')
+        .select('refcode, date, hour, delta')
+        .gte('date', dateFrom)
+        .lte('date', dateTo)
+
+      // Exclude hours before data start on start date
+      if (dateFrom === DATA_START.date) {
         query = query.gte('hour', DATA_START.hour)
-      } else if (date < DATA_START.date) {
-        setRows([]); setLastUpdated(new Date()); setLoading(false); return
       }
+
       const { data, error: err } = await query
       if (err) throw err
+
+      // Aggregate by refcode (sum across all dates)
       const map = {}
       for (const row of data) {
         if (row.refcode?.toString().trim().toLowerCase() === 'all') continue
         if (!map[row.refcode]) map[row.refcode] = { refcode: row.refcode }
-        map[row.refcode][`h${row.hour}`] = Number(row.delta)
+        // Keep per-hour deltas (sum across days for same hour)
+        const key = `h${row.hour}`
+        map[row.refcode][key] = (map[row.refcode][key] || 0) + Number(row.delta)
       }
+
       Object.keys(ops).forEach(refcode => {
         if (!map[refcode]) map[refcode] = { refcode, noData: true }
       })
+
       const result = Object.values(map).map(op => {
         const total = HOURS.reduce((s, h) => s + (op[`h${h}`] || 0), 0)
         return { ...op, total }
@@ -154,7 +172,7 @@ export default function App() {
     } finally {
       setLoading(false)
     }
-  }, [date])
+  }, [dateFrom, dateTo])
 
   useEffect(() => { load() }, [load])
   useEffect(() => {
@@ -171,9 +189,18 @@ export default function App() {
   const getShift = (rc) => operators[rc]?.shift || ''
   const shifts = ['ALL', ...Array.from(new Set(Object.values(operators).map(o => o.shift).filter(Boolean))).sort()]
 
-  const filtered = rows
+  // Hours within selected range
+  const visibleHours = HOURS.filter(h => h >= hourRange[0] && h <= hourRange[1])
+
+  // Rows with totals recalculated for selected hour range
+  const rowsInRange = rows.map(op => {
+    const total = visibleHours.reduce((s, h) => s + (op[`h${h}`] || 0), 0)
+    return { ...op, rangeTotal: total }
+  })
+
+  const filtered = rowsInRange
     .filter(op => shiftFilter === 'ALL' || getShift(op.refcode) === shiftFilter)
-    .filter(op => !onlyActive || op.total > 0)
+    .filter(op => !onlyActive || op.rangeTotal > 0)
     .filter(op => {
       if (!search) return true
       const q = search.toLowerCase()
@@ -185,20 +212,21 @@ export default function App() {
       const an = getName(a.refcode), bn = getName(b.refcode)
       return sortDir === 'desc' ? bn.localeCompare(an, 'uk') : an.localeCompare(bn, 'uk')
     }
-    const av = a[sortCol] ?? 0, bv = b[sortCol] ?? 0
-    return sortDir === 'desc' ? bv - av : av - bv
+    const aVal = sortCol === 'total' ? (a.rangeTotal ?? 0) : (a[sortCol] ?? 0)
+    const bVal = sortCol === 'total' ? (b.rangeTotal ?? 0) : (b[sortCol] ?? 0)
+    return sortDir === 'desc' ? bVal - aVal : aVal - bVal
   })
 
-  const hourlyTotals = HOURS.map(h => ({
+  const hourlyTotals = visibleHours.map(h => ({
     hour: `${String(h).padStart(2, '0')}:00`,
     revenue: filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
   })).filter(x => x.revenue > 0)
 
   const [topExpanded, setTopExpanded] = useState(false)
-  const top20 = [...filtered].filter(op => op.total > 0).sort((a, b) => b.total - a.total).slice(0, 20)
+  const top20 = [...filtered].filter(op => op.rangeTotal > 0).sort((a, b) => b.rangeTotal - a.rangeTotal).slice(0, 20)
   const topVisible = topExpanded ? top20 : top20.slice(0, 5)
-  const grandTotal = filtered.reduce((s, op) => s + op.total, 0)
-  const activeCount = filtered.filter(r => r.total > 0).length
+  const grandTotal = filtered.reduce((s, op) => s + op.rangeTotal, 0)
+  const activeCount = filtered.filter(r => r.rangeTotal > 0).length
 
   // dark mode chart colors
   const isDark = document.documentElement.classList.contains('dark')
@@ -221,12 +249,34 @@ export default function App() {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <ThemeSwitcher theme={theme} setTheme={setTheme} />
-          <input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
+
+          {/* Date range */}
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              max={dateTo}
+              onChange={e => setDateFrom(e.target.value)}
+              className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+            <span className="text-slate-400 text-sm">—</span>
+            <input
+              type="date"
+              value={dateTo}
+              min={dateFrom}
+              onChange={e => setDateTo(e.target.value)}
+              className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+            {!isToday && (
+              <button
+                onClick={() => { setDateFrom(today); setDateTo(today) }}
+                className="text-xs text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium whitespace-nowrap"
+              >
+                Сегодня
+              </button>
+            )}
+          </div>
+
           <button
             onClick={load}
             disabled={loading}
@@ -240,11 +290,41 @@ export default function App() {
         </div>
       </header>
 
+      {/* Hour range slider */}
+      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-3 flex items-center gap-6">
+        <span className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Часы:</span>
+        <div className="flex-1 max-w-lg">
+          <Slider
+            range
+            min={0} max={23}
+            value={hourRange}
+            onChange={setHourRange}
+            marks={{ 0: '00:00', 6: '06:00', 12: '12:00', 18: '18:00', 23: '23:00' }}
+            styles={{
+              track: { backgroundColor: '#6366f1' },
+              handle: { borderColor: '#6366f1', backgroundColor: '#6366f1', opacity: 1 },
+              rail: { backgroundColor: isDark ? '#334155' : '#e2e8f0' },
+            }}
+          />
+        </div>
+        <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 whitespace-nowrap w-28 text-right">
+          {String(hourRange[0]).padStart(2,'0')}:00 — {String(hourRange[1]).padStart(2,'0')}:00
+        </span>
+        {(hourRange[0] !== 0 || hourRange[1] !== 23) && (
+          <button
+            onClick={() => setHourRange([0, 23])}
+            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+          >
+            Сбросить
+          </button>
+        )}
+      </div>
+
       <div className="px-4 md:px-6 py-6 space-y-5 max-w-screen-2xl mx-auto">
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label="Всего за день" value={`${fmt(grandTotal)} $`} icon="💰" color="indigo" />
+          <KpiCard label={isToday ? 'Всего за день' : `Итого за период`} value={`${fmt(grandTotal)} $`} icon="💰" color="indigo" />
           <KpiCard label="Операторов" value={filtered.length} icon="👥" color="slate" />
           <KpiCard label="Активных (> 0)" value={activeCount} icon="✅" color="green" />
           <KpiCard
@@ -295,7 +375,7 @@ export default function App() {
             </button>
             <div className="px-5 pb-5 space-y-3">
               {topVisible.map((op, i) => {
-                const pct = grandTotal > 0 ? (op.total / grandTotal) * 100 : 0
+                const pct = grandTotal > 0 ? (op.rangeTotal / grandTotal) * 100 : 0
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
                 const badge = i < 5 ? medals[i] : <span className="text-xs font-bold text-slate-400">{i + 1}</span>
                 return (
@@ -308,7 +388,7 @@ export default function App() {
                     <div className="flex-1 h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="w-24 text-sm font-bold text-slate-800 dark:text-slate-200 text-right">{fmt(op.total)} $</span>
+                    <span className="w-24 text-sm font-bold text-slate-800 dark:text-slate-200 text-right">{fmt(op.rangeTotal)} $</span>
                     <span className="text-xs text-slate-400 w-10 text-right">{pct.toFixed(1)}%</span>
                   </div>
                 )
@@ -391,7 +471,7 @@ export default function App() {
                     <th className="px-3 py-3 text-right font-bold text-indigo-700 dark:text-indigo-400 cursor-pointer hover:text-indigo-900 bg-indigo-50 dark:bg-indigo-900/30 whitespace-nowrap select-none" onClick={() => handleSort('total')}>
                       Итого {sortCol === 'total' ? (sortDir === 'desc' ? '↓' : '↑') : ''}
                     </th>
-                    {HOURS.map(h => (
+                    {visibleHours.map(h => (
                       <th key={h} className="px-2 py-3 text-center font-medium text-slate-500 dark:text-slate-500 cursor-pointer hover:text-indigo-600 whitespace-nowrap select-none" onClick={() => handleSort(`h${h}`)}>
                         {String(h).padStart(2, '0')}:00{sortCol === `h${h}` ? (sortDir === 'desc' ? '↓' : '↑') : ''}
                       </th>
@@ -402,7 +482,7 @@ export default function App() {
                   {sorted.map((op, idx) => {
                     const name = getName(op.refcode)
                     const shift = getShift(op.refcode)
-                    const isZero = op.noData || op.total === 0
+                    const isZero = op.noData || op.rangeTotal === 0
                     return (
                       <tr key={op.refcode} className={`border-b border-slate-100 dark:border-slate-700/50 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 transition-colors ${isZero ? 'opacity-40' : idx % 2 === 1 ? 'bg-slate-50/40 dark:bg-slate-700/20' : ''}`}>
                         <td className="sticky left-0 bg-inherit px-4 py-2 whitespace-nowrap">
@@ -417,10 +497,10 @@ export default function App() {
                           </div>
                           {shift && <p className="text-slate-400 text-xs">{shift}</p>}
                         </td>
-                        <td className={`px-3 py-2 text-right font-bold whitespace-nowrap ${op.total > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/20 text-red-400'}`}>
-                          {isZero ? '—' : fmt(op.total)}
+                        <td className={`px-3 py-2 text-right font-bold whitespace-nowrap ${op.rangeTotal > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/20 text-red-400'}`}>
+                          {isZero ? '—' : fmt(op.rangeTotal)}
                         </td>
-                        {HOURS.map(h => {
+                        {visibleHours.map(h => {
                           const val = op[`h${h}`]
                           const hasData = val != null
                           const hasRevenue = hasData && val > 0
@@ -436,7 +516,7 @@ export default function App() {
                   <tr className="bg-indigo-50 dark:bg-indigo-900/30 border-t-2 border-indigo-200 dark:border-indigo-800">
                     <td className="sticky left-0 bg-indigo-50 dark:bg-indigo-900/50 px-4 py-2.5 font-bold text-indigo-800 dark:text-indigo-300 whitespace-nowrap">ИТОГО</td>
                     <td className="px-3 py-2.5 text-right font-bold text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/50 whitespace-nowrap">{fmt(grandTotal)}</td>
-                    {HOURS.map(h => {
+                    {visibleHours.map(h => {
                       const sum = filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
                       return (
                         <td key={h} className={`px-2 py-2.5 text-center font-semibold whitespace-nowrap ${sum > 0 ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-300 dark:text-slate-700'}`}>
