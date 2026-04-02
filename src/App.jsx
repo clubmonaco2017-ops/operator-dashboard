@@ -194,7 +194,9 @@ export default function App() {
     revenue: filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
   })).filter(x => x.revenue > 0)
 
-  const top5 = [...filtered].sort((a, b) => b.total - a.total).slice(0, 5)
+  const [topExpanded, setTopExpanded] = useState(false)
+  const top20 = [...filtered].filter(op => op.total > 0).sort((a, b) => b.total - a.total).slice(0, 20)
+  const topVisible = topExpanded ? top20 : top20.slice(0, 5)
   const grandTotal = filtered.reduce((s, op) => s + op.total, 0)
   const activeCount = filtered.filter(r => r.total > 0).length
 
@@ -271,17 +273,34 @@ export default function App() {
           </div>
         )}
 
-        {/* Top 5 */}
-        {top5.filter(op => op.total > 0).length > 0 && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">🏆 Топ-5 операторов за день</h2>
-            <div className="space-y-3">
-              {top5.filter(op => op.total > 0).map((op, i) => {
+        {/* Top 20 collapsible */}
+        {top20.length > 0 && (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <button
+              onClick={() => setTopExpanded(v => !v)}
+              className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+            >
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                🏆 Топ операторов за день
+                <span className="ml-2 text-xs font-normal text-slate-400">
+                  {topExpanded ? `все ${top20.length}` : `топ-5 из ${top20.length}`}
+                </span>
+              </h2>
+              <svg
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                className={`w-4 h-4 text-slate-400 transition-transform ${topExpanded ? 'rotate-180' : ''}`}
+              >
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div className="px-5 pb-5 space-y-3">
+              {topVisible.map((op, i) => {
                 const pct = grandTotal > 0 ? (op.total / grandTotal) * 100 : 0
                 const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
+                const badge = i < 5 ? medals[i] : <span className="text-xs font-bold text-slate-400">{i + 1}</span>
                 return (
                   <div key={op.refcode} className="flex items-center gap-3">
-                    <span className="text-lg w-7">{medals[i]}</span>
+                    <span className="text-lg w-7 flex items-center justify-center">{badge}</span>
                     <div className="w-40">
                       <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{getName(op.refcode)}</p>
                       {getShift(op.refcode) && <p className="text-xs text-slate-400">{getShift(op.refcode)}</p>}
@@ -294,6 +313,14 @@ export default function App() {
                   </div>
                 )
               })}
+              {top20.length > 5 && (
+                <button
+                  onClick={() => setTopExpanded(v => !v)}
+                  className="w-full mt-1 text-xs text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium py-1 transition-colors"
+                >
+                  {topExpanded ? '↑ Свернуть' : `↓ Показать все ${top20.length}`}
+                </button>
+              )}
             </div>
           </div>
         )}
