@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 body {
   margin: 0;
-  background: #f1f5f9;
 }
 
 #root {
