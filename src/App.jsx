@@ -259,8 +259,6 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <ThemeSwitcher theme={theme} setTheme={setTheme} />
-
           {/* Date range */}
           <div className="flex items-center gap-2">
             <input
@@ -319,6 +317,7 @@ export default function App() {
           {lastUpdated && (
             <span className="text-xs text-slate-400">{lastUpdated.toLocaleTimeString('uk-UA')}</span>
           )}
+          <ThemeSwitcher theme={theme} setTheme={setTheme} />
         </div>
       </header>
 
