@@ -102,6 +102,7 @@ export default function App() {
   const [dateFrom, setDateFrom] = useState(today)
   const [dateTo, setDateTo]     = useState(today)
   const [hourRange, setHourRange] = useState([0, 23])
+  const [showHourSlider, setShowHourSlider] = useState(false)
   const [rows, setRows] = useState([])
   const [operators, setOperators] = useState({})
   const [loading, setLoading] = useState(true)
@@ -267,6 +268,27 @@ export default function App() {
               onChange={e => setDateTo(e.target.value)}
               className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
+
+            {/* Clock icon — toggle hour slider */}
+            <button
+              onClick={() => setShowHourSlider(v => !v)}
+              title="Фильтр по часам"
+              className={`relative p-1.5 rounded-lg border transition-colors ${
+                showHourSlider
+                  ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                  : 'border-slate-300 dark:border-slate-600 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              }`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {/* Dot indicator if range is not default */}
+              {(hourRange[0] !== 0 || hourRange[1] !== 23) && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full" />
+              )}
+            </button>
+
             {!isToday && (
               <button
                 onClick={() => { setDateFrom(today); setDateTo(today) }}
@@ -290,35 +312,37 @@ export default function App() {
         </div>
       </header>
 
-      {/* Hour range slider */}
-      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-3 flex items-center gap-6">
-        <span className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Часы:</span>
-        <div className="flex-1 max-w-lg">
-          <Slider
-            range
-            min={0} max={23}
-            value={hourRange}
-            onChange={setHourRange}
-            marks={{ 0: '00:00', 6: '06:00', 12: '12:00', 18: '18:00', 23: '23:00' }}
-            styles={{
-              track: { backgroundColor: '#6366f1' },
-              handle: { borderColor: '#6366f1', backgroundColor: '#6366f1', opacity: 1 },
-              rail: { backgroundColor: isDark ? '#334155' : '#e2e8f0' },
-            }}
-          />
+      {/* Hour range slider — collapsible */}
+      {showHourSlider && (
+        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center gap-6">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Часы:</span>
+          <div className="flex-1 max-w-lg">
+            <Slider
+              range
+              min={0} max={23}
+              value={hourRange}
+              onChange={setHourRange}
+              marks={{ 0: '00:00', 6: '06:00', 12: '12:00', 18: '18:00', 23: '23:00' }}
+              styles={{
+                track: { backgroundColor: '#6366f1' },
+                handle: { borderColor: '#6366f1', backgroundColor: '#6366f1', opacity: 1 },
+                rail: { backgroundColor: isDark ? '#334155' : '#e2e8f0' },
+              }}
+            />
+          </div>
+          <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 whitespace-nowrap w-28 text-right">
+            {String(hourRange[0]).padStart(2,'0')}:00 — {String(hourRange[1]).padStart(2,'0')}:00
+          </span>
+          {(hourRange[0] !== 0 || hourRange[1] !== 23) && (
+            <button
+              onClick={() => setHourRange([0, 23])}
+              className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 whitespace-nowrap"
+            >
+              Сбросить
+            </button>
+          )}
         </div>
-        <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 whitespace-nowrap w-28 text-right">
-          {String(hourRange[0]).padStart(2,'0')}:00 — {String(hourRange[1]).padStart(2,'0')}:00
-        </span>
-        {(hourRange[0] !== 0 || hourRange[1] !== 23) && (
-          <button
-            onClick={() => setHourRange([0, 23])}
-            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-          >
-            Сбросить
-          </button>
-        )}
-      </div>
+      )}
 
       <div className="px-4 md:px-6 py-6 space-y-5 max-w-screen-2xl mx-auto">
 
