@@ -528,8 +528,8 @@ export default function App() {
                     const isZero = op.noData || op.rangeTotal === 0
                     const shiftStyle = SHIFT_STYLES[shift] || {}
                     return (
-                      <tr key={op.refcode} className={`border-b border-slate-100 dark:border-slate-700/50 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 transition-colors ${shiftStyle.border || ''} ${isZero ? 'opacity-40' : idx % 2 === 1 ? 'bg-slate-50/40 dark:bg-slate-700/20' : ''}`}>
-                        <td className="sticky left-0 bg-inherit px-4 py-2 whitespace-nowrap">
+                      <tr key={op.refcode} className={`border-b border-slate-100 dark:border-slate-700/50 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 transition-colors ${isZero ? 'opacity-40' : idx % 2 === 1 ? 'bg-slate-50/40 dark:bg-slate-700/20' : ''}`}>
+                        <td className={`sticky left-0 bg-inherit px-4 py-2 whitespace-nowrap ${shiftStyle.border || ''}`}>
                           <div className="flex items-center gap-2">
                             {shiftStyle.dot && (
                               <span className={`w-2 h-2 rounded-full flex-shrink-0 ${shiftStyle.dot}`} />
