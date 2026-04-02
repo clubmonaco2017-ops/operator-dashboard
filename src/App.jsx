@@ -23,6 +23,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
+  const [onlyActive, setOnlyActive] = useState(false)
   const [sortCol, setSortCol] = useState('total')
   const [sortDir, setSortDir] = useState('desc')
   const [shiftFilter, setShiftFilter] = useState('ALL')
@@ -114,6 +115,7 @@ export default function App() {
   // Filter + search + sort
   const filtered = rows
     .filter(op => shiftFilter === 'ALL' || getShift(op.refcode) === shiftFilter)
+    .filter(op => !onlyActive || op.total > 0)
     .filter(op => {
       if (!search) return true
       const q = search.toLowerCase()
@@ -263,6 +265,16 @@ export default function App() {
               {s === 'ALL' ? 'Все смены' : s}
             </button>
           ))}
+          {/* Active only toggle */}
+          <label className="flex items-center gap-2 cursor-pointer select-none ml-1">
+            <div
+              onClick={() => setOnlyActive(v => !v)}
+              className={`w-10 h-5 rounded-full transition-colors relative ${onlyActive ? 'bg-emerald-500' : 'bg-slate-300'}`}
+            >
+              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${onlyActive ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            </div>
+            <span className="text-sm text-slate-600 font-medium">Только активные</span>
+          </label>
         </div>
 
         {/* Main Table */}
