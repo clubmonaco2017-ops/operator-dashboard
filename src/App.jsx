@@ -6,6 +6,9 @@ import {
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
+// Data before this point is invalid (first snapshot captured cumulative)
+const DATA_START = { date: '2026-04-02', hour: 22 }
+
 const fmt = (n) =>
   n == null ? '—' : Math.round(n).toLocaleString('en-US')
 
@@ -43,11 +46,23 @@ export default function App() {
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await supabase
+      let query = supabase
         .from('hourly_revenue')
         .select('refcode, hour, delta')
         .eq('date', date)
 
+      // Exclude hours before the data start point
+      if (date === DATA_START.date) {
+        query = query.gte('hour', DATA_START.hour)
+      } else if (date < DATA_START.date) {
+        // Entire day is before start — return empty
+        setRows([])
+        setLastUpdated(new Date())
+        setLoading(false)
+        return
+      }
+
+      const { data, error: err } = await query
       if (err) throw err
 
       const map = {}
