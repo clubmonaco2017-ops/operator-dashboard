@@ -28,7 +28,7 @@ export default function App() {
   const [shiftFilter, setShiftFilter] = useState('ALL')
   const [search, setSearch] = useState('')
 
-  // Load operator names once
+  // Load operator names once, then trigger data load with full operator list
   useEffect(() => {
     supabase
       .from('operators')
@@ -38,11 +38,12 @@ export default function App() {
           const map = {}
           data.forEach(op => { map[op.refcode] = { name: op.name, shift: op.shift || '' } })
           setOperators(map)
+          load(map) // reload with full operator list
         }
       })
-  }, [])
+  }, [date]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (ops = operators) => {
     setLoading(true)
     setError(null)
     try {
@@ -71,6 +72,11 @@ export default function App() {
         if (!map[row.refcode]) map[row.refcode] = { refcode: row.refcode }
         map[row.refcode][`h${row.hour}`] = Number(row.delta)
       }
+
+      // Add all known operators with zero balance if not present
+      Object.keys(ops).forEach(refcode => {
+        if (!map[refcode]) map[refcode] = { refcode, noData: true }
+      })
 
       const result = Object.values(map).map(op => {
         const total = HOURS.reduce((s, h) => s + (op[`h${h}`] || 0), 0)
@@ -314,10 +320,13 @@ export default function App() {
                   {sorted.map((op, idx) => {
                     const name = getName(op.refcode)
                     const shift = getShift(op.refcode)
+                    const isZero = op.noData || op.total === 0
                     return (
                       <tr
                         key={op.refcode}
-                        className={`border-b border-slate-100 hover:bg-indigo-50/30 transition-colors ${idx % 2 === 1 ? 'bg-slate-50/40' : ''}`}
+                        className={`border-b border-slate-100 hover:bg-indigo-50/30 transition-colors ${
+                          isZero ? 'opacity-40' : idx % 2 === 1 ? 'bg-slate-50/40' : ''
+                        }`}
                       >
                         <td className="sticky left-0 bg-inherit px-4 py-2 whitespace-nowrap">
                           <div className="relative group inline-block">
@@ -332,7 +341,7 @@ export default function App() {
                           {shift && <p className="text-slate-400 text-xs">{shift}</p>}
                         </td>
                         <td className={`px-3 py-2 text-right font-bold whitespace-nowrap ${op.total > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-400'}`}>
-                          {fmt(op.total)}
+                          {isZero ? '—' : fmt(op.total)}
                         </td>
                         {HOURS.map(h => {
                           const val = op[`h${h}`]
