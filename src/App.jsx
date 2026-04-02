@@ -229,6 +229,8 @@ export default function App() {
     revenue: filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
   })).filter(x => x.revenue > 0)
 
+  const [chartExpanded, setChartExpanded] = useState(true)
+  const [topSectionExpanded, setTopSectionExpanded] = useState(true)
   const [topExpanded, setTopExpanded] = useState(false)
   const top20 = [...filtered].filter(op => op.rangeTotal > 0).sort((a, b) => b.rangeTotal - a.rangeTotal).slice(0, 20)
   const topVisible = topExpanded ? top20 : top20.slice(0, 5)
@@ -369,19 +371,34 @@ export default function App() {
 
         {/* Chart */}
         {hourlyTotals.length > 0 && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Выручка по часам</h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={hourlyTotals} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-                <XAxis dataKey="hour" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
-                <Bar dataKey="revenue" radius={[5, 5, 0, 0]} maxBarSize={40}>
-                  {hourlyTotals.map((_, i) => <Cell key={i} fill="#6366f1" />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <button
+              onClick={() => setChartExpanded(v => !v)}
+              className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+            >
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">📊 Выручка по часам</h2>
+              <svg
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                className={`w-4 h-4 text-slate-400 transition-transform ${chartExpanded ? 'rotate-180' : ''}`}
+              >
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            {chartExpanded && (
+              <div className="px-5 pb-5">
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={hourlyTotals} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                    <XAxis dataKey="hour" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
+                    <Bar dataKey="revenue" radius={[5, 5, 0, 0]} maxBarSize={40}>
+                      {hourlyTotals.map((_, i) => <Cell key={i} fill="#6366f1" />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
         )}
 
@@ -389,51 +406,53 @@ export default function App() {
         {top20.length > 0 && (
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <button
-              onClick={() => setTopExpanded(v => !v)}
+              onClick={() => setTopSectionExpanded(v => !v)}
               className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
             >
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                 🏆 Топ операторов за день
                 <span className="ml-2 text-xs font-normal text-slate-400">
-                  {topExpanded ? `все ${top20.length}` : `топ-5 из ${top20.length}`}
+                  {topSectionExpanded ? (topExpanded ? `все ${top20.length}` : `топ-5 из ${top20.length}`) : `${top20.length} операторов`}
                 </span>
               </h2>
               <svg
                 viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                className={`w-4 h-4 text-slate-400 transition-transform ${topExpanded ? 'rotate-180' : ''}`}
+                className={`w-4 h-4 text-slate-400 transition-transform ${topSectionExpanded ? 'rotate-180' : ''}`}
               >
                 <path d="M6 9l6 6 6-6"/>
               </svg>
             </button>
-            <div className="px-5 pb-5 space-y-3">
-              {topVisible.map((op, i) => {
-                const pct = grandTotal > 0 ? (op.rangeTotal / grandTotal) * 100 : 0
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
-                const badge = i < 5 ? medals[i] : <span className="text-xs font-bold text-slate-400">{i + 1}</span>
-                return (
-                  <div key={op.refcode} className="flex items-center gap-3">
-                    <span className="text-lg w-7 flex items-center justify-center">{badge}</span>
-                    <div className="w-40">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{getName(op.refcode)}</p>
-                      {getShift(op.refcode) && <p className="text-xs text-slate-400">{getShift(op.refcode)}</p>}
+            {topSectionExpanded && (
+              <div className="px-5 pb-5 space-y-3">
+                {topVisible.map((op, i) => {
+                  const pct = grandTotal > 0 ? (op.rangeTotal / grandTotal) * 100 : 0
+                  const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
+                  const badge = i < 5 ? medals[i] : <span className="text-xs font-bold text-slate-400">{i + 1}</span>
+                  return (
+                    <div key={op.refcode} className="flex items-center gap-3">
+                      <span className="text-lg w-7 flex items-center justify-center">{badge}</span>
+                      <div className="w-40">
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{getName(op.refcode)}</p>
+                        {getShift(op.refcode) && <p className="text-xs text-slate-400">{getShift(op.refcode)}</p>}
+                      </div>
+                      <div className="flex-1 h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="w-24 text-sm font-bold text-slate-800 dark:text-slate-200 text-right">{fmt(op.rangeTotal)} $</span>
+                      <span className="text-xs text-slate-400 w-10 text-right">{pct.toFixed(1)}%</span>
                     </div>
-                    <div className="flex-1 h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
-                    </div>
-                    <span className="w-24 text-sm font-bold text-slate-800 dark:text-slate-200 text-right">{fmt(op.rangeTotal)} $</span>
-                    <span className="text-xs text-slate-400 w-10 text-right">{pct.toFixed(1)}%</span>
-                  </div>
-                )
-              })}
-              {top20.length > 5 && (
-                <button
-                  onClick={() => setTopExpanded(v => !v)}
-                  className="w-full mt-1 text-xs text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium py-1 transition-colors"
-                >
-                  {topExpanded ? '↑ Свернуть' : `↓ Показать все ${top20.length}`}
-                </button>
-              )}
-            </div>
+                  )
+                })}
+                {top20.length > 5 && (
+                  <button
+                    onClick={() => setTopExpanded(v => !v)}
+                    className="w-full mt-1 text-xs text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium py-1 transition-colors"
+                  >
+                    {topExpanded ? '↑ Свернуть' : `↓ Показать все ${top20.length}`}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
