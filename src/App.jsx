@@ -320,7 +320,15 @@ export default function App() {
                         className={`border-b border-slate-100 hover:bg-indigo-50/30 transition-colors ${idx % 2 === 1 ? 'bg-slate-50/40' : ''}`}
                       >
                         <td className="sticky left-0 bg-inherit px-4 py-2 whitespace-nowrap">
-                          <p className="font-semibold text-slate-700">{name}</p>
+                          <div className="relative group inline-block">
+                            <p className="font-semibold text-slate-700 cursor-default">{name}</p>
+                            <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover:block z-50">
+                              <div className="bg-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg">
+                                {op.refcode}
+                                <div className="absolute top-full left-3 border-4 border-transparent border-t-slate-800" />
+                              </div>
+                            </div>
+                          </div>
                           {shift && <p className="text-slate-400 text-xs">{shift}</p>}
                         </td>
                         <td className={`px-3 py-2 text-right font-bold whitespace-nowrap ${op.total > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-400'}`}>
