@@ -47,9 +47,10 @@ function useTheme() {
 
   useEffect(() => {
     const root = document.documentElement
-    const apply = (isDark) => {
-      root.classList.toggle('dark', isDark)
-    }
+    const apply = (isDark) => root.classList.toggle('dark', isDark)
+
+    localStorage.setItem('theme', theme)
+
     if (theme === 'dark') {
       apply(true)
     } else if (theme === 'light') {
@@ -62,7 +63,6 @@ function useTheme() {
       mq.addEventListener('change', handler)
       return () => mq.removeEventListener('change', handler)
     }
-    localStorage.setItem('theme', theme)
   }, [theme])
 
   return [theme, setTheme]
