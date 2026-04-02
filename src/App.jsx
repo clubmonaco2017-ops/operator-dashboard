@@ -10,7 +10,7 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const DATA_START = { date: '2026-04-02', hour: 22 }
 
 const fmt = (n) =>
-  n == null ? '—' : Math.round(n).toLocaleString('en-US')
+  n == null ? '—' : Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 function todayStr() {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Kiev' })
@@ -73,7 +73,7 @@ export default function App() {
 
       const result = Object.values(map).map(op => {
         const total = HOURS.reduce((s, h) => s + (op[`h${h}`] || 0), 0)
-        return { ...op, total: Math.round(total) }
+        return { ...op, total }
       })
 
       setRows(result)
