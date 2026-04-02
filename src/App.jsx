@@ -491,24 +491,37 @@ export default function App() {
               <p className="text-slate-400 text-sm">Нет данных за {date}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-auto max-h-[70vh]">
               <table className="w-full text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                    <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-400 cursor-pointer hover:text-indigo-600 whitespace-nowrap select-none" onClick={() => handleSort('name')}>
+                    <th className="sticky left-0 top-0 z-30 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-400 cursor-pointer hover:text-indigo-600 whitespace-nowrap select-none" onClick={() => handleSort('name')}>
                       Оператор {sortCol === 'name' ? (sortDir === 'desc' ? '↓' : '↑') : ''}
                     </th>
-                    <th className="px-3 py-3 text-right font-bold text-indigo-700 dark:text-indigo-400 cursor-pointer hover:text-indigo-900 bg-indigo-50 dark:bg-indigo-900/30 whitespace-nowrap select-none" onClick={() => handleSort('total')}>
+                    <th className="sticky top-0 z-20 px-3 py-3 text-right font-bold text-indigo-700 dark:text-indigo-400 cursor-pointer hover:text-indigo-900 bg-indigo-50 dark:bg-indigo-900/30 whitespace-nowrap select-none" onClick={() => handleSort('total')}>
                       Итого {sortCol === 'total' ? (sortDir === 'desc' ? '↓' : '↑') : ''}
                     </th>
                     {visibleHours.map(h => (
-                      <th key={h} className="px-2 py-3 text-center font-medium text-slate-500 dark:text-slate-500 cursor-pointer hover:text-indigo-600 whitespace-nowrap select-none" onClick={() => handleSort(`h${h}`)}>
+                      <th key={h} className="sticky top-0 z-20 px-2 py-3 text-center font-medium text-slate-500 dark:text-slate-500 cursor-pointer hover:text-indigo-600 whitespace-nowrap select-none bg-slate-50 dark:bg-slate-900/50" onClick={() => handleSort(`h${h}`)}>
                         {String(h).padStart(2, '0')}:00{sortCol === `h${h}` ? (sortDir === 'desc' ? '↓' : '↑') : ''}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Sticky ИТОГО row — pinned below the header */}
+                  <tr className="bg-indigo-50 dark:bg-indigo-900/30 border-b-2 border-indigo-200 dark:border-indigo-800">
+                    <td className="sticky left-0 top-[41px] z-20 bg-indigo-50 dark:bg-indigo-900/50 px-4 py-2.5 font-bold text-indigo-800 dark:text-indigo-300 whitespace-nowrap">ИТОГО</td>
+                    <td className="sticky top-[41px] z-10 px-3 py-2.5 text-right font-bold text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/50 whitespace-nowrap">{fmt(grandTotal)}</td>
+                    {visibleHours.map(h => {
+                      const sum = filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
+                      return (
+                        <td key={h} className={`sticky top-[41px] z-10 px-2 py-2.5 text-center font-semibold whitespace-nowrap bg-indigo-50 dark:bg-indigo-900/30 ${sum > 0 ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-300 dark:text-slate-700'}`}>
+                          {sum > 0 ? fmt(sum) : ''}
+                        </td>
+                      )
+                    })}
+                  </tr>
                   {sorted.map((op, idx) => {
                     const name = getName(op.refcode)
                     const shift = getShift(op.refcode)
@@ -549,18 +562,6 @@ export default function App() {
                       </tr>
                     )
                   })}
-                  <tr className="bg-indigo-50 dark:bg-indigo-900/30 border-t-2 border-indigo-200 dark:border-indigo-800">
-                    <td className="sticky left-0 bg-indigo-50 dark:bg-indigo-900/50 px-4 py-2.5 font-bold text-indigo-800 dark:text-indigo-300 whitespace-nowrap">ИТОГО</td>
-                    <td className="px-3 py-2.5 text-right font-bold text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/50 whitespace-nowrap">{fmt(grandTotal)}</td>
-                    {visibleHours.map(h => {
-                      const sum = filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
-                      return (
-                        <td key={h} className={`px-2 py-2.5 text-center font-semibold whitespace-nowrap ${sum > 0 ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-300 dark:text-slate-700'}`}>
-                          {sum > 0 ? fmt(sum) : ''}
-                        </td>
-                      )
-                    })}
-                  </tr>
                 </tbody>
               </table>
             </div>
