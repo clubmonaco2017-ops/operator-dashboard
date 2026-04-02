@@ -7,7 +7,7 @@ import {
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
 const fmt = (n) =>
-  n == null ? '—' : Math.round(n).toLocaleString('uk-UA')
+  n == null ? '—' : Math.round(n).toLocaleString('en-US')
 
 function todayStr() {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Kiev' })
@@ -152,12 +152,12 @@ export default function App() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label="Всего за день" value={`${fmt(grandTotal)} ₴`} icon="💰" color="indigo" />
+          <KpiCard label="Всего за день" value={`${fmt(grandTotal)} $`} icon="💰" color="indigo" />
           <KpiCard label="Операторов" value={filtered.length} icon="👥" color="slate" />
           <KpiCard label="Активных (> 0)" value={activeCount} icon="✅" color="green" />
           <KpiCard
             label="Средний доход"
-            value={filtered.length ? `${fmt(Math.round(grandTotal / Math.max(activeCount, 1)))} ₴` : '—'}
+            value={filtered.length ? `${fmt(Math.round(grandTotal / Math.max(activeCount, 1)))} $` : '—'}
             icon="📈"
             color="amber"
           />
@@ -173,7 +173,7 @@ export default function App() {
                 <XAxis dataKey="hour" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
                 <Tooltip
-                  formatter={(v) => [`${fmt(v)} ₴`, 'Выручка']}
+                  formatter={(v) => [`${fmt(v)} $`, 'Выручка']}
                   contentStyle={{ fontSize: 12, borderRadius: 10, border: '1px solid #e2e8f0' }}
                   cursor={{ fill: '#f1f5f9' }}
                 />
@@ -208,7 +208,7 @@ export default function App() {
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="w-24 text-sm font-bold text-slate-800 text-right">{fmt(op.total)} ₴</span>
+                    <span className="w-24 text-sm font-bold text-slate-800 text-right">{fmt(op.total)} $</span>
                     <span className="text-xs text-slate-400 w-10 text-right">{pct.toFixed(1)}%</span>
                   </div>
                 )
