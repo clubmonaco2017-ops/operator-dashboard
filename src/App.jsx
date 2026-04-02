@@ -262,7 +262,7 @@ export default function App() {
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
                 <XAxis dataKey="hour" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} cursor={{ fill: isDark ? '#1e293b' : '#f1f5f9' }} />
+                <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
                 <Bar dataKey="revenue" radius={[5, 5, 0, 0]} maxBarSize={40}>
                   {hourlyTotals.map((_, i) => <Cell key={i} fill="#6366f1" />)}
                 </Bar>
