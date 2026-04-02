@@ -242,6 +242,8 @@ export default function App() {
   const tooltipStyle = isDark
     ? { fontSize: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }
     : { fontSize: 12, borderRadius: 10, border: '1px solid #e2e8f0' }
+  const tooltipLabelStyle = isDark ? { color: '#94a3b8' } : {}
+  const tooltipItemStyle  = isDark ? { color: '#e2e8f0' } : {}
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 transition-colors">
@@ -374,7 +376,7 @@ export default function App() {
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
                 <XAxis dataKey="hour" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
+                <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
                 <Bar dataKey="revenue" radius={[5, 5, 0, 0]} maxBarSize={40}>
                   {hourlyTotals.map((_, i) => <Cell key={i} fill="#6366f1" />)}
                 </Bar>
