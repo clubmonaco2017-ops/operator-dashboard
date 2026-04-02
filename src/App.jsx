@@ -67,6 +67,7 @@ export default function App() {
 
       const map = {}
       for (const row of data) {
+        if (row.refcode?.toString().trim().toLowerCase() === 'all') continue
         if (!map[row.refcode]) map[row.refcode] = { refcode: row.refcode }
         map[row.refcode][`h${row.hour}`] = Number(row.delta)
       }
