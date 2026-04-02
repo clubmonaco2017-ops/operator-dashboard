@@ -6,11 +6,9 @@ import {
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
-// Format number
 const fmt = (n) =>
   n == null ? '—' : Math.round(n).toLocaleString('uk-UA')
 
-// Today in YYYY-MM-DD (Kyiv time)
 function todayStr() {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Kiev' })
 }
@@ -18,11 +16,28 @@ function todayStr() {
 export default function App() {
   const [date, setDate] = useState(todayStr())
   const [rows, setRows] = useState([])
+  const [operators, setOperators] = useState({}) // { refcode: { name, shift } }
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [sortCol, setSortCol] = useState('total')
   const [sortDir, setSortDir] = useState('desc')
+  const [shiftFilter, setShiftFilter] = useState('ALL')
+  const [search, setSearch] = useState('')
+
+  // Load operator names once
+  useEffect(() => {
+    supabase
+      .from('operators')
+      .select('refcode, name, shift')
+      .then(({ data }) => {
+        if (data) {
+          const map = {}
+          data.forEach(op => { map[op.refcode] = { name: op.name, shift: op.shift || '' } })
+          setOperators(map)
+        }
+      })
+  }, [])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -35,14 +50,12 @@ export default function App() {
 
       if (err) throw err
 
-      // Group by refcode
       const map = {}
       for (const row of data) {
         if (!map[row.refcode]) map[row.refcode] = { refcode: row.refcode }
         map[row.refcode][`h${row.hour}`] = Number(row.delta)
       }
 
-      // Add totals
       const result = Object.values(map).map(op => {
         const total = HOURS.reduce((s, h) => s + (op[`h${h}`] || 0), 0)
         return { ...op, total: Math.round(total) }
@@ -59,7 +72,6 @@ export default function App() {
 
   useEffect(() => { load() }, [load])
 
-  // Auto-refresh every 5 minutes
   useEffect(() => {
     const id = setInterval(load, 5 * 60 * 1000)
     return () => clearInterval(id)
@@ -70,22 +82,40 @@ export default function App() {
     else { setSortCol(col); setSortDir('desc') }
   }
 
-  const sorted = [...rows].sort((a, b) => {
+  // Helper: display name for a refcode
+  const getName = (refcode) => operators[refcode]?.name || refcode
+  const getShift = (refcode) => operators[refcode]?.shift || ''
+
+  // Get unique shifts for filter
+  const shifts = ['ALL', ...Array.from(new Set(Object.values(operators).map(o => o.shift).filter(Boolean))).sort()]
+
+  // Filter + search + sort
+  const filtered = rows
+    .filter(op => shiftFilter === 'ALL' || getShift(op.refcode) === shiftFilter)
+    .filter(op => {
+      if (!search) return true
+      const q = search.toLowerCase()
+      return getName(op.refcode).toLowerCase().includes(q) || op.refcode.includes(q)
+    })
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortCol === 'name') {
+      const an = getName(a.refcode), bn = getName(b.refcode)
+      return sortDir === 'desc' ? bn.localeCompare(an, 'uk') : an.localeCompare(bn, 'uk')
+    }
     const av = a[sortCol] ?? 0
     const bv = b[sortCol] ?? 0
-    if (typeof av === 'string') return sortDir === 'desc' ? bv.localeCompare(av) : av.localeCompare(bv)
     return sortDir === 'desc' ? bv - av : av - bv
   })
 
-  // Chart data
   const hourlyTotals = HOURS.map(h => ({
     hour: `${String(h).padStart(2, '0')}:00`,
-    revenue: rows.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
+    revenue: filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
   })).filter(x => x.revenue > 0)
 
-  const top5 = [...rows].sort((a, b) => b.total - a.total).slice(0, 5)
-  const grandTotal = rows.reduce((s, op) => s + op.total, 0)
-  const activeCount = rows.filter(r => r.total > 0).length
+  const top5 = [...filtered].sort((a, b) => b.total - a.total).slice(0, 5)
+  const grandTotal = filtered.reduce((s, op) => s + op.total, 0)
+  const activeCount = filtered.filter(r => r.total > 0).length
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -113,9 +143,7 @@ export default function App() {
             {loading ? '...' : '↻ Обновить'}
           </button>
           {lastUpdated && (
-            <span className="text-xs text-slate-400">
-              {lastUpdated.toLocaleTimeString('uk-UA')}
-            </span>
+            <span className="text-xs text-slate-400">{lastUpdated.toLocaleTimeString('uk-UA')}</span>
           )}
         </div>
       </header>
@@ -125,11 +153,11 @@ export default function App() {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <KpiCard label="Всего за день" value={`${fmt(grandTotal)} ₴`} icon="💰" color="indigo" />
-          <KpiCard label="Операторов" value={rows.length} icon="👥" color="slate" />
+          <KpiCard label="Операторов" value={filtered.length} icon="👥" color="slate" />
           <KpiCard label="Активных (> 0)" value={activeCount} icon="✅" color="green" />
           <KpiCard
             label="Средний доход"
-            value={rows.length ? `${fmt(Math.round(grandTotal / Math.max(activeCount, 1)))} ₴` : '—'}
+            value={filtered.length ? `${fmt(Math.round(grandTotal / Math.max(activeCount, 1)))} ₴` : '—'}
             icon="📈"
             color="amber"
           />
@@ -138,9 +166,7 @@ export default function App() {
         {/* Chart */}
         {hourlyTotals.length > 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">
-              Выручка по часам (все операторы)
-            </h2>
+            <h2 className="text-sm font-semibold text-slate-700 mb-4">Выручка по часам</h2>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={hourlyTotals} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
@@ -152,9 +178,7 @@ export default function App() {
                   cursor={{ fill: '#f1f5f9' }}
                 />
                 <Bar dataKey="revenue" radius={[5, 5, 0, 0]} maxBarSize={40}>
-                  {hourlyTotals.map((_, i) => (
-                    <Cell key={i} fill="#6366f1" />
-                  ))}
+                  {hourlyTotals.map((_, i) => <Cell key={i} fill="#6366f1" />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -172,7 +196,12 @@ export default function App() {
                 return (
                   <div key={op.refcode} className="flex items-center gap-3">
                     <span className="text-lg w-7">{medals[i]}</span>
-                    <span className="w-20 text-sm font-mono font-semibold text-slate-700">{op.refcode}</span>
+                    <div className="w-40">
+                      <p className="text-sm font-semibold text-slate-700 truncate">{getName(op.refcode)}</p>
+                      {getShift(op.refcode) && (
+                        <p className="text-xs text-slate-400">{getShift(op.refcode)}</p>
+                      )}
+                    </div>
                     <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-500"
@@ -187,6 +216,32 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Search */}
+          <input
+            type="text"
+            placeholder="🔍 Поиск оператора..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+          {/* Shift filter */}
+          {shifts.length > 1 && shifts.map(s => (
+            <button
+              key={s}
+              onClick={() => setShiftFilter(s)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                shiftFilter === s
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white text-slate-600 border border-slate-300 hover:border-indigo-400'
+              }`}
+            >
+              {s === 'ALL' ? 'Все смены' : s}
+            </button>
+          ))}
+        </div>
 
         {/* Main Table */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -217,9 +272,9 @@ export default function App() {
                   <tr className="bg-slate-50 border-b border-slate-200">
                     <th
                       className="sticky left-0 z-10 bg-slate-50 px-4 py-3 text-left font-semibold text-slate-600 cursor-pointer hover:text-indigo-600 whitespace-nowrap select-none"
-                      onClick={() => handleSort('refcode')}
+                      onClick={() => handleSort('name')}
                     >
-                      Оператор {sortCol === 'refcode' ? (sortDir === 'desc' ? '↓' : '↑') : ''}
+                      Оператор {sortCol === 'name' ? (sortDir === 'desc' ? '↓' : '↑') : ''}
                     </th>
                     <th
                       className="px-3 py-3 text-right font-bold text-indigo-700 cursor-pointer hover:text-indigo-900 bg-indigo-50 whitespace-nowrap select-none"
@@ -240,43 +295,44 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sorted.map((op, idx) => (
-                    <tr
-                      key={op.refcode}
-                      className={`border-b border-slate-100 hover:bg-indigo-50/30 transition-colors ${idx % 2 === 1 ? 'bg-slate-50/40' : ''}`}
-                    >
-                      <td className="sticky left-0 bg-inherit px-4 py-2 font-mono font-semibold text-slate-700 whitespace-nowrap">
-                        {op.refcode}
-                      </td>
-                      <td className={`px-3 py-2 text-right font-bold whitespace-nowrap ${op.total > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-400'}`}>
-                        {fmt(op.total)}
-                      </td>
-                      {HOURS.map(h => {
-                        const val = op[`h${h}`]
-                        const hasData = val != null
-                        const hasRevenue = hasData && val > 0
-                        return (
-                          <td
-                            key={h}
-                            className={`px-2 py-2 text-center whitespace-nowrap
-                              ${hasRevenue ? 'bg-green-50 text-green-700 font-medium' : hasData ? 'bg-red-50 text-red-300' : 'text-slate-200'}`}
-                          >
-                            {hasData ? fmt(val) : ''}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
+                  {sorted.map((op, idx) => {
+                    const name = getName(op.refcode)
+                    const shift = getShift(op.refcode)
+                    return (
+                      <tr
+                        key={op.refcode}
+                        className={`border-b border-slate-100 hover:bg-indigo-50/30 transition-colors ${idx % 2 === 1 ? 'bg-slate-50/40' : ''}`}
+                      >
+                        <td className="sticky left-0 bg-inherit px-4 py-2 whitespace-nowrap">
+                          <p className="font-semibold text-slate-700">{name}</p>
+                          {shift && <p className="text-slate-400 text-xs">{shift}</p>}
+                        </td>
+                        <td className={`px-3 py-2 text-right font-bold whitespace-nowrap ${op.total > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-400'}`}>
+                          {fmt(op.total)}
+                        </td>
+                        {HOURS.map(h => {
+                          const val = op[`h${h}`]
+                          const hasData = val != null
+                          const hasRevenue = hasData && val > 0
+                          return (
+                            <td
+                              key={h}
+                              className={`px-2 py-2 text-center whitespace-nowrap
+                                ${hasRevenue ? 'bg-green-50 text-green-700 font-medium' : hasData ? 'bg-red-50 text-red-300' : 'text-slate-200'}`}
+                            >
+                              {hasData ? fmt(val) : ''}
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    )
+                  })}
                   {/* Grand total row */}
                   <tr className="bg-indigo-50 border-t-2 border-indigo-200">
-                    <td className="sticky left-0 bg-indigo-50 px-4 py-2.5 font-bold text-indigo-800 whitespace-nowrap">
-                      ИТОГО
-                    </td>
-                    <td className="px-3 py-2.5 text-right font-bold text-indigo-800 bg-indigo-100 whitespace-nowrap">
-                      {fmt(grandTotal)}
-                    </td>
+                    <td className="sticky left-0 bg-indigo-50 px-4 py-2.5 font-bold text-indigo-800 whitespace-nowrap">ИТОГО</td>
+                    <td className="px-3 py-2.5 text-right font-bold text-indigo-800 bg-indigo-100 whitespace-nowrap">{fmt(grandTotal)}</td>
                     {HOURS.map(h => {
-                      const sum = rows.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
+                      const sum = filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
                       return (
                         <td key={h} className={`px-2 py-2.5 text-center font-semibold whitespace-nowrap ${sum > 0 ? 'text-indigo-700' : 'text-slate-300'}`}>
                           {sum > 0 ? fmt(sum) : ''}
@@ -291,7 +347,7 @@ export default function App() {
         </div>
 
         <p className="text-center text-xs text-slate-400 pb-4">
-          Данные обновляются каждый час автоматически · автообновление каждые 5 мин
+          Данные обновляются каждый час · автообновление каждые 5 мин
         </p>
       </div>
     </div>
