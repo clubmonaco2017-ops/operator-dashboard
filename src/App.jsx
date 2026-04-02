@@ -190,6 +190,12 @@ export default function App() {
   const getShift = (rc) => operators[rc]?.shift || ''
   const shifts = ['ALL', ...Array.from(new Set(Object.values(operators).map(o => o.shift).filter(Boolean))).sort()]
 
+  const SHIFT_STYLES = {
+    'ДНЕВНАЯ':  { dot: 'bg-amber-400',   border: 'border-l-4 border-l-amber-400',  label: 'text-amber-600 dark:text-amber-400'  },
+    'ВЕЧЕРНЯЯ': { dot: 'bg-orange-400',  border: 'border-l-4 border-l-orange-400', label: 'text-orange-600 dark:text-orange-400' },
+    'НОЧНАЯ':   { dot: 'bg-indigo-400',  border: 'border-l-4 border-l-indigo-400', label: 'text-indigo-600 dark:text-indigo-400' },
+  }
+
   // Hours within selected range
   const visibleHours = HOURS.filter(h => h >= hourRange[0] && h <= hourRange[1])
 
@@ -507,19 +513,25 @@ export default function App() {
                     const name = getName(op.refcode)
                     const shift = getShift(op.refcode)
                     const isZero = op.noData || op.rangeTotal === 0
+                    const shiftStyle = SHIFT_STYLES[shift] || {}
                     return (
-                      <tr key={op.refcode} className={`border-b border-slate-100 dark:border-slate-700/50 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 transition-colors ${isZero ? 'opacity-40' : idx % 2 === 1 ? 'bg-slate-50/40 dark:bg-slate-700/20' : ''}`}>
+                      <tr key={op.refcode} className={`border-b border-slate-100 dark:border-slate-700/50 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 transition-colors ${shiftStyle.border || ''} ${isZero ? 'opacity-40' : idx % 2 === 1 ? 'bg-slate-50/40 dark:bg-slate-700/20' : ''}`}>
                         <td className="sticky left-0 bg-inherit px-4 py-2 whitespace-nowrap">
-                          <div className="relative group inline-block">
-                            <p className="font-semibold text-slate-700 dark:text-slate-200 cursor-default">{name}</p>
-                            <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover:block z-50">
-                              <div className="bg-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg">
-                                {op.refcode}
-                                <div className="absolute top-full left-3 border-4 border-transparent border-t-slate-800" />
+                          <div className="flex items-center gap-2">
+                            {shiftStyle.dot && (
+                              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${shiftStyle.dot}`} />
+                            )}
+                            <div className="relative group inline-block">
+                              <p className="font-semibold text-slate-700 dark:text-slate-200 cursor-default">{name}</p>
+                              <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover:block z-50">
+                                <div className="bg-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg">
+                                  {op.refcode}
+                                  <div className="absolute top-full left-3 border-4 border-transparent border-t-slate-800" />
+                                </div>
                               </div>
                             </div>
                           </div>
-                          {shift && <p className="text-slate-400 text-xs">{shift}</p>}
+                          {shift && <p className={`text-xs ml-4 ${shiftStyle.label || 'text-slate-400'}`}>{shift}</p>}
                         </td>
                         <td className={`px-3 py-2 text-right font-bold whitespace-nowrap ${op.rangeTotal > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/20 text-red-400'}`}>
                           {isZero ? '—' : fmt(op.rangeTotal)}
