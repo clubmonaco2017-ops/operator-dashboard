@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabaseClient'
+import { useAuth } from './useAuth'
+import LoginPage from './LoginPage'
+import AdminPanel from './AdminPanel'
 import {
   BarChart, Bar, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
@@ -98,7 +101,9 @@ function ThemeSwitcher({ theme, setTheme }) {
 
 // ── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
+  const { user, login, logout, loading: authLoading } = useAuth()
   const [theme, setTheme] = useTheme()
+  const [showAdmin, setShowAdmin] = useState(false)
   const today = todayStr()
   const [dateFrom, setDateFrom] = useState(today)
   const [dateTo, setDateTo]     = useState(today)
@@ -246,6 +251,16 @@ export default function App() {
   const tooltipLabelStyle = isDark ? { color: '#94a3b8' } : {}
   const tooltipItemStyle  = isDark ? { color: '#e2e8f0' } : {}
 
+  // Auth guard — show login if no session
+  if (!user) {
+    return <LoginPage onLogin={login} loading={authLoading} />
+  }
+
+  const isSuperAdmin = user.role === 'superadmin'
+  const canViewRevenue = isSuperAdmin || !!user.permissions?.can_view_revenue
+  const canViewChart   = isSuperAdmin || !!user.permissions?.can_view_chart
+  const canViewTop     = isSuperAdmin || !!user.permissions?.can_view_top
+
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 transition-colors">
       {/* Header */}
@@ -317,8 +332,42 @@ export default function App() {
             <span className="text-xs text-slate-400">{lastUpdated.toLocaleTimeString('uk-UA')}</span>
           )}
           <ThemeSwitcher theme={theme} setTheme={setTheme} />
+
+          {/* Admin panel button — superadmin only */}
+          {isSuperAdmin && (
+            <button
+              onClick={() => setShowAdmin(true)}
+              title="Управление пользователями"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium border border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span className="hidden sm:inline">Пользователи</span>
+            </button>
+          )}
+
+          {/* Logout */}
+          <button
+            onClick={logout}
+            title="Выйти"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span className="hidden sm:inline">Выйти</span>
+          </button>
         </div>
       </header>
+
+      {/* Admin Panel overlay */}
+      {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
 
       {/* Hour range slider — collapsible */}
       {showHourSlider && (
@@ -368,7 +417,7 @@ export default function App() {
         </div>
 
         {/* Chart */}
-        {hourlyTotals.length > 0 && (
+        {canViewChart && hourlyTotals.length > 0 && (
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="px-5 py-4 flex items-center justify-between">
               <button
@@ -446,7 +495,7 @@ export default function App() {
         )}
 
         {/* Top 20 collapsible */}
-        {top20.length > 0 && (
+        {canViewTop && top20.length > 0 && (
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <button
               onClick={() => setTopSectionExpanded(v => !v)}
@@ -499,7 +548,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Filters */}
+        {/* Filters + Main Table — only for users with can_view_revenue */}
+        {canViewRevenue && <>
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="text"
@@ -631,6 +681,7 @@ export default function App() {
             </div>
           )}
         </div>
+        </>}
 
         <p className="text-center text-xs text-slate-400 pb-4">
           Данные обновляются каждый час · автообновление каждые 5 мин
