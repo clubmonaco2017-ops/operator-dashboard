@@ -562,7 +562,7 @@ export default function App() {
                     <th className="sticky left-0 top-0 z-30 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-400 cursor-pointer hover:text-indigo-600 whitespace-nowrap select-none" onClick={() => handleSort('name')}>
                       Оператор {sortCol === 'name' ? (sortDir === 'desc' ? '↓' : '↑') : ''}
                     </th>
-                    <th className="sticky top-0 z-20 px-3 py-3 text-right font-bold text-indigo-700 dark:text-indigo-400 cursor-pointer hover:text-indigo-900 bg-indigo-50 dark:bg-indigo-900/30 whitespace-nowrap select-none" onClick={() => handleSort('total')}>
+                    <th className="sticky top-0 z-20 px-3 py-3 text-right font-bold text-indigo-700 dark:text-indigo-400 cursor-pointer hover:text-indigo-900 bg-indigo-50 dark:bg-indigo-900/30 whitespace-nowrap select-none border-r-2 border-r-slate-200 dark:border-r-slate-600" onClick={() => handleSort('total')}>
                       Итого {sortCol === 'total' ? (sortDir === 'desc' ? '↓' : '↑') : ''}
                     </th>
                     {visibleHours.map(h => (
@@ -576,7 +576,7 @@ export default function App() {
                   {/* Sticky ИТОГО row — pinned below the header */}
                   <tr className="bg-indigo-50 dark:bg-indigo-900/30 border-b-2 border-indigo-200 dark:border-indigo-800">
                     <td className="sticky left-0 top-[41px] z-20 bg-indigo-50 dark:bg-indigo-900/50 px-4 py-2.5 font-bold text-indigo-800 dark:text-indigo-300 whitespace-nowrap">ИТОГО</td>
-                    <td className="sticky top-[41px] z-10 px-3 py-2.5 text-right font-bold text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/50 whitespace-nowrap">{fmt(grandTotal)}</td>
+                    <td className="sticky top-[41px] z-10 px-3 py-2.5 text-right font-bold text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/50 whitespace-nowrap border-r-2 border-r-slate-200 dark:border-r-slate-600">{fmt(grandTotal)}</td>
                     {visibleHours.map(h => {
                       const sum = filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
                       return (
@@ -610,7 +610,7 @@ export default function App() {
                           </div>
                           {shift && <p className={`text-xs ml-4 ${shiftStyle.label || 'text-slate-400'}`}>{shift}</p>}
                         </td>
-                        <td className={`px-3 py-2 text-right font-bold whitespace-nowrap ${op.rangeTotal > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/20 text-red-400'}`}>
+                        <td className={`px-3 py-2 text-right font-bold whitespace-nowrap border-r-2 border-r-slate-200 dark:border-r-slate-600 ${op.rangeTotal > 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/20 text-red-400'}`}>
                           {isZero ? '—' : fmt(op.rangeTotal)}
                         </td>
                         {visibleHours.map(h => {
