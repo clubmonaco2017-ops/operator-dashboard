@@ -618,7 +618,7 @@ export default function App() {
                           const hasData = val != null
                           const hasRevenue = hasData && val > 0
                           return (
-                            <td key={h} className={`px-2 py-2 text-center whitespace-nowrap ${hasRevenue ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-medium' : hasData ? 'bg-red-50 dark:bg-red-900/10 text-red-300' : 'text-slate-200 dark:text-slate-700'}`}>
+                            <td key={h} className={`px-2 py-2 text-center whitespace-nowrap ${hasRevenue ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-medium' : 'bg-red-50 dark:bg-red-900/10 text-red-300'}`}>
                               {hasData ? fmt(val) : ''}
                             </td>
                           )
