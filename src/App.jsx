@@ -135,16 +135,11 @@ export default function App() {
     setLoading(true)
     setError(null)
     try {
-      let query = supabase
+      const query = supabase
         .from('hourly_revenue')
         .select('refcode, date, hour, delta')
         .gte('date', dateFrom)
         .lte('date', dateTo)
-
-      // Exclude hours before data start on start date
-      if (dateFrom === DATA_START.date) {
-        query = query.gte('hour', DATA_START.hour)
-      }
 
       const { data, error: err } = await query
       if (err) throw err
@@ -153,6 +148,8 @@ export default function App() {
       const map = {}
       for (const row of data) {
         if (row.refcode?.toString().trim().toLowerCase() === 'all') continue
+        // Exclude hours before data start on the specific start date only
+        if (row.date === DATA_START.date && row.hour < DATA_START.hour) continue
         if (!map[row.refcode]) map[row.refcode] = { refcode: row.refcode }
         // Keep per-hour deltas (sum across days for same hour)
         const key = `h${row.hour}`
