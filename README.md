@@ -1,16 +1,63 @@
-# React + Vite
+# Дашборд операторов
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Фронтенд для мониторинга почасовой выручки операторов. Данные берутся из Supabase, куда их пишет бэкенд-скрипт на основе Tableau.
 
-Currently, two official plugins are available:
+**Продакшн:** https://operator-dashboard-psi.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Стек
 
-## React Compiler
+- React + Vite
+- Tailwind CSS v4 (`@tailwindcss/vite`)
+- Supabase JS (`@supabase/supabase-js`)
+- Recharts — графики
+- rc-slider — ползунок диапазона часов
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Возможности
 
-## Expanding the ESLint configuration
+- Почасовая таблица выручки по операторам с сортировкой по любой колонке
+- Фильтрация по смене (ДНЕВНАЯ / ВЕЧЕРНЯЯ / НОЧНАЯ), поиск по имени
+- Цветовая маркировка операторов по смене (левая полоса + цветная метка)
+- Выбор диапазона дат и диапазона часов (ползунок за иконкой часов)
+- График выручки по часам — Bar или Area, переключается внутри блока
+- Топ-20 операторов с прогресс-барами и медалями
+- Все секции сворачиваются
+- Строка ИТОГО зафиксирована вверху таблицы при скролле
+- Тёмная / светлая / системная тема с сохранением в localStorage
+- Автообновление каждые 5 минут
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Структура Supabase
+
+**`hourly_revenue`** — основная таблица с данными:
+| Колонка | Тип | Описание |
+|---------|-----|----------|
+| refcode | text | Реферальный код оператора |
+| date | date | Дата |
+| hour | int | Час (0–23) |
+| delta | numeric | Выручка за час |
+
+**`operators`** — справочник операторов:
+| Колонка | Тип | Описание |
+|---------|-----|----------|
+| refcode | text PK | Реферальный код |
+| name | text | Имя оператора |
+| shift | text | Смена (ДНЕВНАЯ / ВЕЧЕРНЯЯ / НОЧНАЯ) |
+
+## Локальный запуск
+
+```bash
+npm install
+```
+
+Создать `.env.local`:
+```
+VITE_SUPABASE_ANON_KEY=<ключ из Supabase → Settings → API>
+```
+
+```bash
+npm run dev
+```
+
+## Деплой
+
+Репозиторий подключён к Vercel. Push в `main` → автодеплой.
+Переменную `VITE_SUPABASE_ANON_KEY` нужно добавить в настройках проекта на Vercel.
