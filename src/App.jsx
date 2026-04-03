@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabaseClient'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
+  BarChart, Bar, AreaChart, Area,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
@@ -230,6 +231,7 @@ export default function App() {
   })).filter(x => x.revenue > 0)
 
   const [chartExpanded, setChartExpanded] = useState(true)
+  const [chartType, setChartType] = useState('bar')
   const [topSectionExpanded, setTopSectionExpanded] = useState(true)
   const [topExpanded, setTopExpanded] = useState(false)
   const top20 = [...filtered].filter(op => op.rangeTotal > 0).sort((a, b) => b.rangeTotal - a.rangeTotal).slice(0, 20)
@@ -371,30 +373,75 @@ export default function App() {
         {/* Chart */}
         {hourlyTotals.length > 0 && (
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <button
-              onClick={() => setChartExpanded(v => !v)}
-              className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-            >
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">📊 Выручка по часам</h2>
-              <svg
-                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                className={`w-4 h-4 text-slate-400 transition-transform ${chartExpanded ? 'rotate-180' : ''}`}
+            <div className="px-5 py-4 flex items-center justify-between">
+              <button
+                onClick={() => setChartExpanded(v => !v)}
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
               >
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
+                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">📊 Выручка по часам</h2>
+                <svg
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                  className={`w-4 h-4 text-slate-400 transition-transform ${chartExpanded ? 'rotate-180' : ''}`}
+                >
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </button>
+              {chartExpanded && (
+                <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-700 rounded-lg p-0.5">
+                  {/* Bar chart icon */}
+                  <button
+                    title="Столбчатый"
+                    onClick={() => setChartType('bar')}
+                    className={`p-1.5 rounded-md transition-colors ${chartType === 'bar' ? 'bg-white dark:bg-slate-500 text-indigo-600 dark:text-indigo-300 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <rect x="3" y="12" width="4" height="9" rx="1"/>
+                      <rect x="10" y="7" width="4" height="14" rx="1"/>
+                      <rect x="17" y="4" width="4" height="17" rx="1"/>
+                    </svg>
+                  </button>
+                  {/* Area chart icon */}
+                  <button
+                    title="Площадной"
+                    onClick={() => setChartType('area')}
+                    className={`p-1.5 rounded-md transition-colors ${chartType === 'area' ? 'bg-white dark:bg-slate-500 text-indigo-600 dark:text-indigo-300 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                      <path d="M2 20 L2 14 L7 8 L12 11 L17 5 L22 9 L22 20 Z" opacity="0.4"/>
+                      <path d="M2 14 L7 8 L12 11 L17 5 L22 9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
             {chartExpanded && (
               <div className="px-5 pb-5">
                 <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={hourlyTotals} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-                    <XAxis dataKey="hour" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
-                    <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
-                    <Bar dataKey="revenue" radius={[5, 5, 0, 0]} maxBarSize={40}>
-                      {hourlyTotals.map((_, i) => <Cell key={i} fill="#6366f1" />)}
-                    </Bar>
-                  </BarChart>
+                  {chartType === 'bar' ? (
+                    <BarChart data={hourlyTotals} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                      <XAxis dataKey="hour" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v.toFixed(0)} />
+                      <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
+                      <Bar dataKey="revenue" radius={[5, 5, 0, 0]} maxBarSize={40}>
+                        {hourlyTotals.map((_, i) => <Cell key={i} fill="#6366f1" />)}
+                      </Bar>
+                    </BarChart>
+                  ) : (
+                    <AreaChart data={hourlyTotals} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                      <defs>
+                        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                      <XAxis dataKey="hour" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v.toFixed(0)} />
+                      <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
+                      <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fill="url(#areaGradient)" dot={{ fill: '#6366f1', r: 3 }} activeDot={{ r: 5 }} />
+                    </AreaChart>
+                  )}
                 </ResponsiveContainer>
               </div>
             )}
