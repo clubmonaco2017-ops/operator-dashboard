@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabaseAdmin } from './supabaseAdmin'
+import { getSupabaseAdmin } from './supabaseAdmin'
 
 const PERMISSIONS_CONFIG = [
   { key: 'can_view_revenue', label: 'Таблица выручки' },
@@ -95,7 +95,7 @@ function CreateUserModal({ onClose, onCreated }) {
     if (!form.email.trim() || !form.password) return
     setError(null)
     setSubmitting(true)
-    const { error: err } = await supabaseAdmin.rpc('create_user', {
+    const { error: err } = await getSupabaseAdmin().rpc('create_user', {
       p_email: form.email.trim(),
       p_password: form.password,
       p_role: form.role,
@@ -188,7 +188,7 @@ function ChangePasswordModal({ user, onClose, onDone }) {
     }
     setError(null)
     setSubmitting(true)
-    const { error: err } = await supabaseAdmin.rpc('update_user_password', {
+    const { error: err } = await getSupabaseAdmin().rpc('update_user_password', {
       p_user_id: user.id,
       p_new_password: password,
     })
@@ -251,7 +251,7 @@ function EditPermissionsModal({ user, onClose, onDone }) {
     e.preventDefault()
     setError(null)
     setSubmitting(true)
-    const { error: err } = await supabaseAdmin.rpc('update_user_permissions', {
+    const { error: err } = await getSupabaseAdmin().rpc('update_user_permissions', {
       p_user_id: user.id,
       p_permissions: permissions,
     })
@@ -303,7 +303,7 @@ export default function AdminPanel({ onClose }) {
   const fetchUsers = useCallback(async () => {
     setLoadingUsers(true)
     setFetchError(null)
-    const { data, error } = await supabaseAdmin.rpc('list_users')
+    const { data, error } = await getSupabaseAdmin().rpc('list_users')
     setLoadingUsers(false)
     if (error) {
       setFetchError(error.message)
@@ -317,7 +317,7 @@ export default function AdminPanel({ onClose }) {
   const handleDeactivate = async (user) => {
     if (!window.confirm(`Деактивировать пользователя ${user.email}?`)) return
     setDeactivating(user.id)
-    const { error } = await supabaseAdmin.rpc('deactivate_user', { p_user_id: user.id })
+    const { error } = await getSupabaseAdmin().rpc('deactivate_user', { p_user_id: user.id })
     setDeactivating(null)
     if (error) {
       alert('Ошибка: ' + error.message)

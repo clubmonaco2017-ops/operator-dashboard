@@ -1,11 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = 'https://akpddaqpggktefkdecrl.supabase.co'
-const SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_KEY || ''
 
-export const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-})
+let _client = null
+
+export function getSupabaseAdmin() {
+  if (_client) return _client
+  const key = import.meta.env.VITE_SUPABASE_SERVICE_KEY
+  if (!key) throw new Error('VITE_SUPABASE_SERVICE_KEY не задан')
+  _client = createClient(SUPABASE_URL, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  return _client
+}
