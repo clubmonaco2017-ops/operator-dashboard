@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import { useAuth } from './useAuth'
 import LoginPage from './LoginPage'
@@ -129,7 +130,7 @@ function ThemeSwitcher({ theme, setTheme }) {
 export default function App() {
   const { user, login, logout, loading: authLoading, updateTimezone } = useAuth()
   const [theme, setTheme] = useTheme()
-  const [showAdmin, setShowAdmin] = useState(false)
+  const navigate = useNavigate()
   const tz = user?.timezone || 'Europe/Kiev'
   const tzOffset = getTzOffset(tz)
   const today = todayStr(tz)
@@ -306,6 +307,11 @@ export default function App() {
   const canViewTop     = isSuperAdmin || !!user.permissions?.can_view_top
 
   return (
+    <Routes>
+      {isSuperAdmin && (
+        <Route path="/admin/*" element={<AdminLayout onClose={() => navigate('/')} onLogout={logout} currentUser={user} />} />
+      )}
+      <Route path="*" element={
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 transition-colors">
       {/* Header */}
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
@@ -389,7 +395,7 @@ export default function App() {
           {/* Account page button — superadmin only */}
           {isSuperAdmin && (
             <button
-              onClick={() => setShowAdmin(true)}
+              onClick={() => navigate('/admin')}
               title="Аккаунт"
               className="p-2 rounded-xl border border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
             >
@@ -402,8 +408,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* Admin Panel — full page */}
-      {showAdmin && <AdminLayout onClose={() => setShowAdmin(false)} onLogout={logout} currentUser={user} />}
 
       {/* Hour range slider — collapsible */}
       {showHourSlider && (
@@ -745,6 +749,8 @@ export default function App() {
         </p>
       </div>
     </div>
+      } />
+    </Routes>
   )
 }
 
