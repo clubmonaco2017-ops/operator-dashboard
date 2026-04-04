@@ -36,6 +36,7 @@ export function useAuth() {
         email: row.user_email,
         role: row.user_role,
         permissions: row.user_permissions || {},
+        timezone: row.user_timezone || 'Europe/Kiev',
       }
 
       localStorage.setItem(SESSION_KEY, JSON.stringify(session))
@@ -53,5 +54,13 @@ export function useAuth() {
     setUser(null)
   }
 
-  return { user, login, logout, loading }
+  const updateTimezone = async (tz) => {
+    if (!user) return
+    await supabase.rpc('update_user_timezone', { p_user_id: user.id, p_timezone: tz })
+    const updated = { ...user, timezone: tz }
+    localStorage.setItem(SESSION_KEY, JSON.stringify(updated))
+    setUser(updated)
+  }
+
+  return { user, login, logout, loading, updateTimezone }
 }
