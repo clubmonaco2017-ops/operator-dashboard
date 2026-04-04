@@ -194,9 +194,9 @@ export default function App() {
   const shifts = ['ALL', ...Array.from(new Set(Object.values(operators).map(o => o.shift).filter(Boolean))).sort()]
 
   const SHIFT_STYLES = {
-    'ДНЕВНАЯ':  { dot: 'bg-amber-400',   border: 'border-l-4 border-l-amber-400',  label: 'text-amber-600 dark:text-amber-400'  },
-    'ВЕЧЕРНЯЯ': { dot: 'bg-orange-400',  border: 'border-l-4 border-l-orange-400', label: 'text-orange-600 dark:text-orange-400' },
-    'НОЧНАЯ':   { dot: 'bg-indigo-400',  border: 'border-l-4 border-l-indigo-400', label: 'text-indigo-600 dark:text-indigo-400' },
+    'ДНЕВНАЯ':  { dot: 'bg-amber-500',   border: 'border-l-4 border-l-amber-500',  label: 'text-amber-500 dark:text-amber-400'  },
+    'ВЕЧЕРНЯЯ': { dot: 'bg-violet-500',  border: 'border-l-4 border-l-violet-500', label: 'text-violet-500 dark:text-violet-400' },
+    'НОЧНАЯ':   { dot: 'bg-slate-500',   border: 'border-l-4 border-l-slate-500',  label: 'text-slate-500 dark:text-slate-400' },
   }
 
   // Hours within selected range
@@ -534,26 +534,47 @@ export default function App() {
         {/* Filters + Main Table — only for users with can_view_revenue */}
         {canViewRevenue && <>
         <div className="flex flex-wrap items-center gap-3">
-          <input
-            type="text"
-            placeholder="🔍 Поиск оператора..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 rounded-lg px-3 py-1.5 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
-          {shifts.length > 1 && shifts.map(s => (
-            <button
-              key={s}
-              onClick={() => setShiftFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                shiftFilter === s
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:border-indigo-400'
-              }`}
-            >
-              {s === 'ALL' ? 'Все смены' : s}
-            </button>
-          ))}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="🔍 Поиск оператора..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 rounded-lg px-3 py-1.5 pr-7 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            )}
+          </div>
+          {shifts.length > 1 && shifts.map(s => {
+            const shiftBtnColors = {
+              'ДНЕВНАЯ':  { active: 'bg-amber-100 text-amber-500 border border-amber-500', inactive: 'border-amber-300 dark:border-amber-700 text-amber-500 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20' },
+              'ВЕЧЕРНЯЯ': { active: 'bg-violet-100 text-violet-500 border border-violet-500', inactive: 'border-violet-300 dark:border-violet-700 text-violet-500 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20' },
+              'НОЧНАЯ':   { active: 'bg-slate-100 text-slate-500 border border-slate-500', inactive: 'border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800' },
+            }
+            const colors = shiftBtnColors[s]
+            const isActive = shiftFilter === s
+            return (
+              <button
+                key={s}
+                onClick={() => setShiftFilter(s)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? (colors?.active || 'bg-indigo-600 text-white')
+                    : (colors ? `bg-white dark:bg-slate-700 border ${colors.inactive}` : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:border-indigo-400')
+                }`}
+              >
+                {s === 'ALL' ? 'Все смены' : s}
+              </button>
+            )
+          })}
           <label className="flex items-center gap-2 cursor-pointer select-none ml-1">
             <div
               onClick={() => setOnlyActive(v => !v)}
