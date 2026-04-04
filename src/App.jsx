@@ -12,13 +12,39 @@ import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
-const DATA_START = { date: '2026-04-02', hour: 22 }
+const DATA_START = { date: '2026-04-04', hour: 0 }
+
+const TIMEZONES = [
+  { value: 'Europe/Kiev',       label: 'Киев (UTC+3)' },
+  { value: 'Asia/Ashgabat',     label: 'Ашхабад (UTC+5)' },
+  { value: 'Europe/Podgorica',  label: 'Подгорица (UTC+2)' },
+  { value: 'America/New_York',  label: 'Майами (UTC-4)' },
+]
 
 const fmt = (n) =>
   n == null ? '—' : Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-function todayStr() {
-  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Kiev' })
+function todayStr(tz = 'Europe/Kiev') {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: tz })
+}
+
+function getTzOffset(tz) {
+  const now = new Date()
+  const utcStr = now.toLocaleString('en-US', { timeZone: 'UTC' })
+  const localStr = now.toLocaleString('en-US', { timeZone: tz })
+  return Math.round((new Date(localStr) - new Date(utcStr)) / 3600000)
+}
+
+function utcToLocalHour(utcHour, offset) {
+  let h = (utcHour + offset) % 24
+  if (h < 0) h += 24
+  return h
+}
+
+function localToUtcHour(localHour, offset) {
+  let h = (localHour - offset) % 24
+  if (h < 0) h += 24
+  return h
 }
 
 // ── Theme icons ──────────────────────────────────────────────────────────────
@@ -102,10 +128,12 @@ function ThemeSwitcher({ theme, setTheme }) {
 
 // ── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const { user, login, logout, loading: authLoading } = useAuth()
+  const { user, login, logout, loading: authLoading, updateTimezone } = useAuth()
   const [theme, setTheme] = useTheme()
   const navigate = useNavigate()
-  const today = todayStr()
+  const tz = user?.timezone || 'Europe/Kiev'
+  const tzOffset = getTzOffset(tz)
+  const today = todayStr(tz)
   const [dateFrom, setDateFrom] = useState(today)
   const [dateTo, setDateTo]     = useState(today)
   const [hourRange, setHourRange] = useState([0, 23])
@@ -135,30 +163,44 @@ export default function App() {
           load(map)
         }
       })
-  }, [dateFrom, dateTo]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dateFrom, dateTo, tz]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const load = useCallback(async (ops = operators) => {
     setLoading(true)
     setError(null)
     try {
+      // Расширяем диапазон дат на +-1 день чтобы учесть сдвиг часового пояса
+      const d1 = new Date(dateFrom + 'T00:00:00Z')
+      const d2 = new Date(dateTo + 'T00:00:00Z')
+      d1.setDate(d1.getDate() - 1)
+      d2.setDate(d2.getDate() + 1)
+      const utcFrom = d1.toISOString().slice(0, 10)
+      const utcTo = d2.toISOString().slice(0, 10)
+
       const query = supabase
         .from('hourly_revenue')
         .select('refcode, date, hour, delta')
-        .gte('date', dateFrom)
-        .lte('date', dateTo)
+        .gte('date', utcFrom)
+        .lte('date', utcTo)
 
       const { data, error: err } = await query
       if (err) throw err
 
-      // Aggregate by refcode (sum across all dates)
+      // Aggregate by refcode — convert UTC date+hour to local timezone
       const map = {}
       for (const row of data) {
         if (row.refcode?.toString().trim().toLowerCase() === 'all') continue
-        // Exclude hours before data start on the specific start date only
-        if (row.date === DATA_START.date && row.hour < DATA_START.hour) continue
+        // Конвертируем UTC дату+час в локальную дату+час
+        const utcDt = new Date(row.date + 'T00:00:00Z')
+        utcDt.setUTCHours(row.hour)
+        const localDt = new Date(utcDt.toLocaleString('en-US', { timeZone: tz }))
+        const localDate = localDt.toLocaleDateString('sv-SE')
+        const localHour = localDt.getHours()
+        // Фильтруем по выбранному диапазону дат (в локальной TZ)
+        if (localDate < dateFrom || localDate > dateTo) continue
+        if (localDate === DATA_START.date && localHour < DATA_START.hour) continue
         if (!map[row.refcode]) map[row.refcode] = { refcode: row.refcode }
-        // Keep per-hour deltas (sum across days for same hour)
-        const key = `h${row.hour}`
+        const key = `h${localHour}`
         map[row.refcode][key] = (map[row.refcode][key] || 0) + Number(row.delta)
       }
 
@@ -339,6 +381,15 @@ export default function App() {
           {lastUpdated && (
             <span className="text-xs text-slate-400">{lastUpdated.toLocaleTimeString('uk-UA')}</span>
           )}
+          <select
+            value={tz}
+            onChange={e => updateTimezone(e.target.value)}
+            className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          >
+            {TIMEZONES.map(t => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
           <ThemeSwitcher theme={theme} setTheme={setTheme} />
 
           {/* Account page button — superadmin only */}
