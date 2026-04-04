@@ -201,6 +201,8 @@ export default function App() {
 
   // Hours within selected range
   const visibleHours = HOURS.filter(h => h >= hourRange[0] && h <= hourRange[1])
+  const currentHour = new Date().getHours()
+  const isFutureHour = (h) => isToday && h > currentHour
 
   // Rows with totals recalculated for selected hour range
   const rowsInRange = rows.map(op => {
@@ -634,8 +636,8 @@ export default function App() {
                     {visibleHours.map(h => {
                       const sum = filtered.reduce((s, op) => s + (op[`h${h}`] || 0), 0)
                       return (
-                        <td key={h} className={`sticky top-[41px] z-10 px-2 py-2.5 text-center font-semibold whitespace-nowrap bg-indigo-50 dark:bg-indigo-900/30 ${sum > 0 ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-300 dark:text-slate-700'}`}>
-                          {sum > 0 ? fmt(sum) : ''}
+                        <td key={h} className={`sticky top-[41px] z-10 px-2 py-2.5 text-center font-semibold whitespace-nowrap ${isFutureHour(h) ? 'bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600' : 'bg-indigo-50 dark:bg-indigo-900/30'} ${!isFutureHour(h) && sum > 0 ? 'text-indigo-700 dark:text-indigo-400' : !isFutureHour(h) ? 'text-slate-300 dark:text-slate-700' : ''}`}>
+                          {isFutureHour(h) ? '' : sum > 0 ? fmt(sum) : ''}
                         </td>
                       )
                     })}
@@ -672,8 +674,8 @@ export default function App() {
                           const hasData = val != null
                           const hasRevenue = hasData && val > 0
                           return (
-                            <td key={h} className={`px-2 py-2 text-center whitespace-nowrap ${hasRevenue ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-medium' : 'bg-red-50 dark:bg-red-900/10 text-red-300'}`}>
-                              {hasData ? fmt(val) : '—'}
+                            <td key={h} className={`px-2 py-2 text-center whitespace-nowrap ${isFutureHour(h) ? 'bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600' : hasRevenue ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-medium' : 'bg-red-50 dark:bg-red-900/10 text-red-300'}`}>
+                              {isFutureHour(h) ? '' : hasData ? fmt(val) : '—'}
                             </td>
                           )
                         })}
