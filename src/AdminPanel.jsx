@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getSupabaseAdmin } from './supabaseAdmin'
+
+async function adminApi(endpoint, body = {}) {
+  const res = await fetch(`/api/admin/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  const json = await res.json()
+  if (!res.ok || json.error) return { data: null, error: { message: json.error || 'Unknown error' } }
+  return { data: json.data, error: null }
+}
 
 const PERMISSIONS_CONFIG = [
   { key: 'can_view_revenue', label: 'Таблица выручки' },
@@ -80,7 +90,7 @@ function PermissionsCheckboxes({ permissions, onChange }) {
 }
 
 // ── Create User Modal ─────────────────────────────────────────────────────────
-function CreateUserModal({ onClose, onCreated }) {
+function CreateUserModal({ onClose, onCreated, callerId }) {
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -95,11 +105,12 @@ function CreateUserModal({ onClose, onCreated }) {
     if (!form.email.trim() || !form.password) return
     setError(null)
     setSubmitting(true)
-    const { error: err } = await getSupabaseAdmin().rpc('create_user', {
-      p_email: form.email.trim(),
-      p_password: form.password,
-      p_role: form.role,
-      p_permissions: form.permissions,
+    const { error: err } = await adminApi('create-user', {
+      caller_id: callerId,
+      email: form.email.trim(),
+      password: form.password,
+      role: form.role,
+      permissions: form.permissions,
     })
     setSubmitting(false)
     if (err) {
@@ -174,7 +185,7 @@ function CreateUserModal({ onClose, onCreated }) {
 }
 
 // ── Change Password Modal ─────────────────────────────────────────────────────
-function ChangePasswordModal({ user, onClose, onDone }) {
+function ChangePasswordModal({ user, onClose, onDone, callerId }) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -188,9 +199,10 @@ function ChangePasswordModal({ user, onClose, onDone }) {
     }
     setError(null)
     setSubmitting(true)
-    const { error: err } = await getSupabaseAdmin().rpc('update_user_password', {
-      p_user_id: user.id,
-      p_new_password: password,
+    const { error: err } = await adminApi('update-password', {
+      caller_id: callerId,
+      user_id: user.id,
+      new_password: password,
     })
     setSubmitting(false)
     if (err) {
@@ -242,7 +254,7 @@ function ChangePasswordModal({ user, onClose, onDone }) {
 }
 
 // ── Edit Permissions Modal ────────────────────────────────────────────────────
-function EditPermissionsModal({ user, onClose, onDone }) {
+function EditPermissionsModal({ user, onClose, onDone, callerId }) {
   const [permissions, setPermissions] = useState(user.permissions || {})
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
@@ -251,9 +263,10 @@ function EditPermissionsModal({ user, onClose, onDone }) {
     e.preventDefault()
     setError(null)
     setSubmitting(true)
-    const { error: err } = await getSupabaseAdmin().rpc('update_user_permissions', {
-      p_user_id: user.id,
-      p_permissions: permissions,
+    const { error: err } = await adminApi('update-permissions', {
+      caller_id: callerId,
+      user_id: user.id,
+      permissions,
     })
     setSubmitting(false)
     if (err) {
@@ -285,7 +298,8 @@ function EditPermissionsModal({ user, onClose, onDone }) {
 }
 
 // ── Main AdminPanel ───────────────────────────────────────────────────────────
-export default function AdminPanel({ onClose }) {
+export default function AdminPanel({ onClose, onLogout, currentUser }) {
+  const callerId = currentUser?.id
   const [users, setUsers] = useState([])
   const [loadingUsers, setLoadingUsers] = useState(true)
   const [fetchError, setFetchError] = useState(null)
@@ -303,21 +317,21 @@ export default function AdminPanel({ onClose }) {
   const fetchUsers = useCallback(async () => {
     setLoadingUsers(true)
     setFetchError(null)
-    const { data, error } = await getSupabaseAdmin().rpc('list_users')
+    const { data, error } = await adminApi('list-users', { caller_id: callerId })
     setLoadingUsers(false)
     if (error) {
       setFetchError(error.message)
     } else {
       setUsers(data || [])
     }
-  }, [])
+  }, [callerId])
 
   useEffect(() => { fetchUsers() }, [fetchUsers])
 
   const handleDeactivate = async (user) => {
     if (!window.confirm(`Деактивировать пользователя ${user.email}?`)) return
     setDeactivating(user.id)
-    const { error } = await getSupabaseAdmin().rpc('deactivate_user', { p_user_id: user.id })
+    const { error } = await adminApi('deactivate-user', { caller_id: callerId, user_id: user.id })
     setDeactivating(null)
     if (error) {
       alert('Ошибка: ' + error.message)
@@ -328,49 +342,54 @@ export default function AdminPanel({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto py-8 px-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl w-full max-w-3xl">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-purple-600 rounded-xl flex items-center justify-center text-white text-base">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Управление пользователями</h2>
-              <p className="text-xs text-slate-400">{users.length} {users.length === 1 ? 'пользователь' : 'пользователей'}</p>
-            </div>
+    <div className="fixed inset-0 z-40 bg-slate-100 dark:bg-slate-900 overflow-y-auto">
+      {/* Header */}
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            title="Назад"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div className="w-9 h-9 bg-purple-600 rounded-xl flex items-center justify-center text-white text-base">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowCreate(true)}
-              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
-                <path d="M12 5v14M5 12h14"/>
-              </svg>
-              Создать
-            </button>
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
+          <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">Аккаунт</h1>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Создать
+          </button>
+          <button
+            onClick={onLogout}
+            title="Выйти из аккаунта"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-700 transition-colors"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span className="hidden sm:inline">Выйти</span>
+          </button>
+        </div>
+      </header>
 
-        {/* Body */}
-        <div className="p-6">
+      {/* Body */}
+      <div className="max-w-3xl mx-auto p-6">
           {loadingUsers ? (
             <div className="flex items-center justify-center py-16 gap-3">
               <svg className="w-5 h-5 animate-spin text-indigo-500" viewBox="0 0 24 24" fill="none">
@@ -464,17 +483,18 @@ export default function AdminPanel({ onClose }) {
             </div>
           )}
         </div>
-      </div>
 
       {/* Modals */}
       {showCreate && (
         <CreateUserModal
+          callerId={callerId}
           onClose={() => setShowCreate(false)}
           onCreated={() => { showToast('Пользователь создан'); fetchUsers() }}
         />
       )}
       {passwordTarget && (
         <ChangePasswordModal
+          callerId={callerId}
           user={passwordTarget}
           onClose={() => setPasswordTarget(null)}
           onDone={() => showToast('Пароль обновлён')}
@@ -482,6 +502,7 @@ export default function AdminPanel({ onClose }) {
       )}
       {permTarget && (
         <EditPermissionsModal
+          callerId={callerId}
           user={permTarget}
           onClose={() => setPermTarget(null)}
           onDone={() => { showToast('Права обновлены'); fetchUsers() }}
