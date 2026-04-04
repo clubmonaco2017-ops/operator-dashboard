@@ -68,7 +68,7 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
     switch (activeSection) {
       case 'users': return <AdminPanel currentUser={currentUser} />
       case 'platforms': return <PlatformsSection currentUser={currentUser} />
-      case 'agencies': return <AgenciesSection />
+      case 'agencies': return <AgenciesSection currentUser={currentUser} />
       case 'clients': return <ClientsSection />
       case 'operators': return <OperatorsSection />
       default: return null
