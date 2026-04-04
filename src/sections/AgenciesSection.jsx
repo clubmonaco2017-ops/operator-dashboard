@@ -196,7 +196,7 @@ function AgencyModal({ agency, platforms, onClose, onSaved, onDeleted, callerId 
           <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Логотип</p>
           <div className="flex items-center gap-3">
             {form.logo_url ? (
-              <img src={form.logo_url} alt="" className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700" />
+              <img src={form.logo_url} alt="" className="h-12 max-w-24 rounded-xl object-contain border border-slate-200 dark:border-slate-700" />
             ) : (
               <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-6 h-6">
@@ -336,7 +336,7 @@ export default function AgenciesSection({ currentUser }) {
               className="text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700/20 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
               <div className="flex items-center gap-3 mb-2">
                 {a.logo_url ? (
-                  <img src={a.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                  <img src={a.logo_url} alt="" className="h-10 max-w-20 rounded-lg object-contain" />
                 ) : (
                   <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm">
                     {a.name?.[0]?.toUpperCase() || '?'}
