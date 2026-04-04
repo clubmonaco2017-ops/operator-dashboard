@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import AdminPanel from './AdminPanel'
 import PlatformsSection from './sections/PlatformsSection'
 import AgenciesSection from './sections/AgenciesSection'
@@ -62,18 +62,12 @@ const SECTIONS = [
 ]
 
 export default function AdminLayout({ onClose, onLogout, currentUser }) {
-  const [activeSection, setActiveSection] = useState('users')
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case 'users': return <AdminPanel currentUser={currentUser} />
-      case 'platforms': return <PlatformsSection currentUser={currentUser} />
-      case 'agencies': return <AgenciesSection currentUser={currentUser} />
-      case 'clients': return <ClientsSection />
-      case 'operators': return <OperatorsSection />
-      default: return null
-    }
-  }
+  // Determine active section from URL path
+  const pathSegment = location.pathname.split('/')[2] || ''
+  const activeSection = SECTIONS.find(s => s.key === pathSegment)?.key || 'users'
 
   return (
     <div className="fixed inset-0 z-40 bg-slate-100 dark:bg-slate-900 flex">
@@ -100,7 +94,7 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
           {SECTIONS.map(({ key, label, icon }) => (
             <button
               key={key}
-              onClick={() => setActiveSection(key)}
+              onClick={() => navigate(key === 'users' ? '/admin' : `/admin/${key}`)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 activeSection === key
                   ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
@@ -141,7 +135,13 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
       {/* Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-6">
-          {renderSection()}
+          <Routes>
+            <Route index element={<AdminPanel currentUser={currentUser} />} />
+            <Route path="platforms" element={<PlatformsSection currentUser={currentUser} />} />
+            <Route path="agencies" element={<AgenciesSection currentUser={currentUser} />} />
+            <Route path="clients" element={<ClientsSection />} />
+            <Route path="operators" element={<OperatorsSection />} />
+          </Routes>
         </div>
       </main>
     </div>
