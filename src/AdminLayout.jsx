@@ -67,7 +67,7 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
   const renderSection = () => {
     switch (activeSection) {
       case 'users': return <AdminPanel currentUser={currentUser} />
-      case 'platforms': return <PlatformsSection />
+      case 'platforms': return <PlatformsSection currentUser={currentUser} />
       case 'agencies': return <AgenciesSection />
       case 'clients': return <ClientsSection />
       case 'operators': return <OperatorsSection />
