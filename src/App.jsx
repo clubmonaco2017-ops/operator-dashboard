@@ -333,41 +333,24 @@ export default function App() {
           )}
           <ThemeSwitcher theme={theme} setTheme={setTheme} />
 
-          {/* Admin panel button — superadmin only */}
+          {/* Account page button — superadmin only */}
           {isSuperAdmin && (
             <button
               onClick={() => setShowAdmin(true)}
-              title="Управление пользователями"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium border border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
+              title="Аккаунт"
+              className="p-2 rounded-xl border border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
               </svg>
-              <span className="hidden sm:inline">Пользователи</span>
             </button>
           )}
-
-          {/* Logout */}
-          <button
-            onClick={logout}
-            title="Выйти"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium border border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <span className="hidden sm:inline">Выйти</span>
-          </button>
         </div>
       </header>
 
-      {/* Admin Panel overlay */}
-      {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
+      {/* Admin Panel — full page */}
+      {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} onLogout={logout} currentUser={user} />}
 
       {/* Hour range slider — collapsible */}
       {showHourSlider && (
