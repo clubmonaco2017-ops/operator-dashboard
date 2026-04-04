@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabaseClient'
 import { useAuth } from './useAuth'
 import LoginPage from './LoginPage'
-import AdminPanel from './AdminPanel'
+import AdminLayout from './AdminLayout'
 import {
   BarChart, Bar, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
@@ -403,7 +403,7 @@ export default function App() {
       </header>
 
       {/* Admin Panel — full page */}
-      {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} onLogout={logout} currentUser={user} />}
+      {showAdmin && <AdminLayout onClose={() => setShowAdmin(false)} onLogout={logout} currentUser={user} />}
 
       {/* Hour range slider — collapsible */}
       {showHourSlider && (
