@@ -585,7 +585,7 @@ export default function App() {
           ) : rows.length === 0 ? (
             <div className="p-16 text-center">
               <div className="text-3xl mb-3">📭</div>
-              <p className="text-slate-400 text-sm">Нет данных за {date}</p>
+              <p className="text-slate-400 text-sm">Нет данных за {dateFrom === dateTo ? dateFrom : `${dateFrom} — ${dateTo}`}</p>
             </div>
           ) : (
             <div className="overflow-auto max-h-[70vh]">
