@@ -322,7 +322,7 @@ export default function AgenciesSection({ currentUser }) {
         </div>
       ) : agencies.length === 0 ? (
         <div className="text-center py-16">
-          <div className="text-3xl mb-3">🏛️</div>
+          <div className="mb-3 flex justify-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 text-slate-300 dark:text-slate-600"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div>
           <p className="text-sm text-slate-400 mb-3">Нет агентств</p>
           <button onClick={() => setEditTarget({})}
             className="text-sm text-indigo-600 dark:text-indigo-400 font-medium hover:text-indigo-700">
@@ -333,7 +333,7 @@ export default function AgenciesSection({ currentUser }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {agencies.map(a => (
             <button key={a.id} onClick={() => setEditTarget(a)}
-              className="text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700/20 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+              className="text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700/20 hover:bg-slate-50 dark:hover:bg-slate-700/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
               <div className="flex items-center gap-3 mb-2">
                 {a.logo_url ? (
                   <img src={a.logo_url} alt="" className="h-10 max-w-20 rounded-lg object-contain" />

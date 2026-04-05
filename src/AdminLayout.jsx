@@ -95,12 +95,15 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
             <button
               key={key}
               onClick={() => navigate(key === 'users' ? '/admin' : `/admin/${key}`)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative ${
                 activeSection === key
                   ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
+              {activeSection === key && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-indigo-600 dark:bg-indigo-400 rounded-r-full" />
+              )}
               {icon}
               {label}
             </button>
