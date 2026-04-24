@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Colors - Primary</title><link rel="stylesheet" href="../colors_and_type.css"></head><body class="dark" style="margin:0;padding:20px;background:var(--bg);color:var(--fg1);font:12px/1.35 var(--font-sans)">
+
+<!-- Row 1: core ramp -->
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px">
+  <div>
+    <div style="height:52px;background:var(--primary);border-radius:10px"></div>
+    <div class="label-caps" style="margin-top:8px">Primary</div>
+    <code style="font-size:11px;color:var(--fg3)">resting CTA</code>
+  </div>
+  <div>
+    <div style="height:52px;background:var(--primary-hover);border-radius:10px"></div>
+    <div class="label-caps" style="margin-top:8px">Hover</div>
+    <code style="font-size:11px;color:var(--fg3)">lighter on dark</code>
+  </div>
+  <div>
+    <div style="height:52px;background:var(--primary);color:var(--primary-fg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:600;letter-spacing:-0.01em;font-size:18px">Aa</div>
+    <div class="label-caps" style="margin-top:8px">Primary FG</div>
+    <code style="font-size:11px;color:var(--fg3)">white on primary</code>
+  </div>
+  <div>
+    <div style="height:52px;background:var(--primary-soft);border-radius:10px;border:1px solid var(--border)"></div>
+    <div class="label-caps" style="margin-top:8px">Soft</div>
+    <code style="font-size:11px;color:var(--fg3)">hover surface</code>
+  </div>
+  <div>
+    <div style="height:52px;background:var(--primary-soft-2);border-radius:10px"></div>
+    <div class="label-caps" style="margin-top:8px">Soft 2</div>
+    <code style="font-size:11px;color:var(--fg3)">active pill bg</code>
+  </div>
+  <div>
+    <div style="height:52px;background:var(--primary-soft-2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--primary-ink);font-weight:600;font-size:18px">Aa</div>
+    <div class="label-caps" style="margin-top:8px">Ink</div>
+    <code style="font-size:11px;color:var(--fg3)">text on soft</code>
+  </div>
+</div>
+
+<!-- Row 2: state demos -->
+<div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+  <!-- Focused -->
+  <div style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;gap:12px">
+    <button style="padding:8px 14px;background:var(--primary);color:var(--primary-fg);border:0;border-radius:8px;font:600 12px var(--font-sans);outline:2px solid var(--primary-ring);outline-offset:2px">Focused</button>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:600;color:var(--fg1)">:focus-visible</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span style="width:12px;height:12px;border-radius:3px;background:var(--primary-ring);border:1px solid var(--border);flex-shrink:0"></span><code style="font-family:var(--font-mono);font-size:10.5px;color:var(--fg3)">--primary-ring</code></div>
+    </div>
+  </div>
+  <!-- Disabled -->
+  <div style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;gap:12px">
+    <button disabled style="padding:8px 14px;background:var(--primary-disabled);color:var(--primary-fg);border:0;border-radius:8px;font:600 12px var(--font-sans);opacity:0.5;cursor:not-allowed">Disabled</button>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:600;color:var(--fg1)">:disabled</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span style="width:12px;height:12px;border-radius:3px;background:var(--primary-disabled);border:1px solid var(--border);flex-shrink:0"></span><code style="font-family:var(--font-mono);font-size:10.5px;color:var(--fg3)">--primary-disabled</code></div>
+    </div>
+  </div>
+</div>
+
+</body></html>
