@@ -184,7 +184,10 @@ team_members                               -- 3 оператора на кома
 team_clients                               -- модели, закреплённые за командой
   team_id   int REFERENCES teams(id) ON DELETE CASCADE
   client_id int REFERENCES clients(id) ON DELETE CASCADE
+  assigned_by int REFERENCES dashboard_users(id)   -- админ
+  assigned_at timestamptz DEFAULT now()
   PRIMARY KEY (team_id, client_id)
+  UNIQUE (client_id)                       -- 1 модель → максимум 1 команда
 
 moderator_operators                        -- кураторство модератор→оператор
   moderator_id int REFERENCES dashboard_users(id)
@@ -225,7 +228,7 @@ task_reports
 1. **Оператор строго в одной команде.** `team_members.operator_id` UNIQUE.
 2. **Оператор всегда имеет и ТЛ, и модератора-куратора** — то есть есть запись в `team_members` (с командой, где lead — тимлид) И запись в `moderator_operators`.
 3. **Лидом команды может быть только `teamlead` или `moderator`.** Проверяется в RPC при INSERT/UPDATE `teams`.
-4. **Клиенты на команду — многие-ко-многим**, но обычно 5-10 моделей на команду.
+4. **Клиент закреплён максимум за одной командой.** `UNIQUE (client_id)` в `team_clients`. Обычно 5–10 моделей на команду. Модели без команды временно лежат в «пуле» непривязанных.
 5. **Задача имеет одного автора и одного исполнителя.** Если надо назначить на нескольких — это две задачи.
 6. **Отчёт привязан к задаче, автор отчёта — исполнитель задачи** (или делегат). Отчёт идёт тому, кто задачу создал (определяется через `task.created_by`).
 7. **Модератор может быть лидом команды И куратором операторов одновременно.** Причём необязательно операторы в его команде = операторы под его кураторством.
