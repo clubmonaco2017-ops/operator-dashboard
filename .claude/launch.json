@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "operator-dashboard",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "/Users/artemsaskin/.nvm/versions/node/v20.19.0/bin/node",
+      "runtimeArgs": ["node_modules/.bin/vite"],
       "port": 5173
     }
   ]
