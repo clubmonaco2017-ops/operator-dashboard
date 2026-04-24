@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<title>Operator Dashboard - Light & Dark Comparison</title>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font:13px/1.5 var(--font-sans);background:oklch(0.12 0.005 250);color:oklch(0.96 0 0);overflow:hidden}
+body{display:flex;flex-direction:column}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:oklch(0.17 0.006 250);border-bottom:1px solid oklch(1 0 0 / 0.06);flex-shrink:0;height:48px}
+.toolbar h1{margin:0;font-size:13px;font-weight:600;letter-spacing:-0.01em;color:oklch(0.96 0 0)}
+.toolbar .sep{color:oklch(0.5 0 0);font-size:11px}
+.toolbar .subtitle{color:oklch(0.66 0 0);font-size:12px;font-weight:400}
+.toolbar .spacer{flex:1}
+
+/* View toggle */
+.seg{display:inline-flex;background:oklch(0.22 0.006 250);border:1px solid oklch(1 0 0 / 0.06);border-radius:8px;padding:2px;gap:2px}
+.seg button{padding:5px 10px;border-radius:6px;font:500 11.5px var(--font-sans);color:oklch(0.7 0 0);background:transparent;border:0;cursor:pointer;transition:background 150ms ease,color 150ms ease;letter-spacing:0.01em}
+.seg button.active{background:oklch(0.32 0.01 250);color:oklch(0.98 0 0)}
+.seg button:hover:not(.active){color:oklch(0.9 0 0)}
+
+/* Stage */
+.stage{flex:1;position:relative;overflow:hidden;background:oklch(0.1 0.005 250)}
+
+/* Panes wrapper — split mode */
+.stage.mode-split .panes{display:grid;grid-template-columns:1fr 1fr;height:100%;gap:2px;background:oklch(0.06 0.005 250)}
+.stage.mode-split .pane{position:relative;display:flex;flex-direction:column;min-width:0}
+.stage.mode-split .pane-label{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:10;padding:4px 12px;border-radius:999px;font:600 10px/1 var(--font-sans);letter-spacing:0.08em;text-transform:uppercase;pointer-events:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.stage.mode-split .pane.light .pane-label{background:oklch(0.99 0.002 250 / 0.9);color:oklch(0.18 0.01 250);border:1px solid oklch(0.88 0.005 250 / 0.5)}
+.stage.mode-split .pane.dark .pane-label{background:oklch(0.205 0.006 250 / 0.9);color:oklch(0.92 0 0);border:1px solid oklch(1 0 0 / 0.1)}
+
+/* Single mode */
+.stage.mode-single .panes{display:block;height:100%}
+.stage.mode-single .pane.hidden{display:none}
+.stage.mode-single .pane{height:100%}
+.stage.mode-single .pane-label{display:none}
+
+/* Iframe */
+.pane iframe{width:100%;height:100%;border:0;display:block;background:var(--bg)}
+
+/* Keyboard hint */
+.hint{color:oklch(0.55 0 0);font-size:11px;display:flex;align-items:center;gap:6px}
+.hint kbd{font-family:var(--font-mono);font-size:10.5px;padding:1px 5px;border-radius:4px;background:oklch(0.26 0.006 250);color:oklch(0.85 0 0);border:1px solid oklch(1 0 0 / 0.08)}
+
+/* Mobile fallback */
+@media (max-width:900px){
+  .stage.mode-split .panes{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+  .toolbar{flex-wrap:wrap;height:auto;padding:8px 12px}
+  .hint{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>Operator Dashboard</h1>
+  <span class="sep">·</span>
+  <span class="subtitle">Light &amp; Dark comparison</span>
+  <div class="spacer"></div>
+  <div class="hint"><kbd>L</kbd> light only · <kbd>D</kbd> dark only · <kbd>S</kbd> split</div>
+  <div class="seg" role="tablist" aria-label="View mode">
+    <button data-mode="split" class="active">Split</button>
+    <button data-mode="light">Light</button>
+    <button data-mode="dark">Dark</button>
+  </div>
+</div>
+
+<div class="stage mode-split" id="stage" data-screen-label="Theme comparison">
+  <div class="panes">
+    <div class="pane light" id="pane-light">
+      <div class="pane-label">Light</div>
+      <iframe src="kit.html?theme=light" title="Operator Dashboard - Light mode" loading="eager"></iframe>
+    </div>
+    <div class="pane dark" id="pane-dark">
+      <div class="pane-label">Dark</div>
+      <iframe src="kit.html?theme=dark" title="Operator Dashboard - Dark mode" loading="eager"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+  const stage = document.getElementById('stage');
+  const paneLight = document.getElementById('pane-light');
+  const paneDark = document.getElementById('pane-dark');
+  const buttons = document.querySelectorAll('.seg button');
+
+  function setMode(mode){
+    stage.className = 'stage mode-' + (mode === 'split' ? 'split' : 'single');
+    paneLight.classList.toggle('hidden', mode === 'dark');
+    paneDark.classList.toggle('hidden', mode === 'light');
+    buttons.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  }
+
+  buttons.forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+  // Keyboard shortcuts
+  window.addEventListener('keydown', e => {
+    if (e.target.matches('input,textarea')) return;
+    const k = e.key.toLowerCase();
+    if (k === 's') setMode('split');
+    else if (k === 'l') setMode('light');
+    else if (k === 'd') setMode('dark');
+  });
+</script>
+
+</body>
+</html>

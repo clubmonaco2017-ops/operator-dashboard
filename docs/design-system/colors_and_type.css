@@ -1,0 +1,277 @@
+/* ============================================================================
+   Operator Dashboard - Colors & Typography tokens
+   Source of truth for design-system usage outside src/index.css.
+   Primary: Blue (oklch). Dark mode is mandatory on every screen.
+   ============================================================================ */
+
+/* Geist Variable - self-hosted (uploaded by brand team) */
+@font-face {
+  font-family: 'Geist Variable';
+  src: url('fonts/Geist_wght_.woff2') format('woff2-variations'),
+       url('fonts/Geist_wght_.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+/* Geist Mono - still CDN-loaded (no mono upload yet) */
+@import url('https://cdn.jsdelivr.net/npm/@fontsource-variable/geist-mono@5.1.0/index.css');
+
+/* ---------------------------------------------------------------------------
+   LIGHT (:root) + DARK (.dark) palette
+   --------------------------------------------------------------------------- */
+:root {
+  /* Surfaces */
+  --bg:            oklch(0.99 0.002 250);       /* page background - near-white, faint blue cast */
+  --surface:       oklch(1 0 0);                /* card / panel */
+  --surface-2:     oklch(0.975 0.003 250);      /* subtle section, table header */
+  --surface-3:     oklch(0.955 0.004 250);      /* hover row, pressed pill */
+  --overlay:       oklch(0.145 0.01 250 / 0.45);/* modal scrim */
+
+  /* Foreground */
+  --fg1:           oklch(0.18 0.01 250);        /* primary text */
+  --fg2:           oklch(0.36 0.01 250);        /* secondary text */
+  --fg3:           oklch(0.52 0.01 250);        /* muted label */
+  --fg4:           oklch(0.68 0.008 250);       /* placeholder, disabled */
+  --fg-on-primary: oklch(1 0 0);
+
+  /* Borders */
+  --border:        oklch(0.922 0.005 250);
+  --border-strong: oklch(0.85 0.008 250);
+  --input:         oklch(0.922 0.005 250);
+  --ring:          oklch(0.623 0.188 259.8);    /* blue-500 focus ring */
+
+  /* Brand - Blue primary */
+  --primary:           oklch(0.546 0.215 262.9);   /* blue-600 (resting) */
+  --primary-hover:     oklch(0.488 0.22 264.4);    /* blue-700 (darker on light bg) */
+  --primary-fg:        oklch(1 0 0);               /* text / icon on primary surface */
+  --primary-soft:      oklch(0.962 0.038 257);     /* blue-50  - hover surface */
+  --primary-soft-2:    oklch(0.84 0.11 253);        /* blue-200 - active pill bg, clearly stronger step */
+  --primary-ink:       oklch(0.38 0.18 264);       /* blue-800 text on soft */
+  --primary-ring:      oklch(0.623 0.188 259.8 / 0.35); /* blue-500 @ 35% focus ring */
+  --primary-disabled:  oklch(0.546 0.215 262.9 / 0.5);  /* primary @ 50% */
+
+  /* Semantic */
+  --success:       oklch(0.595 0.145 155);
+  --success-soft:  oklch(0.95 0.04 155);
+  --success-ink:   oklch(0.42 0.12 155);
+
+  --warning:       oklch(0.73 0.175 70);        /* amber-500 */
+  --warning-soft:  oklch(0.965 0.05 85);
+  --warning-ink:   oklch(0.48 0.14 60);
+
+  --danger:        oklch(0.577 0.245 27.3);
+  --danger-soft:   oklch(0.96 0.035 27);
+  --danger-ink:    oklch(0.42 0.18 27);
+
+  --info:          oklch(0.623 0.188 259.8);
+  --info-soft:     oklch(0.95 0.04 257);
+
+  /* Chart palette - max 3 colors as per Intercom Reports rule */
+  --chart-1: oklch(0.546 0.215 262.9);  /* blue */
+  --chart-2: oklch(0.73 0.175 70);      /* amber */
+  --chart-3: oklch(0.68 0.01 250);      /* grey */
+  --chart-grid: oklch(0.92 0.005 250);
+  --chart-axis: oklch(0.6 0.01 250);
+
+  /* Shift palette (domain-specific - 3 shifts per team) */
+  --shift-day:     oklch(0.73 0.175 70);    /* amber */
+  --shift-evening: oklch(0.55 0.22 295);    /* violet */
+  --shift-night:   oklch(0.52 0.01 250);    /* slate */
+
+  /* Role badges */
+  --role-superadmin: oklch(0.55 0.22 295);  /* violet */
+  --role-admin:      oklch(0.546 0.215 262.9); /* blue */
+  --role-moderator:  oklch(0.595 0.145 155);   /* green */
+  --role-teamlead:   oklch(0.73 0.175 70);     /* amber */
+  --role-operator:   oklch(0.52 0.01 250);     /* slate */
+
+  /* Task statuses */
+  --status-pending:     oklch(0.6 0.01 250);
+  --status-in-progress: oklch(0.546 0.215 262.9);
+  --status-done:        oklch(0.595 0.145 155);
+  --status-overdue:     oklch(0.577 0.245 27.3);
+
+  /* Typography - technical tone: Geist + caps labels w/ letter-spacing */
+  --font-sans:    'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:    'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Type scale */
+  --fs-xxs:  11px;  /* caps labels, sidebar section */
+  --fs-xs:   12px;  /* meta, table header, pills */
+  --fs-sm:   13px;  /* table body, buttons, form inputs */
+  --fs-base: 14px;  /* default body */
+  --fs-md:   15px;
+  --fs-lg:   18px;  /* card heading */
+  --fs-xl:   22px;  /* page heading */
+  --fs-2xl:  28px;  /* KPI big number */
+  --fs-3xl:  36px;  /* dashboard hero number */
+
+  --lh-tight: 1.2;
+  --lh-snug:  1.35;
+  --lh-base:  1.5;
+
+  --ls-caps:   0.08em;    /* section labels: uppercase + tracking */
+  --ls-tight: -0.01em;    /* large numbers */
+
+  /* Spacing (Tailwind-compatible 4-based scale) */
+  --sp-0: 0;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* Radii - shadcn-base-nova scale, base 10px */
+  --radius:     10px;
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg:  10px;
+  --radius-xl:  14px;
+  --radius-2xl: 18px;
+  --radius-pill: 999px;
+
+  /* Elevation - soft, short, subtle. No drop-shadow abuse */
+  --elev-0: none;
+  --elev-1: 0 1px 0 0 oklch(0.145 0.01 250 / 0.04),
+            0 1px 2px 0 oklch(0.145 0.01 250 / 0.06);
+  --elev-2: 0 2px 4px -1px oklch(0.145 0.01 250 / 0.06),
+            0 4px 8px -2px oklch(0.145 0.01 250 / 0.08);
+  --elev-3: 0 8px 16px -4px oklch(0.145 0.01 250 / 0.1),
+            0 16px 32px -8px oklch(0.145 0.01 250 / 0.12);
+  --focus-ring: 0 0 0 3px oklch(0.623 0.188 259.8 / 0.35);
+
+  /* Motion */
+  --ease:           cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring:    cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast:   120ms;
+  --dur-base:   180ms;
+  --dur-slow:   260ms;
+}
+
+.dark {
+  --bg:            oklch(0.145 0.005 250);
+  --surface:       oklch(0.205 0.006 250);
+  --surface-2:     oklch(0.245 0.007 250);
+  --surface-3:     oklch(0.27 0.008 250);
+  --overlay:       oklch(0.1 0.005 250 / 0.6);
+
+  --fg1:           oklch(0.985 0.002 250);
+  --fg2:           oklch(0.82 0.004 250);
+  --fg3:           oklch(0.66 0.008 250);
+  --fg4:           oklch(0.5 0.008 250);
+  --fg-on-primary: oklch(1 0 0);
+
+  --border:        oklch(1 0 0 / 0.08);
+  --border-strong: oklch(1 0 0 / 0.16);
+  --input:         oklch(1 0 0 / 0.12);
+  --ring:          oklch(0.68 0.18 259);
+
+  --primary:           oklch(0.64 0.19 260);       /* blue-500-ish, brighter on dark */
+  --primary-hover:     oklch(0.72 0.18 260);       /* lighter on dark bg (blue-400-ish) */
+  --primary-fg:        oklch(1 0 0);
+  --primary-soft:      oklch(0.22 0.07 260);        /* blue-950 - hover surface */
+  --primary-soft-2:    oklch(0.36 0.13 260);        /* blue-900 - active pill bg, clearly stronger */
+  --primary-ink:       oklch(0.86 0.12 258);       /* text on soft */
+  --primary-ring:      oklch(0.68 0.18 259 / 0.45);/* focus ring */
+  --primary-disabled:  oklch(0.64 0.19 260 / 0.5); /* primary @ 50% */
+
+  --success-soft:  oklch(0.42 0.1 155 / 0.22);
+  --success-ink:   oklch(0.82 0.12 155);
+  --warning-soft:  oklch(0.5 0.12 70 / 0.25);
+  --warning-ink:   oklch(0.88 0.12 85);
+  --danger-soft:   oklch(0.42 0.15 27 / 0.24);
+  --danger-ink:    oklch(0.82 0.15 27);
+
+  --chart-grid: oklch(1 0 0 / 0.08);
+  --chart-axis: oklch(0.6 0.01 250);
+  --chart-3:    oklch(0.6 0.01 250);
+
+  --elev-1: 0 1px 0 0 oklch(0 0 0 / 0.3),
+            0 1px 2px 0 oklch(0 0 0 / 0.4);
+  --elev-2: 0 2px 4px -1px oklch(0 0 0 / 0.35),
+            0 4px 8px -2px oklch(0 0 0 / 0.45);
+  --elev-3: 0 8px 16px -4px oklch(0 0 0 / 0.5),
+            0 16px 32px -8px oklch(0 0 0 / 0.55);
+}
+
+/* ---------------------------------------------------------------------------
+   Semantic typographic classes - “component-level” type
+   --------------------------------------------------------------------------- */
+body, .body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  color: var(--fg1);
+  background: var(--bg);
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+}
+
+.h-display {
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.h1 {
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  font-weight: 700;
+  color: var(--fg1);
+}
+.h2 {
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  font-weight: 600;
+  color: var(--fg1);
+}
+.h3 {
+  font-size: var(--fs-base);
+  line-height: var(--lh-snug);
+  font-weight: 600;
+  color: var(--fg1);
+}
+.p  { color: var(--fg2); font-size: var(--fs-sm); line-height: var(--lh-base); }
+.meta { color: var(--fg3); font-size: var(--fs-xs); }
+.code, code, pre {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+/* The signature “caps section label” used throughout the product */
+.label-caps {
+  font-size: var(--fs-xxs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-caps);
+  color: var(--fg3);
+}
+
+/* Monospaced ref-code chip */
+.ref-code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--fg3);
+  white-space: nowrap;
+}
+
+/* Numeric table cells: tabular figures */
+.num, td.num, .tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* Focus - single source of truth */
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-md);
+}

@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<title>Operator Dashboard - UI Kit</title>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font:14px/1.5 var(--font-sans);color:var(--fg1);background:var(--bg)}
+body.dark{background:var(--bg)}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+a{color:inherit;text-decoration:none}
+[data-lucide]{width:16px;height:16px;stroke-width:2}
+.i-20 [data-lucide],[data-lucide].i-20{width:20px;height:20px}
+.i-14 [data-lucide],[data-lucide].i-14{width:14px;height:14px}
+
+/* ============ APP SHELL ============ */
+.app{display:grid;grid-template-columns:56px 360px 1fr;height:100vh;overflow:hidden}
+
+/* Rail */
+.rail{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:6px}
+.rail .logo{width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;margin-bottom:8px}
+.rail button{width:38px;height:38px;border-radius:8px;color:var(--fg3);display:flex;align-items:center;justify-content:center;transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease);position:relative}
+.rail button:hover{background:var(--surface-2);color:var(--fg1)}
+.rail button.active{background:var(--primary-soft-2);color:var(--primary-ink)}
+.rail button.active::before{content:'';position:absolute;left:-14px;top:8px;bottom:8px;width:2px;background:var(--primary);border-radius:2px}
+.rail .badge{position:absolute;top:4px;right:4px;min-width:14px;height:14px;padding:0 4px;border-radius:999px;background:var(--danger);color:#fff;font:700 9px var(--font-sans);display:flex;align-items:center;justify-content:center}
+.rail .spacer{flex:1}
+.rail .avatar{width:32px;height:32px;border-radius:999px;background:var(--primary-soft-2);color:var(--primary-ink);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* List pane */
+.list{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.list-hdr{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.list-hdr h1{margin:0;font-size:18px;font-weight:700;letter-spacing:-0.01em}
+.list-count{font:500 12px var(--font-mono);color:var(--fg3);margin-left:4px}
+.search{margin:0 16px 10px;position:relative}
+.search input{width:100%;padding:8px 10px 8px 32px;background:var(--surface-2);border:1px solid transparent;border-radius:8px;color:var(--fg1);font:13px var(--font-sans);transition:border var(--dur-fast)}
+.search input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px oklch(0.623 0.188 259.8 / 0.35)}
+.search [data-lucide]{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--fg4)}
+.search .kbd{position:absolute;right:8px;top:50%;transform:translateY(-50%);font:500 10px var(--font-mono);padding:2px 6px;border:1px solid var(--border);border-radius:4px;color:var(--fg3);background:var(--surface)}
+.chips{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}
+.chip{padding:3px 9px;font:500 11px var(--font-sans);border-radius:999px;color:var(--fg2);background:var(--surface-2);border:1px solid transparent;transition:background var(--dur-fast),color var(--dur-fast)}
+.chip:hover{background:var(--surface-3)}
+.chip.active{background:var(--primary-soft-2);color:var(--primary-ink);border-color:color-mix(in oklch,var(--primary) 40%,transparent)}
+.chip .n{font-variant-numeric:tabular-nums;opacity:0.7;margin-left:3px}
+.rows{flex:1;overflow-y:auto;padding:2px 8px 16px}
+.row{padding:10px 10px;border-radius:8px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background var(--dur-fast)}
+.row:hover{background:var(--surface-2)}
+.row.selected{background:var(--primary-soft-2)}
+.row .av{width:32px;height:32px;border-radius:999px;background:var(--primary-soft-2);color:var(--primary-ink);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.row .av .dot{position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:999px;border:2px solid var(--surface);background:var(--success)}
+.row.selected .av .dot{border-color:var(--primary-soft-2)}
+.row .av.inactive{background:var(--surface-3);color:var(--fg4)}
+.row .av.inactive .dot{background:var(--fg4)}
+.row .body{flex:1;min-width:0}
+.row .top{display:flex;align-items:center;gap:6px}
+.row .nm{font-weight:600;font-size:13px;color:var(--fg1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .rc{font:500 10.5px var(--font-mono);color:var(--fg3);margin-top:2px;letter-spacing:0.02em}
+.row .role-dot{width:6px;height:6px;border-radius:999px;flex-shrink:0}
+.row.inactive{opacity:0.55}
+.row .meta{font-size:11px;color:var(--fg3);text-transform:uppercase;letter-spacing:0.06em;font-weight:600}
+
+/* Detail pane */
+.detail{overflow-y:auto;display:flex;flex-direction:column;background:var(--bg)}
+.detail-topbar{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--surface);height:52px;position:sticky;top:0;z-index:2}
+.crumbs{color:var(--fg3);font-size:12px;display:flex;align-items:center;gap:6px}
+.crumbs strong{color:var(--fg1);font-weight:600}
+.detail-topbar .spacer{flex:1}
+.btn{padding:6px 12px;border-radius:8px;font:500 12.5px var(--font-sans);display:inline-flex;align-items:center;gap:6px;transition:background var(--dur-fast),border-color var(--dur-fast)}
+.btn-ghost{color:var(--fg2)}
+.btn-ghost:hover{background:var(--surface-2);color:var(--fg1)}
+.btn-secondary{background:var(--surface);border:1px solid var(--border);color:var(--fg1)}
+.btn-secondary:hover{background:var(--surface-2)}
+.btn-primary{background:var(--primary);color:#fff;font-weight:600}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-danger{background:var(--surface);border:1px solid color-mix(in oklch,var(--danger) 40%,var(--border));color:var(--danger-ink)}
+.btn-danger:hover{background:color-mix(in oklch,var(--danger) 12%,var(--surface))}
+
+/* Hero */
+.hero{padding:22px 28px 18px;display:flex;gap:18px;align-items:flex-start}
+.hero-av{width:64px;height:64px;border-radius:16px;background:var(--primary-soft-2);color:var(--primary-ink);font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hero h2{margin:0;font-size:22px;font-weight:700;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{padding:3px 9px;border-radius:999px;font:600 11px var(--font-sans);display:inline-flex;align-items:center;gap:5px}
+.pill-role{background:color-mix(in oklch,var(--role-moderator) 20%,transparent);color:var(--role-moderator)}
+.pill-status{background:color-mix(in oklch,var(--success) 20%,transparent);color:var(--success-ink)}
+.hero-meta{display:flex;gap:18px;margin-top:10px;color:var(--fg3);font-size:12.5px;flex-wrap:wrap}
+.hero-meta span{display:inline-flex;align-items:center;gap:6px}
+.ref{font:500 12px var(--font-mono);letter-spacing:0.02em;color:var(--fg2);padding:3px 8px;background:var(--surface-2);border-radius:6px}
+
+/* Tabs */
+.tabs{padding:0 28px;display:flex;gap:2px;border-bottom:1px solid var(--border);position:sticky;top:52px;background:var(--bg);z-index:1}
+.tab{padding:10px 14px;font:500 13px var(--font-sans);color:var(--fg3);border-bottom:2px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:8px;transition:color var(--dur-fast)}
+.tab:hover{color:var(--fg1)}
+.tab.active{color:var(--fg1);border-bottom-color:var(--primary)}
+.tab .cnt{font:600 10.5px var(--font-mono);padding:1px 6px;border-radius:999px;background:var(--surface-2);color:var(--fg3);font-variant-numeric:tabular-nums}
+.tab.active .cnt{background:var(--primary-soft-2);color:var(--primary-ink)}
+
+/* Main content */
+.tab-body{padding:24px 28px 60px;display:grid;grid-template-columns:1fr 320px;gap:24px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.section-hdr{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.section-hdr h3{margin:0;font:600 13px var(--font-sans)}
+.section-hdr .label-caps{color:var(--fg3)}
+.section-body{padding:16px 18px}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:10px 16px;font-size:13px}
+.kv dt{color:var(--fg3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;padding-top:2px}
+.kv dd{margin:0;color:var(--fg1)}
+.kv dd.edit{color:var(--fg1);padding:6px 10px;border:1px solid transparent;border-radius:6px;cursor:text;margin-left:-10px}
+.kv dd.edit:hover{border-color:var(--border);background:var(--surface-2)}
+
+/* Right activity panel */
+.activity{display:flex;flex-direction:column;gap:18px}
+.activity .section{}
+.event{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed var(--border)}
+.event:last-child{border-bottom:0}
+.event .eav{width:28px;height:28px;border-radius:999px;background:var(--surface-2);color:var(--fg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.event .etxt{font-size:12.5px;color:var(--fg2);line-height:1.45}
+.event .etxt b{color:var(--fg1);font-weight:600}
+.event .etime{font-size:11px;color:var(--fg4);margin-top:2px;font-variant-numeric:tabular-nums}
+
+/* Permission groups */
+.perm-group{padding:12px 0;border-bottom:1px dashed var(--border)}
+.perm-group:last-child{border-bottom:0}
+.perm-group .label-caps{color:var(--fg3);margin-bottom:8px}
+.person-card:hover{background:var(--surface-2)}
+.perm-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:13px}
+.perm-row .nm{color:var(--fg1)}
+.perm-row .hint{color:var(--fg3);font-size:11px;margin-top:1px}
+.tg{width:32px;height:18px;border-radius:999px;background:var(--surface-3);position:relative;transition:background var(--dur-fast);flex-shrink:0}
+.tg::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:999px;background:#fff;transition:left var(--dur-fast) var(--ease-spring)}
+.tg.on{background:var(--primary)}
+.tg.on::after{left:16px}
+
+/* Mobile */
+.mobile{display:none}
+@media (max-width: 900px){
+  .app{grid-template-columns:1fr}
+  .rail,.list,.detail .activity-pane,.tab-body > .activity{display:none}
+  .detail{padding-bottom:64px}
+  .tab-body{grid-template-columns:1fr;padding:16px}
+  .mobile-tabs{display:flex;position:fixed;bottom:0;left:0;right:0;height:64px;background:var(--surface);border-top:1px solid var(--border);z-index:10;padding-bottom:env(safe-area-inset-bottom,0)}
+  .mobile-tabs a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--fg3);font:500 10.5px var(--font-sans)}
+  .mobile-tabs a.active{color:var(--primary)}
+  .mobile-tabs a [data-lucide]{width:20px;height:20px}
+  .hero{padding:16px;flex-direction:column;align-items:flex-start}
+  .hero-av{width:48px;height:48px;font-size:18px}
+  .tabs{padding:0 16px;overflow-x:auto}
+}
+
+/* Bottom sheet (visual only) */
+.sheet{display:none}
+</style>
+</head>
+<body>
+<script>
+  // Theme comes from ?theme=light|dark (default: dark).
+  // Allows index.html to embed two copies side-by-side via iframe.
+  const params = new URLSearchParams(location.search);
+  document.body.className = params.get('theme') === 'light' ? 'light' : 'dark';
+</script>
+
+<div class="app" data-screen-label="Staff master-detail">
+
+  <!-- RAIL -->
+  <nav class="rail" aria-label="Main">
+    <div class="logo" title="Operator Dashboard"><i data-lucide="message-square-text"></i></div>
+    <button title="Дашборд"><i data-lucide="layout-dashboard"></i></button>
+    <button class="active" title="Сотрудники"><i data-lucide="users"></i></button>
+    <button title="Клиенты"><i data-lucide="user-round"></i></button>
+    <button title="Команды"><i data-lucide="users-round"></i></button>
+    <button title="Задачи"><i data-lucide="list-checks"></i></button>
+    <button title="Оповещения"><i data-lucide="bell"></i><span class="badge">3</span></button>
+    <div class="spacer"></div>
+    <button title="Настройки"><i data-lucide="settings-2"></i></button>
+    <div class="avatar" title="СА">СА</div>
+  </nav>
+
+  <!-- LIST -->
+  <section class="list" aria-label="Staff list">
+    <div class="list-hdr">
+      <h1>Сотрудники <span class="list-count">24</span></h1>
+      <button class="btn btn-primary" id="newBtn"><i data-lucide="plus" class="i-14"></i>Добавить</button>
+    </div>
+    <div class="search">
+      <i data-lucide="search"></i>
+      <input id="q" placeholder="Поиск по имени, реф-коду…"/>
+      <span class="kbd">/</span>
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip" data-role="all">Все<span class="n">24</span></button>
+      <button class="chip" data-role="admin">Админы<span class="n">3</span></button>
+      <button class="chip active" data-role="moderator">Модераторы<span class="n">5</span></button>
+      <button class="chip" data-role="teamlead">Тимлиды<span class="n">4</span></button>
+      <button class="chip" data-role="operator">Операторы<span class="n">12</span></button>
+    </div>
+    <div class="rows" id="rows"></div>
+  </section>
+
+  <!-- DETAIL -->
+  <section class="detail" id="detail" aria-label="Staff detail">
+    <!-- rendered by JS -->
+  </section>
+</div>
+
+<nav class="mobile-tabs" aria-label="Mobile">
+  <a><i data-lucide="layout-dashboard"></i>Дашборд</a>
+  <a class="active"><i data-lucide="users"></i>Сотрудники</a>
+  <a><i data-lucide="list-checks"></i>Задачи</a>
+  <a><i data-lucide="user-round"></i>Клиенты</a>
+  <a><i data-lucide="bell"></i>Оповещения</a>
+</nav>
+
+<script>
+const ROLE_COLORS = {
+  admin: 'var(--role-admin)', moderator:'var(--role-moderator)',
+  teamlead:'var(--role-teamlead)', operator:'var(--role-operator)', superadmin:'var(--role-superadmin)'
+};
+const ROLE_LABEL = {admin:'Админ',moderator:'Модератор',teamlead:'Тим Лидер',operator:'Оператор',superadmin:'Супер-Админ'};
+const SHIFT_COLORS = {'ДНЕВНАЯ':'var(--shift-day)','ВЕЧЕРНЯЯ':'var(--shift-evening)','НОЧНАЯ':'var(--shift-night)'};
+
+const STAFF = [
+  // Moderator who ALSO leads a team + curates operators. Ref: domain-model §3.1 (moderator optionally lead of same team).
+  {id:1,ref:'MOD-АннаМ-003',first:'Анна',last:'Морозова',role:'moderator',shift:'ДНЕВНАЯ',email:'anna.m@agency.local',active:true,phone:'+380 67 111-22-33',created:'15 янв 2026',leadsTeam:'Team Alpha',curates:[4,5]},
+  // Moderator who curates but does NOT lead.
+  {id:2,ref:'MOD-МаринаК-008',first:'Марина',last:'Ковалёва',role:'moderator',shift:'ВЕЧЕРНЯЯ',email:'m.kovaleva@agency.local',active:true,created:'02 фев 2026',leadsTeam:null,curates:[6]},
+  {id:3,ref:'TL-ОлегВ-002',first:'Олег',last:'Власов',role:'teamlead',shift:'ДНЕВНАЯ',email:'o.vlasov@agency.local',active:true,created:'08 янв 2026',leadsTeam:'Team Alpha'},
+  {id:4,ref:'OP-ИванП-014',first:'Иван',last:'Петров',role:'operator',shift:'ВЕЧЕРНЯЯ',email:'i.petrov@agency.local',active:true,created:'11 мар 2026',team:'Team Alpha',curatorId:1},
+  {id:5,ref:'OP-ДенисА-015',first:'Денис',last:'Алексеев',role:'operator',shift:'НОЧНАЯ',email:'d.alekseev@agency.local',active:true,created:'18 мар 2026',team:'Team Alpha',curatorId:1},
+  {id:6,ref:'OP-СергейК-019',first:'Сергей',last:'Клименко',role:'operator',shift:'ДНЕВНАЯ',email:'s.klimenko@agency.local',active:false,created:'21 фев 2026',team:'-',curatorId:2},
+  {id:7,ref:'ADM-НатальяР-001',first:'Наталья',last:'Рудь',role:'admin',email:'n.rud@agency.local',active:true,created:'12 янв 2026'},
+  {id:8,ref:'MOD-ЕкатеринаБ-010',first:'Екатерина',last:'Белова',role:'moderator',shift:'НОЧНАЯ',email:'e.belova@agency.local',active:true,created:'30 мар 2026',leadsTeam:'Team Charlie',curates:[]},
+];
+
+// Simulated viewer session. In prod this comes from auth context. Drives topbar action visibility per docs/domain-model.md §3.1.
+// Try swapping VIEWER.role/permissions to see buttons appear/disappear.
+const VIEWER = {
+  id: 99,
+  role: 'admin',
+  permissions: ['create_users','manage_roles','manage_teams','send_reminders','create_tasks','view_all_tasks','view_all_revenue']
+};
+// A user can always change their own password. Otherwise: superadmin, or anyone with manage_roles (role-management surface).
+const canChangePassword = (viewer, target) =>
+  viewer.id === target.id || viewer.role === 'superadmin' || viewer.permissions.includes('manage_roles');
+// Deletion is a 2-step flow: anyone with create_users (admin-tier) files a request; only superadmin approves.
+const canRequestDeletion = (viewer, target) =>
+  viewer.id !== target.id && (viewer.role === 'superadmin' || viewer.permissions.includes('create_users'));
+
+const PERMS = [
+  {group:'Администрирование',items:[
+    {k:'create_users',nm:'Создавать сотрудников',on:false,hint:'Может добавлять новых пользователей в CRM'},
+    {k:'manage_roles',nm:'Управлять правами',on:false,hint:'Доступ к переключателям прав'},
+    {k:'manage_teams',nm:'Управлять командами',on:true,hint:'Сбор и изменение состава команд'},
+    {k:'send_reminders',nm:'Получать оповещения по просрочкам',on:true},
+  ]},
+  {group:'Задачи',items:[
+    {k:'create_tasks',nm:'Создавать задачи',on:true},
+    {k:'view_all_tasks',nm:'Видеть все задачи',on:false},
+    {k:'view_own_tasks',nm:'Видеть свои задачи',on:true},
+  ]},
+  {group:'Выручка',items:[
+    {k:'view_all_revenue',nm:'Вся выручка',on:false},
+    {k:'view_team_revenue',nm:'Выручка команды',on:true},
+    {k:'view_own_revenue',nm:'Своя выручка',on:true},
+  ]},
+];
+
+const EVENTS = [
+  {who:'Наталья Рудь',act:'повысила права',det:'+ manage_teams',when:'3 мин назад'},
+  {who:'Анна Морозова',act:'сменила пароль',det:'',when:'Сегодня, 11:24'},
+  {who:'Система',act:'создала сотрудника',det:'MOD-АннаМ-003',when:'15 янв 2026'},
+];
+
+let selectedId = 1;
+let activeTab = 'profile';
+
+function initials(u){return (u.first[0]||'')+(u.last[0]||'')}
+
+function renderRows(){
+  const role = document.querySelector('.chip.active').dataset.role;
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const rows = document.getElementById('rows');
+  rows.innerHTML = '';
+  STAFF.filter(u => role==='all' || u.role===role)
+    .filter(u => !q || (u.first+' '+u.last+' '+u.ref).toLowerCase().includes(q))
+    .forEach(u => {
+      const el = document.createElement('div');
+      el.className = 'row' + (u.id===selectedId?' selected':'') + (u.active?'':' inactive');
+      el.innerHTML = `
+        <div class="av ${u.active?'':'inactive'}">${initials(u)}<span class="dot"></span></div>
+        <div class="body">
+          <div class="top">
+            <span class="role-dot" style="background:${ROLE_COLORS[u.role]}"></span>
+            <span class="nm">${u.first} ${u.last}</span>
+          </div>
+          <div class="rc">${u.ref}${u.shift?' · <span style="color:'+(SHIFT_COLORS[u.shift])+'">'+u.shift+'</span>':''}</div>
+        </div>`;
+      el.onclick = ()=>{selectedId=u.id;renderAll()};
+      rows.appendChild(el);
+    });
+  lucide.createIcons();
+}
+
+function renderDetail(){
+  const u = STAFF.find(x=>x.id===selectedId);
+  const d = document.getElementById('detail');
+  if(!u){
+    d.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--fg3)">
+      <div style="width:56px;height:56px;border-radius:14px;background:var(--surface-2);display:flex;align-items:center;justify-content:center"><i data-lucide="mouse-pointer-square-dashed"></i></div>
+      <div style="font-weight:600;color:var(--fg1)">Выберите сотрудника</div>
+      <div style="font-size:12px">Детали откроются в этой панели.</div>
+    </div>`;
+    lucide.createIcons();
+    return;
+  }
+  const roleBg = `color-mix(in oklch, ${ROLE_COLORS[u.role]} 20%, transparent)`;
+  const showPassword = canChangePassword(VIEWER, u);
+  const showDelete = canRequestDeletion(VIEWER, u);
+  d.innerHTML = `
+    <div class="detail-topbar">
+      <div class="crumbs">Сотрудники <i data-lucide="chevron-right" class="i-14"></i> <strong>${u.first} ${u.last}</strong></div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" title="Навигация ↑↓"><i data-lucide="chevron-up"></i></button>
+      <button class="btn btn-ghost"><i data-lucide="chevron-down"></i></button>
+      ${showPassword ? '<button class="btn btn-secondary"><i data-lucide="key-round" class="i-14"></i> Сменить пароль</button>' : ''}
+      ${showDelete ? '<button class="btn btn-danger"><i data-lucide="user-x" class="i-14"></i> Запросить удаление</button>' : ''}
+    </div>
+
+    <div class="hero">
+      <div class="hero-av">${initials(u)}</div>
+      <div style="flex:1;min-width:0">
+        <h2>${u.first} ${u.last}
+          <span class="pill" style="background:${roleBg};color:${ROLE_COLORS[u.role]}">${ROLE_LABEL[u.role]}</span>
+          ${u.active?'<span class="pill pill-status"><span style="width:6px;height:6px;border-radius:999px;background:var(--success)"></span>Активен</span>':'<span class="pill" style="background:var(--surface-3);color:var(--fg3)">Неактивен</span>'}
+        </h2>
+        <div class="hero-meta">
+          <span class="ref">${u.ref}<i data-lucide="copy" class="i-14" style="margin-left:6px;color:var(--fg4)"></i></span>
+          <span><i data-lucide="mail" class="i-14"></i>${u.email}</span>
+          ${u.shift?`<span><i data-lucide="clock" class="i-14" style="color:${SHIFT_COLORS[u.shift]}"></i><span style="color:${SHIFT_COLORS[u.shift]};font-weight:600;font-size:11px;letter-spacing:0.08em">${u.shift}</span></span>`:''}
+          ${u.leadsTeam?`<span><i data-lucide="users-round" class="i-14"></i>Ведёт <b style="color:var(--fg1);font-weight:600">${u.leadsTeam}</b></span>`:''}
+          ${u.curates?`<span><i data-lucide="user-cog" class="i-14"></i>Курирует ${u.curates.length} операторов</span>`:''}
+          ${u.team && !u.leadsTeam && !u.curates?`<span><i data-lucide="users-round" class="i-14"></i>${u.team}</span>`:''}
+          <span><i data-lucide="calendar" class="i-14"></i>С ${u.created}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      ${tab('profile','Профиль','')}
+      ${tab('attributes','Атрибуты','3')}
+      ${tab('permissions','Права','6')}
+    </div>
+
+    <div class="tab-body">
+      <div>${tabBody(u)}</div>
+      <aside class="activity">
+        <div class="section">
+          <div class="section-hdr"><span class="label-caps">Активность</span><button class="btn btn-ghost i-14"><i data-lucide="more-horizontal"></i></button></div>
+          <div class="section-body">
+            ${EVENTS.map(e=>`<div class="event">
+              <div class="eav"><i data-lucide="activity" class="i-14"></i></div>
+              <div style="flex:1"><div class="etxt"><b>${e.who}</b> ${e.act} ${e.det?'<code style="font-family:var(--font-mono);font-size:11px;color:var(--primary-ink)">'+e.det+'</code>':''}</div><div class="etime">${e.when}</div></div>
+            </div>`).join('')}
+          </div>
+        </div>
+        ${curationBlock(u)}
+      </aside>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+function tab(id,label,cnt){
+  return `<button class="tab ${activeTab===id?'active':''}" data-tab="${id}">${label}${cnt?`<span class="cnt">${cnt}</span>`:''}</button>`;
+}
+
+// Curation relationship is one-directional per docs/domain-model.md §4.1 (moderator_operator link):
+// - Moderators CURATE operators (0..N)
+// - Operators are curated BY exactly one moderator
+// - Admins / Teamleads / Superadmins are outside this relation
+function personCard(p, {clickable}={}){
+  if(!p) return '';
+  return `
+    <div class="person-card" ${clickable?`data-goto="${p.id}"`:''} style="display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;${clickable?'cursor:pointer':''}">
+      <div style="width:32px;height:32px;border-radius:999px;background:var(--primary-soft-2);color:var(--primary-ink);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${initials(p)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px;color:var(--fg1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.first} ${p.last}</div>
+        <div style="color:var(--fg3);font-family:var(--font-mono);font-size:10.5px;letter-spacing:0.02em">${p.ref}</div>
+      </div>
+      ${p.shift?`<span class="label-caps" style="font-size:9.5px;color:${SHIFT_COLORS[p.shift]}">${p.shift[0]}</span>`:''}
+    </div>`;
+}
+
+function curationBlock(u){
+  if(u.role === 'moderator'){
+    const curated = (u.curates||[]).map(id => STAFF.find(x=>x.id===id)).filter(Boolean);
+    return `<div class="section">
+      <div class="section-hdr">
+        <span class="label-caps">Курирует <span style="font-family:var(--font-mono);color:var(--fg3);margin-left:4px">${curated.length}</span></span>
+        <button class="btn btn-ghost"><i data-lucide="plus" class="i-14"></i></button>
+      </div>
+      <div class="section-body" style="padding:8px 10px">
+        ${curated.length ? curated.map(p=>personCard(p,{clickable:true})).join('') :
+          '<div style="padding:16px 8px;text-align:center;color:var(--fg3);font-size:12px">Операторы не назначены</div>'}
+      </div>
+    </div>`;
+  }
+  if(u.role === 'operator'){
+    const curator = STAFF.find(x=>x.id===u.curatorId && x.role==='moderator');
+    return `<div class="section">
+      <div class="section-hdr"><span class="label-caps">Куратор</span><button class="btn btn-ghost"><i data-lucide="pencil" class="i-14"></i></button></div>
+      <div class="section-body" style="padding:8px 10px">
+        ${curator ? personCard(curator,{clickable:true}) :
+          '<div style="padding:16px 8px;text-align:center;color:var(--fg3);font-size:12px">Куратор не назначен</div>'}
+      </div>
+    </div>`;
+  }
+  // Admin / Teamlead / Superadmin have no curation relation per domain model
+  return '';
+}
+
+function tabBody(u){
+  if(activeTab==='profile'){
+    return `<div class="section">
+      <div class="section-hdr"><span class="label-caps">Профиль</span></div>
+      <div class="section-body">
+        <dl class="kv">
+          <dt>Имя</dt><dd class="edit">${u.first}</dd>
+          <dt>Фамилия</dt><dd class="edit">${u.last}</dd>
+          <dt>Email</dt><dd class="edit">${u.email}</dd>
+          <dt>Телефон</dt><dd class="edit">${u.phone||'<span style="color:var(--fg3)">не указан</span>'}</dd>
+          <dt>Telegram</dt><dd class="edit" style="color:var(--fg3)">не указан</dd>
+          <dt>Роль</dt><dd><i data-lucide="lock" class="i-14" style="color:var(--fg4);margin-right:6px"></i>${ROLE_LABEL[u.role]}</dd>
+          <dt>Реф-код</dt><dd><i data-lucide="lock" class="i-14" style="color:var(--fg4);margin-right:6px"></i><code style="font-family:var(--font-mono);font-size:12px;color:var(--fg2)">${u.ref}</code></dd>
+        </dl>
+      </div>
+    </div>`;
+  }
+  if(activeTab==='attributes'){
+    return `<div class="section">
+      <div class="section-hdr"><span class="label-caps">Атрибуты</span><button class="btn btn-ghost"><i data-lucide="plus" class="i-14"></i>Добавить</button></div>
+      <div class="section-body">
+        <dl class="kv">
+          <dt>Shift</dt><dd class="edit" style="color:${SHIFT_COLORS[u.shift]||'var(--fg2)'};font-weight:600">${u.shift||'-'}</dd>
+          <dt>Panel id</dt><dd class="edit"><code style="font-family:var(--font-mono)">PNL-0341</code></dd>
+          <dt>Timezone</dt><dd class="edit">Europe/Kiev (UTC+3)</dd>
+        </dl>
+      </div>
+    </div>`;
+  }
+  if(activeTab==='permissions'){
+    return `<div class="section">
+      <div class="section-hdr"><span class="label-caps">Права доступа</span><span style="font:500 11px var(--font-mono);color:var(--fg3)">6 / 11</span></div>
+      <div class="section-body">
+        ${PERMS.map(g=>`<div class="perm-group">
+          <div class="label-caps">${g.group}</div>
+          ${g.items.map(i=>`<div class="perm-row">
+            <div><div class="nm">${i.nm}</div>${i.hint?`<div class="hint">${i.hint}</div>`:''}</div>
+            <div class="tg ${i.on?'on':''}" onclick="this.classList.toggle('on')"></div>
+          </div>`).join('')}
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  return `<div class="section"><div class="section-body" style="text-align:center;padding:32px;color:var(--fg3)"><div style="font-size:12px">Неизвестная вкладка</div></div></div>`;
+}
+
+function renderAll(){renderRows();renderDetail();}
+
+document.getElementById('chips').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b)return;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  b.classList.add('active'); renderRows();
+});
+document.getElementById('q').addEventListener('input',renderRows);
+document.addEventListener('click',e=>{
+  const t=e.target.closest('.tab'); if(t){activeTab=t.dataset.tab;renderDetail();return;}
+  const p=e.target.closest('[data-goto]'); if(p){selectedId=+p.dataset.goto;activeTab='profile';renderAll();}
+});
+window.addEventListener('keydown',e=>{
+  if(e.key==='/' && document.activeElement.tagName!=='INPUT'){e.preventDefault();document.getElementById('q').focus();}
+});
+
+renderAll();
+</script>
+</body>
+</html>
