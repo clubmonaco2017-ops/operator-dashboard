@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -18,7 +19,8 @@ body {
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', sans-serif;
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -59,73 +61,229 @@ body {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ============================================================================
+   Operator Dashboard — design tokens
+   Shadcn names (--background, --primary, etc.) carry DS values.
+   Extended DS tokens (--fg2, --surface-2, --primary-soft, shift/role/status,
+   type scale, spacing, elevation, motion) follow after.
+   Source: docs/design-system/colors_and_type.css
+   ============================================================================ */
+
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* ---- shadcn-compatible names, DS values (light) ---- */
+  --background: oklch(0.99 0.002 250);
+  --foreground: oklch(0.18 0.01 250);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.18 0.01 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --popover-foreground: oklch(0.18 0.01 250);
+  --primary: oklch(0.546 0.215 262.9);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.975 0.003 250);
+  --secondary-foreground: oklch(0.18 0.01 250);
+  --muted: oklch(0.975 0.003 250);
+  --muted-foreground: oklch(0.52 0.01 250);
+  --accent: oklch(0.955 0.004 250);
+  --accent-foreground: oklch(0.18 0.01 250);
+  --destructive: oklch(0.577 0.245 27.3);
+  --border: oklch(0.922 0.005 250);
+  --input: oklch(0.922 0.005 250);
+  --ring: oklch(0.623 0.188 259.8);
+  --chart-1: oklch(0.546 0.215 262.9);
+  --chart-2: oklch(0.73 0.175 70);
+  --chart-3: oklch(0.68 0.01 250);
+  --chart-4: oklch(0.556 0.01 250);
+  --chart-5: oklch(0.439 0.01 250);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.18 0.01 250);
+  --sidebar-primary: oklch(0.546 0.215 262.9);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.955 0.004 250);
+  --sidebar-accent-foreground: oklch(0.18 0.01 250);
+  --sidebar-border: oklch(0.922 0.005 250);
+  --sidebar-ring: oklch(0.623 0.188 259.8);
+
+  /* ---- DS extended tokens ---- */
+  /* Surfaces */
+  --bg: oklch(0.99 0.002 250);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.975 0.003 250);
+  --surface-3: oklch(0.955 0.004 250);
+  --overlay: oklch(0.145 0.01 250 / 0.45);
+
+  /* Foreground scale */
+  --fg1: oklch(0.18 0.01 250);
+  --fg2: oklch(0.36 0.01 250);
+  --fg3: oklch(0.52 0.01 250);
+  --fg4: oklch(0.68 0.008 250);
+  --fg-on-primary: oklch(1 0 0);
+
+  /* Border */
+  --border-strong: oklch(0.85 0.008 250);
+
+  /* Primary variations */
+  --primary-hover: oklch(0.488 0.22 264.4);
+  --primary-fg: oklch(1 0 0);
+  --primary-soft: oklch(0.962 0.038 257);
+  --primary-soft-2: oklch(0.84 0.11 253);
+  --primary-ink: oklch(0.38 0.18 264);
+  --primary-ring: oklch(0.623 0.188 259.8 / 0.35);
+  --primary-disabled: oklch(0.546 0.215 262.9 / 0.5);
+
+  /* Semantic */
+  --success: oklch(0.595 0.145 155);
+  --success-soft: oklch(0.95 0.04 155);
+  --success-ink: oklch(0.42 0.12 155);
+  --warning: oklch(0.73 0.175 70);
+  --warning-soft: oklch(0.965 0.05 85);
+  --warning-ink: oklch(0.48 0.14 60);
+  --danger: oklch(0.577 0.245 27.3);
+  --danger-soft: oklch(0.96 0.035 27);
+  --danger-ink: oklch(0.42 0.18 27);
+  --info: oklch(0.623 0.188 259.8);
+  --info-soft: oklch(0.95 0.04 257);
+
+  /* Chart grid/axis */
+  --chart-grid: oklch(0.92 0.005 250);
+  --chart-axis: oklch(0.6 0.01 250);
+
+  /* Shift palette (domain-specific) */
+  --shift-day: oklch(0.73 0.175 70);
+  --shift-evening: oklch(0.55 0.22 295);
+  --shift-night: oklch(0.52 0.01 250);
+
+  /* Role badges */
+  --role-superadmin: oklch(0.55 0.22 295);
+  --role-admin: oklch(0.546 0.215 262.9);
+  --role-moderator: oklch(0.595 0.145 155);
+  --role-teamlead: oklch(0.73 0.175 70);
+  --role-operator: oklch(0.52 0.01 250);
+
+  /* Task statuses */
+  --status-pending: oklch(0.6 0.01 250);
+  --status-in-progress: oklch(0.546 0.215 262.9);
+  --status-done: oklch(0.595 0.145 155);
+  --status-overdue: oklch(0.577 0.245 27.3);
+
+  /* Type scale */
+  --fs-xxs: 11px;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-base: 14px;
+  --fs-md: 15px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
+  --fs-2xl: 28px;
+  --fs-3xl: 36px;
+  --lh-tight: 1.2;
+  --lh-snug: 1.35;
+  --lh-base: 1.5;
+  --ls-caps: 0.08em;
+  --ls-tight: -0.01em;
+
+  /* Spacing (4-based) */
+  --sp-0: 0;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* Elevation */
+  --elev-0: none;
+  --elev-1: 0 1px 0 0 oklch(0.145 0.01 250 / 0.04),
+            0 1px 2px 0 oklch(0.145 0.01 250 / 0.06);
+  --elev-2: 0 2px 4px -1px oklch(0.145 0.01 250 / 0.06),
+            0 4px 8px -2px oklch(0.145 0.01 250 / 0.08);
+  --elev-3: 0 8px 16px -4px oklch(0.145 0.01 250 / 0.1),
+            0 16px 32px -8px oklch(0.145 0.01 250 / 0.12);
+  --focus-ring: 0 0 0 3px oklch(0.623 0.188 259.8 / 0.35);
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 260ms;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* ---- shadcn-compatible names, DS values (dark) ---- */
+  --background: oklch(0.145 0.005 250);
+  --foreground: oklch(0.985 0.002 250);
+  --card: oklch(0.205 0.006 250);
+  --card-foreground: oklch(0.985 0.002 250);
+  --popover: oklch(0.205 0.006 250);
+  --popover-foreground: oklch(0.985 0.002 250);
+  --primary: oklch(0.64 0.19 260);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.245 0.007 250);
+  --secondary-foreground: oklch(0.985 0.002 250);
+  --muted: oklch(0.245 0.007 250);
+  --muted-foreground: oklch(0.66 0.008 250);
+  --accent: oklch(0.27 0.008 250);
+  --accent-foreground: oklch(0.985 0.002 250);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: oklch(1 0 0 / 0.08);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.68 0.18 259);
+  --chart-1: oklch(0.64 0.19 260);
+  --chart-2: oklch(0.73 0.175 70);
+  --chart-3: oklch(0.6 0.01 250);
+  --chart-4: oklch(0.5 0.01 250);
+  --chart-5: oklch(0.4 0.01 250);
+  --sidebar: oklch(0.205 0.006 250);
+  --sidebar-foreground: oklch(0.985 0.002 250);
+  --sidebar-primary: oklch(0.64 0.19 260);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.27 0.008 250);
+  --sidebar-accent-foreground: oklch(0.985 0.002 250);
+  --sidebar-border: oklch(1 0 0 / 0.08);
+  --sidebar-ring: oklch(0.68 0.18 259);
+
+  /* ---- DS extended tokens (dark overrides) ---- */
+  --bg: oklch(0.145 0.005 250);
+  --surface: oklch(0.205 0.006 250);
+  --surface-2: oklch(0.245 0.007 250);
+  --surface-3: oklch(0.27 0.008 250);
+  --overlay: oklch(0.1 0.005 250 / 0.6);
+
+  --fg1: oklch(0.985 0.002 250);
+  --fg2: oklch(0.82 0.004 250);
+  --fg3: oklch(0.66 0.008 250);
+  --fg4: oklch(0.5 0.008 250);
+
+  --border-strong: oklch(1 0 0 / 0.16);
+
+  --primary-hover: oklch(0.72 0.18 260);
+  --primary-soft: oklch(0.22 0.07 260);
+  --primary-soft-2: oklch(0.36 0.13 260);
+  --primary-ink: oklch(0.86 0.12 258);
+  --primary-ring: oklch(0.68 0.18 259 / 0.45);
+  --primary-disabled: oklch(0.64 0.19 260 / 0.5);
+
+  --success-soft: oklch(0.42 0.1 155 / 0.22);
+  --success-ink: oklch(0.82 0.12 155);
+  --warning-soft: oklch(0.5 0.12 70 / 0.25);
+  --warning-ink: oklch(0.88 0.12 85);
+  --danger-soft: oklch(0.42 0.15 27 / 0.24);
+  --danger-ink: oklch(0.82 0.15 27);
+
+  --chart-grid: oklch(1 0 0 / 0.08);
+  --chart-axis: oklch(0.6 0.01 250);
+
+  --elev-1: 0 1px 0 0 oklch(0 0 0 / 0.3),
+            0 1px 2px 0 oklch(0 0 0 / 0.4);
+  --elev-2: 0 2px 4px -1px oklch(0 0 0 / 0.35),
+            0 4px 8px -2px oklch(0 0 0 / 0.45);
+  --elev-3: 0 8px 16px -4px oklch(0 0 0 / 0.5),
+            0 16px 32px -8px oklch(0 0 0 / 0.55);
 }
 
 @layer base {
@@ -134,8 +292,70 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* ============================================================================
+   Semantic typographic utilities (DS)
+   ============================================================================ */
+@layer components {
+  .h-display {
+    font-size: var(--fs-3xl);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-tight);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .h1 {
+    font-size: var(--fs-xl);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--ls-tight);
+    font-weight: 700;
+    color: var(--fg1);
+  }
+  .h2 {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+    font-weight: 600;
+    color: var(--fg1);
+  }
+  .h3 {
+    font-size: var(--fs-base);
+    line-height: var(--lh-snug);
+    font-weight: 600;
+    color: var(--fg1);
+  }
+  .p {
+    color: var(--fg2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-base);
+  }
+  .meta {
+    color: var(--fg3);
+    font-size: var(--fs-xs);
+  }
+  .label-caps {
+    font-size: var(--fs-xxs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--ls-caps);
+    color: var(--fg3);
+  }
+  .ref-code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.02em;
+    color: var(--fg3);
+    white-space: nowrap;
+  }
+  .num,
+  td.num,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
   }
 }
