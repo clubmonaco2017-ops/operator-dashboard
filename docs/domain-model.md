@@ -144,25 +144,53 @@ Superadmin
 ```
 clients
   id             serial PK
-  name           text NOT NULL            -- имя модели / псевдоним
-  alias          text                     -- внутренний псевдоним
+  name           text NOT NULL            -- публичное имя на платформе
+  alias          text                     -- внутренний псевдоним (@sofia.reign)
   description    text
   avatar_url     text                     -- Storage: client-avatars
   platform_id    int REFERENCES platforms(id)
   agency_id      int REFERENCES agencies(id)
+  tableau_id     text                     -- ID клиента в Tableau (метрики). См. _decisions.md D-11.
   is_active      bool DEFAULT true
   created_by     int REFERENCES dashboard_users(id)
   created_at     timestamptz DEFAULT now()
+  updated_at     timestamptz DEFAULT now()
 
-client_media
+client_media                              -- фото/видео клиента
+  id           serial PK
+  client_id    int REFERENCES clients(id) ON DELETE CASCADE
+  type         text CHECK (type IN ('photo','video'))
+  storage_path text NOT NULL              -- путь в Supabase Storage
+  filename     text NOT NULL
+  caption      text
+  size_bytes   bigint
+  width        int
+  height       int
+  duration_ms  int                        -- только для video
+  mime_type    text
+  status       text DEFAULT 'ready'       -- ready | processing | error
+  error_reason text                       -- если status='error'
+  sort_order   int DEFAULT 0              -- ручной порядок при sort='manual'
+  created_by   int REFERENCES dashboard_users(id)
+  created_at   timestamptz DEFAULT now()
+  updated_at   timestamptz DEFAULT now()
+
+client_activity                           -- лог событий (правая колонка «Активность»)
   id         serial PK
   client_id  int REFERENCES clients(id) ON DELETE CASCADE
-  type       text CHECK (type IN ('photo','video'))
-  url        text NOT NULL
-  sort_order int DEFAULT 0
-  created_by int REFERENCES dashboard_users(id)
+  actor_id   int REFERENCES dashboard_users(id)  -- NULL = «Система»
+  event_type text NOT NULL                       -- 'created','updated_profile','updated_description',
+                                                 -- 'archived','restored','media_uploaded',
+                                                 -- 'media_deleted','media_reordered'
+  payload    jsonb
   created_at timestamptz DEFAULT now()
 ```
+
+**Tableau ID — два разных назначения**:
+- `dashboard_users.tableau_id` — refcode оператора на `hourly_revenue` (для расчёта зарплат). _Subplan 1+2._
+- `clients.tableau_id` — ID клиента на дашборд метрик (просмотры/доход/посты). _Subplan 3, см. карточку «Сводка»._
+
+Это разные сущности в Tableau, имя поля общее.
 
 **Subplan 4 — Команды и кураторство**
 

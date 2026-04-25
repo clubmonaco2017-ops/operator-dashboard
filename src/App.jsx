@@ -7,6 +7,7 @@ import { StaffListPage } from './pages/StaffListPage.jsx'
 import { StaffCreatePage } from './pages/StaffCreatePage.jsx'
 import { StaffDetailPage } from './pages/StaffDetailPage.jsx'
 import { NotificationsPage } from './pages/NotificationsPage.jsx'
+import { ClientListPage } from './pages/ClientListPage.jsx'
 import { isSuperadmin } from './lib/permissions.js'
 
 export default function App() {
@@ -24,6 +25,9 @@ export default function App() {
       <Route path="/staff/new" element={<StaffCreatePage />} />
       <Route path="/staff/:refCode" element={<StaffDetailPage />} />
       <Route path="/staff/:refCode/:tab" element={<StaffDetailPage />} />
+      <Route path="/clients" element={<ClientListPage />} />
+      <Route path="/clients/:clientId" element={<ClientListPage />} />
+      <Route path="/clients/:clientId/:tab" element={<ClientListPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
       {isSuperadmin(user) && (
         <Route

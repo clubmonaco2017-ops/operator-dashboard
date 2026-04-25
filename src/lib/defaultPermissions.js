@@ -5,6 +5,8 @@ const DEFAULTS = {
     'send_reminders',
     'view_all_revenue',
     'view_all_tasks',
+    'manage_clients',
+    'assign_team_clients',
   ],
   moderator: [
     'create_tasks',
