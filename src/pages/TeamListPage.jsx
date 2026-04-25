@@ -9,6 +9,7 @@ import { TeamEmptyZero } from '../components/teams/EmptyZero.jsx'
 import { TeamEmptyFilter } from '../components/teams/EmptyFilter.jsx'
 import { TeamDetailEmptyHint } from '../components/teams/DetailEmptyHint.jsx'
 import { CreateTeamSlideOut } from '../components/teams/CreateTeamSlideOut.jsx'
+import { TeamDetailPanel } from '../components/teams/TeamDetailPanel.jsx'
 import { pluralizeTeams } from '../lib/teams.js'
 
 export function TeamListPage() {
@@ -125,7 +126,14 @@ export function TeamListPage() {
             aria-label="Профиль команды"
           >
             {detailIsOpen ? (
-              <DetailPlaceholder teamId={teamId} onBack={() => navigate('/teams')} />
+              <TeamDetailPanel
+                callerId={user?.id}
+                user={user}
+                teamId={Number(teamId)}
+                siblings={rows}
+                onChanged={reload}
+                onBack={() => navigate('/teams')}
+              />
             ) : (
               <TeamDetailEmptyHint />
             )}
@@ -184,24 +192,6 @@ function TeamListSkeleton() {
         </li>
       ))}
     </ul>
-  )
-}
-
-function DetailPlaceholder({ teamId, onBack }) {
-  return (
-    <div className="relative flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
-      <button
-        type="button"
-        onClick={onBack}
-        className="absolute left-4 top-4 text-sm text-muted-foreground hover:text-foreground lg:hidden focus-ds rounded px-2 py-1"
-      >
-        ← Список
-      </button>
-      <p className="text-base font-semibold text-foreground">Команда #{teamId}</p>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Детали команды будут реализованы в Stage 7.
-      </p>
-    </div>
   )
 }
 
