@@ -9,6 +9,13 @@ export const permissionGroups = [
     ],
   },
   {
+    title: 'Клиенты',
+    permissions: [
+      { key: 'manage_clients',      label: 'CRUD клиентов' },
+      { key: 'assign_team_clients', label: 'Назначать клиентов на команду' },
+    ],
+  },
+  {
     title: 'Задачи',
     permissions: [
       { key: 'create_tasks',   label: 'Создавать задачи' },

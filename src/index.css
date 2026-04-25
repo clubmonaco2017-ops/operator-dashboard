@@ -59,6 +59,29 @@ body {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ---- DS extended color aliases (so border-border-strong etc. work in Tailwind v4) ---- */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-fg1: var(--fg1);
+  --color-fg2: var(--fg2);
+  --color-fg3: var(--fg3);
+  --color-fg4: var(--fg4);
+  --color-border-strong: var(--border-strong);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-ink: var(--primary-ink);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-ink: var(--success-ink);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-ink: var(--warning-ink);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-ink: var(--danger-ink);
 }
 
 /* ============================================================================
@@ -358,4 +381,77 @@ body {
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
   }
+
+  /* --- Buttons (DS tokens) --- */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: var(--radius-md);
+    background: var(--primary);
+    color: var(--primary-fg);
+    font-size: var(--fs-base);
+    font-weight: 600;
+    line-height: 1;
+    padding: 8px 14px;
+    box-shadow: var(--elev-1);
+    transition: background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+  .btn-primary:disabled { background: var(--primary-disabled); cursor: not-allowed; }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--fg1);
+    font-size: var(--fs-base);
+    font-weight: 500;
+    line-height: 1;
+    padding: 8px 12px;
+    transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  }
+  .btn-ghost:hover { background: var(--surface-2); border-color: var(--border-strong); }
+  .btn-ghost:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+  .btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-danger-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--danger-soft);
+    background: var(--surface);
+    color: var(--danger-ink);
+    font-size: var(--fs-base);
+    font-weight: 600;
+    line-height: 1;
+    padding: 8px 12px;
+    transition: background var(--dur-fast) var(--ease);
+  }
+  .btn-danger-ghost:hover { background: var(--danger-soft); }
+  .btn-danger-ghost:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+  .btn-danger-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* --- Surfaces / cards --- */
+  .surface-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--elev-1);
+  }
+
+  /* --- Focus ring helper --- */
+  .focus-ds:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  /* --- Subtle cursor change for editable plain-text fields (R2.2) --- */
+  .editable-text:hover { cursor: text; }
 }
+
