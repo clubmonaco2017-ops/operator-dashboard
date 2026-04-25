@@ -1,23 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../supabaseClient'
-import { useTeamActions } from '../../hooks/useTeamActions.js'
-import { formatLeadRole } from '../../lib/teams.js'
-import { initials } from '../../lib/clients.js'
+import { invalidateUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
 
 /**
- * Модальное окно «Сменить лида команды».
+ * Модалка «Перевести оператора в другую команду» (или назначить, если он не в команде).
  *
  * @param {object} props
  * @param {number} props.callerId
- * @param {number} props.teamId
- * @param {number|null} props.currentLeadId
+ * @param {number} props.operatorId
+ * @param {number|null} props.currentTeamId
  * @param {function} props.onClose
  * @param {function} props.onChanged
  */
-export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onChanged }) {
-  const { updateTeam } = useTeamActions(callerId)
-
-  const [candidates, setCandidates] = useState([])
+export function ChangeTeamModal({ callerId, operatorId, currentTeamId, onClose, onChanged }) {
+  const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -25,7 +21,6 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
   const closeBtnRef = useRef(null)
   const previouslyFocused = useRef(null)
 
-  // Esc + initial focus + restore on close
   useEffect(() => {
     previouslyFocused.current = document.activeElement
     closeBtnRef.current?.focus()
@@ -42,25 +37,21 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
     }
   }, [onClose, submitting])
 
-  // Load candidate leads (mirrors CreateTeamSlideOut behaviour).
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     supabase
-      .from('dashboard_users')
-      .select('id, first_name, last_name, alias, email, role, avatar_url')
-      .in('role', ['superadmin', 'admin', 'teamlead', 'moderator'])
+      .from('teams')
+      .select('id, name')
       .eq('is_active', true)
-      .order('first_name')
+      .order('name')
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {
           setError(err.message)
-          setCandidates([])
+          setTeams([])
         } else {
-          setCandidates(
-            (data ?? []).filter((u) => u.id !== currentLeadId),
-          )
+          setTeams((data ?? []).filter((t) => t.id !== currentTeamId))
         }
       })
       .then(() => {
@@ -69,14 +60,30 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
     return () => {
       cancelled = true
     }
-  }, [currentLeadId])
+  }, [currentTeamId])
 
   async function handleSubmit() {
     if (submitting || selected == null) return
     setSubmitting(true)
     setError(null)
     try {
-      await updateTeam(teamId, { leadUserId: selected })
+      let err
+      if (currentTeamId == null) {
+        ;({ error: err } = await supabase.rpc('add_team_member', {
+          p_caller_id: callerId,
+          p_team_id: selected,
+          p_operator_id: operatorId,
+        }))
+      } else {
+        ;({ error: err } = await supabase.rpc('move_team_member', {
+          p_caller_id: callerId,
+          p_from_team: currentTeamId,
+          p_to_team: selected,
+          p_operator_id: operatorId,
+        }))
+      }
+      if (err) throw new Error(err.message)
+      invalidateUserTeamMembership(operatorId)
       onChanged?.()
     } catch (e) {
       setError(e.message)
@@ -90,15 +97,15 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="change-lead-title"
+      aria-labelledby="change-team-title"
       onClick={(e) => {
         if (e.target === e.currentTarget && !submitting) onClose()
       }}
     >
-      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl max-h-[80vh]">
+      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl max-h-[90vh]">
         <header className="flex items-center justify-between border-b border-border px-5 py-4">
-          <h3 id="change-lead-title" className="text-base font-semibold text-foreground">
-            Сменить лида команды
+          <h3 id="change-team-title" className="text-base font-semibold text-foreground">
+            {currentTeamId == null ? 'Назначить в команду' : 'Перевести в другую команду'}
           </h3>
           <button
             ref={closeBtnRef}
@@ -121,17 +128,16 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
         <div className="flex-1 overflow-auto">
           {loading ? (
             <ListSkeleton />
-          ) : candidates.length === 0 ? (
+          ) : teams.length === 0 ? (
             <p className="px-5 py-8 text-center text-sm italic text-[var(--fg4)]">
-              Нет других кандидатов.
+              Нет других активных команд.
             </p>
           ) : (
-            <ul className="divide-y divide-border" role="radiogroup" aria-label="Кандидаты в лиды">
-              {candidates.map((u) => {
-                const name = leadLabel(u)
-                const isSelected = selected === u.id
+            <ul className="divide-y divide-border" role="radiogroup" aria-label="Команды">
+              {teams.map((t) => {
+                const isSelected = selected === t.id
                 return (
-                  <li key={u.id}>
+                  <li key={t.id}>
                     <label
                       className={[
                         'flex cursor-pointer items-center gap-3 px-5 py-2.5 hover:bg-muted/40 focus-within:bg-muted/40',
@@ -142,21 +148,15 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
                     >
                       <input
                         type="radio"
-                        name="new-lead"
+                        name="new-team"
                         checked={isSelected}
-                        onChange={() => setSelected(u.id)}
+                        onChange={() => setSelected(t.id)}
                         className="h-4 w-4 shrink-0 cursor-pointer accent-[var(--primary)] focus-ds"
-                        aria-label={name}
+                        aria-label={t.name}
                       />
-                      <Avatar name={name} avatarUrl={u.avatar_url} />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground">
-                          {name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatLeadRole(u.role) || u.role}
-                        </p>
-                      </div>
+                      <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground" title={t.name}>
+                        {t.name}
+                      </p>
                     </label>
                   </li>
                 )
@@ -188,40 +188,13 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
   )
 }
 
-// ---------------------------------------------------------------------------
-
-function leadLabel(u) {
-  const fullName = `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim()
-  if (fullName) return fullName
-  if (u.alias) return u.alias
-  return u.email ?? `#${u.id}`
-}
-
-function Avatar({ name, avatarUrl }) {
-  if (avatarUrl) {
-    return <img src={avatarUrl} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
-  }
-  return (
-    <div
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-xs font-semibold text-[var(--primary-ink)]"
-      aria-hidden
-    >
-      {initials(name ?? '?')}
-    </div>
-  )
-}
-
 function ListSkeleton() {
   return (
     <ul className="divide-y divide-border" aria-busy="true">
-      {[55, 70, 60, 50].map((w, i) => (
-        <li key={i} className="flex items-center gap-3 px-5 py-2.5">
+      {[60, 80, 50, 70].map((w, i) => (
+        <li key={i} className="flex items-center gap-3 px-5 py-3">
           <div className="h-4 w-4 shrink-0 animate-pulse rounded-full bg-muted" />
-          <div className="h-9 w-9 shrink-0 animate-pulse rounded-full bg-muted" />
-          <div className="flex-1 space-y-1.5">
-            <div className="h-3 animate-pulse rounded bg-muted" style={{ width: `${w}%` }} />
-            <div className="h-2.5 w-1/4 animate-pulse rounded bg-muted/70" />
-          </div>
+          <div className="h-3 animate-pulse rounded bg-muted" style={{ width: `${w}%` }} />
         </li>
       ))}
     </ul>

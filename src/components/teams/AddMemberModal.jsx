@@ -19,8 +19,10 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
   const [busyId, setBusyId] = useState(null)
   const [error, setError] = useState(null)
   const searchRef = useRef(null)
+  const previouslyFocused = useRef(null)
 
   useEffect(() => {
+    previouslyFocused.current = document.activeElement
     searchRef.current?.focus()
     const onKey = (e) => {
       if (e.key === 'Escape') {
@@ -29,7 +31,10 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
       }
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      previouslyFocused.current?.focus?.()
+    }
   }, [onClose])
 
   async function handleAdd(op) {

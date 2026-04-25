@@ -1,23 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../supabaseClient'
-import { useTeamActions } from '../../hooks/useTeamActions.js'
-import { formatLeadRole } from '../../lib/teams.js'
+import { invalidateUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
 import { initials } from '../../lib/clients.js'
 
 /**
- * Модальное окно «Сменить лида команды».
+ * Модалка «Сменить куратора».
+ * Required-replacement (D-9): без опции «без куратора».
  *
  * @param {object} props
  * @param {number} props.callerId
- * @param {number} props.teamId
- * @param {number|null} props.currentLeadId
+ * @param {number} props.operatorId
+ * @param {number|null} props.currentCuratorId
  * @param {function} props.onClose
  * @param {function} props.onChanged
  */
-export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onChanged }) {
-  const { updateTeam } = useTeamActions(callerId)
-
-  const [candidates, setCandidates] = useState([])
+export function ChangeCuratorModal({ callerId, operatorId, currentCuratorId, onClose, onChanged }) {
+  const [moderators, setModerators] = useState([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -25,7 +23,6 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
   const closeBtnRef = useRef(null)
   const previouslyFocused = useRef(null)
 
-  // Esc + initial focus + restore on close
   useEffect(() => {
     previouslyFocused.current = document.activeElement
     closeBtnRef.current?.focus()
@@ -42,25 +39,22 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
     }
   }, [onClose, submitting])
 
-  // Load candidate leads (mirrors CreateTeamSlideOut behaviour).
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     supabase
       .from('dashboard_users')
-      .select('id, first_name, last_name, alias, email, role, avatar_url')
-      .in('role', ['superadmin', 'admin', 'teamlead', 'moderator'])
+      .select('id, first_name, last_name, alias, email, avatar_url')
+      .eq('role', 'moderator')
       .eq('is_active', true)
       .order('first_name')
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {
           setError(err.message)
-          setCandidates([])
+          setModerators([])
         } else {
-          setCandidates(
-            (data ?? []).filter((u) => u.id !== currentLeadId),
-          )
+          setModerators((data ?? []).filter((u) => u.id !== currentCuratorId))
         }
       })
       .then(() => {
@@ -69,14 +63,20 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
     return () => {
       cancelled = true
     }
-  }, [currentLeadId])
+  }, [currentCuratorId])
 
   async function handleSubmit() {
     if (submitting || selected == null) return
     setSubmitting(true)
     setError(null)
     try {
-      await updateTeam(teamId, { leadUserId: selected })
+      const { error: err } = await supabase.rpc('set_operator_curator', {
+        p_caller_id: callerId,
+        p_operator_id: operatorId,
+        p_new_moderator_id: selected,
+      })
+      if (err) throw new Error(err.message)
+      invalidateUserTeamMembership(operatorId)
       onChanged?.()
     } catch (e) {
       setError(e.message)
@@ -90,15 +90,15 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="change-lead-title"
+      aria-labelledby="change-curator-title"
       onClick={(e) => {
         if (e.target === e.currentTarget && !submitting) onClose()
       }}
     >
-      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl max-h-[80vh]">
+      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl max-h-[90vh]">
         <header className="flex items-center justify-between border-b border-border px-5 py-4">
-          <h3 id="change-lead-title" className="text-base font-semibold text-foreground">
-            Сменить лида команды
+          <h3 id="change-curator-title" className="text-base font-semibold text-foreground">
+            {currentCuratorId == null ? 'Назначить куратора' : 'Сменить куратора'}
           </h3>
           <button
             ref={closeBtnRef}
@@ -121,14 +121,14 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
         <div className="flex-1 overflow-auto">
           {loading ? (
             <ListSkeleton />
-          ) : candidates.length === 0 ? (
+          ) : moderators.length === 0 ? (
             <p className="px-5 py-8 text-center text-sm italic text-[var(--fg4)]">
-              Нет других кандидатов.
+              Нет доступных модераторов.
             </p>
           ) : (
-            <ul className="divide-y divide-border" role="radiogroup" aria-label="Кандидаты в лиды">
-              {candidates.map((u) => {
-                const name = leadLabel(u)
+            <ul className="divide-y divide-border" role="radiogroup" aria-label="Модераторы">
+              {moderators.map((u) => {
+                const name = modLabel(u)
                 const isSelected = selected === u.id
                 return (
                   <li key={u.id}>
@@ -142,7 +142,7 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
                     >
                       <input
                         type="radio"
-                        name="new-lead"
+                        name="new-curator"
                         checked={isSelected}
                         onChange={() => setSelected(u.id)}
                         className="h-4 w-4 shrink-0 cursor-pointer accent-[var(--primary)] focus-ds"
@@ -150,12 +150,12 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
                       />
                       <Avatar name={name} avatarUrl={u.avatar_url} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground">
+                        <p className="truncate text-sm font-medium text-foreground" title={name}>
                           {name}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatLeadRole(u.role) || u.role}
-                        </p>
+                        {u.alias && (
+                          <p className="truncate text-xs text-muted-foreground">{u.alias}</p>
+                        )}
                       </div>
                     </label>
                   </li>
@@ -188,9 +188,7 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
   )
 }
 
-// ---------------------------------------------------------------------------
-
-function leadLabel(u) {
+function modLabel(u) {
   const fullName = `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim()
   if (fullName) return fullName
   if (u.alias) return u.alias

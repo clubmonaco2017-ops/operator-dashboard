@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../useAuth.jsx'
 import { hasPermission } from '../../lib/permissions.js'
+import { TeamMembershipBlock } from './TeamMembershipBlock.jsx'
+import { CuratorBlock } from './CuratorBlock.jsx'
+import { CuratedOperatorsBlock } from './CuratedOperatorsBlock.jsx'
 
 export function ProfileTab({ row, onSaved }) {
   const { user } = useAuth()
@@ -40,26 +43,38 @@ export function ProfileTab({ row, onSaved }) {
   }
 
   return (
-    <form onSubmit={save} className="grid grid-cols-1 gap-4 rounded-lg border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800 sm:grid-cols-2">
-      <Field label="Имя" value={firstName} onChange={setFirstName} disabled={!canEdit} required />
-      <Field label="Фамилия" value={lastName} onChange={setLastName} disabled={!canEdit} required />
-      <Field label="Псевдоним" value={alias} onChange={setAlias} disabled={!canEdit} />
-      <Field label="Email" value={email} onChange={setEmail} type="email" disabled={!canEdit} required />
-      <ReadOnly label="Реф-код 🔒" value={row.ref_code} mono />
-      <ReadOnly label="Роль 🔒" value={row.role} />
-      {error && <p className="text-sm text-red-500 sm:col-span-2">{error}</p>}
-      {canEdit && (
-        <div className="sm:col-span-2">
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {saving ? 'Сохранение…' : 'Сохранить'}
-          </button>
-        </div>
+    <>
+      <form onSubmit={save} className="grid grid-cols-1 gap-4 rounded-lg border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800 sm:grid-cols-2">
+        <Field label="Имя" value={firstName} onChange={setFirstName} disabled={!canEdit} required />
+        <Field label="Фамилия" value={lastName} onChange={setLastName} disabled={!canEdit} required />
+        <Field label="Псевдоним" value={alias} onChange={setAlias} disabled={!canEdit} />
+        <Field label="Email" value={email} onChange={setEmail} type="email" disabled={!canEdit} required />
+        <ReadOnly label="Реф-код 🔒" value={row.ref_code} mono />
+        <ReadOnly label="Роль 🔒" value={row.role} />
+        {error && <p className="text-sm text-red-500 sm:col-span-2" role="alert">{error}</p>}
+        {canEdit && (
+          <div className="sm:col-span-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {saving ? 'Сохранение…' : 'Сохранить'}
+            </button>
+          </div>
+        )}
+      </form>
+
+      {row.role === 'operator' && (
+        <>
+          <TeamMembershipBlock callerId={user.id} user={user} staff={row} />
+          <CuratorBlock callerId={user.id} user={user} staff={row} />
+        </>
       )}
-    </form>
+      {row.role === 'moderator' && (
+        <CuratedOperatorsBlock callerId={user.id} user={user} staff={row} />
+      )}
+    </>
   )
 }
 

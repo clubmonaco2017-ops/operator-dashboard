@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTeam } from '../../hooks/useTeam.js'
 import { useTeamActions } from '../../hooks/useTeamActions.js'
@@ -381,8 +381,22 @@ function Avatar({ id, name, muted }) {
 }
 
 function DetailSkeleton() {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 2000)
+    return () => clearTimeout(t)
+  }, [])
   return (
     <div className="flex h-full w-full flex-col" aria-busy="true" aria-label="Загрузка профиля команды">
+      {slow && (
+        <p
+          className="border-b border-border bg-muted/40 px-6 py-1.5 text-xs text-muted-foreground"
+          role="status"
+          aria-live="polite"
+        >
+          Загружается…
+        </p>
+      )}
       {/* Top bar */}
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div className="h-4 w-32 animate-pulse rounded bg-muted" />
