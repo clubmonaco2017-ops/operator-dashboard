@@ -107,8 +107,8 @@ function humanizeTeamEvent(type, payload) {
       return 'перевёл(а) клиента'
     }
     case 'team_archived': {
-      const op = payload?.operators_released ?? 0
-      const cl = payload?.clients_released ?? 0
+      const op = payload?.released_operators ?? 0
+      const cl = payload?.released_clients ?? 0
       return `архивировал(а) команду — освобождено ${op} оп. и ${cl} кл.`
     }
     case 'team_restored':

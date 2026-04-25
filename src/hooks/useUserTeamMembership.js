@@ -55,16 +55,15 @@ export function useUserTeamMembership(userId) {
     setLoading(true)
 
     const run = async () => {
-      const { count, error: err } = await supabase
-        .from('team_members')
-        .select('operator_id', { head: true, count: 'exact' })
-        .eq('operator_id', userId)
+      const { data, error: err } = await supabase.rpc('get_user_team_membership', {
+        p_user_id: userId,
+      })
       if (cancelled) return
       if (err) {
         // Тихо: на сбой считаем, что нет членства; не кешируем.
         setHas(false)
       } else {
-        const value = (count ?? 0) > 0
+        const value = !!data
         cache.set(userId, value)
         setHas(value)
       }

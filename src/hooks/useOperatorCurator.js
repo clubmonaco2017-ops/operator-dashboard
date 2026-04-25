@@ -5,6 +5,7 @@ import { supabase } from '../supabaseClient'
  * Возвращает текущего куратора оператора (или null).
  * Используется в StaffDetailPage для блока «Куратор».
  *
+ * @param {number|null} callerId
  * @param {number|null} operatorUserId
  * @returns {{
  *   data: {moderator_id, first_name, last_name, alias, email, ref_code, role}|null,
@@ -13,14 +14,14 @@ import { supabase } from '../supabaseClient'
  *   reload: () => void,
  * }}
  */
-export function useOperatorCurator(operatorUserId) {
+export function useOperatorCurator(callerId, operatorUserId) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    if (!operatorUserId) {
+    if (!operatorUserId || !callerId) {
       setData(null)
       return
     }
@@ -28,41 +29,45 @@ export function useOperatorCurator(operatorUserId) {
     setLoading(true)
     setError(null)
     supabase
-      .from('moderator_operators')
-      .select(
-        'moderator_id, moderator:dashboard_users!moderator_operators_moderator_id_fkey(id, first_name, last_name, alias, email, ref_code, role)',
-      )
-      .eq('operator_id', operatorUserId)
-      .maybeSingle()
-      .then(({ data: row, error: err }) => {
+      .rpc('get_operator_curator', {
+        p_caller_id: callerId,
+        p_operator_id: operatorUserId,
+      })
+      .then(({ data: rows, error: err }) => {
         if (cancelled) return
         if (err) {
           setError(err.message)
           setData(null)
           return
         }
-        if (!row || !row.moderator) {
+        const row = (rows ?? [])[0]
+        if (!row) {
           setData(null)
           return
         }
-        const m = row.moderator
+        // The RPC returns a flattened, name-prefixed shape. Rebuild the
+        // first/last/email pieces from the joined fields where available.
+        // Since the RPC only exposes a composed name, alias, ref_code and
+        // role, we surface name as first_name+last_name='' fallback.
         setData({
           moderator_id: row.moderator_id,
-          first_name: m.first_name,
-          last_name: m.last_name,
-          alias: m.alias,
-          email: m.email,
-          ref_code: m.ref_code,
-          role: m.role,
+          first_name: null,
+          last_name: null,
+          alias: row.moderator_alias ?? null,
+          email: null,
+          ref_code: row.moderator_ref_code ?? null,
+          role: row.moderator_role ?? null,
+          // Composed display name from the RPC (always non-null since COALESCE).
+          display_name: row.moderator_name ?? null,
         })
       })
-      .finally(() => {
+      .then(() => {
         if (!cancelled) setLoading(false)
       })
     return () => {
       cancelled = true
     }
-  }, [operatorUserId, reloadKey])
+  }, [callerId, operatorUserId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
   return { data, loading, error, reload }

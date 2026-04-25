@@ -9,7 +9,7 @@ import { formatLeadRole } from '../../lib/teams.js'
  * Виден всем; кнопка перевода — admin/superadmin или текущий лид.
  */
 export function TeamMembershipBlock({ callerId, user, staff }) {
-  const { data, loading, error, reload } = useStaffTeamMembership(staff.id)
+  const { data, loading, error, reload } = useStaffTeamMembership(callerId, staff.id)
   const [open, setOpen] = useState(false)
 
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'

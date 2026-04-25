@@ -8,7 +8,7 @@ import { ChangeCuratorModal } from './ChangeCuratorModal.jsx'
  * Назначить — admin/superadmin; сменить — admin/superadmin или текущий куратор.
  */
 export function CuratorBlock({ callerId, user, staff }) {
-  const { data, loading, error, reload } = useOperatorCurator(staff.id)
+  const { data, loading, error, reload } = useOperatorCurator(callerId, staff.id)
   const [open, setOpen] = useState(false)
 
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
@@ -30,7 +30,7 @@ export function CuratorBlock({ callerId, user, staff }) {
   }
 
   const name = data
-    ? `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim() || data.alias || data.email || `#${data.moderator_id}`
+    ? data.display_name || data.alias || `#${data.moderator_id}`
     : null
 
   return (

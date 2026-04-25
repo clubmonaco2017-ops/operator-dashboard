@@ -68,7 +68,7 @@ export function useTeamActions(callerId) {
         if (err) throw new Error(err.message)
         // В команде могло быть много операторов — точечный сброс не выгоден.
         invalidateAllUserTeamMembership()
-        return data // jsonb { operators_released, clients_released, ... }
+        return data // jsonb { released_operators, released_clients, ... }
       } catch (e) {
         setError(e.message)
         throw e
