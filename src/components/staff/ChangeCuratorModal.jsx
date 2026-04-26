@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { invalidateUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
 import { initials } from '../../lib/clients.js'
@@ -108,7 +109,7 @@ export function ChangeCuratorModal({ callerId, operatorId, currentCuratorId, onC
             aria-label="Закрыть"
             className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
           >
-            <CloseIcon />
+            <X size={16} />
           </button>
         </header>
 
@@ -226,10 +227,3 @@ function ListSkeleton() {
   )
 }
 
-function CloseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-      <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}

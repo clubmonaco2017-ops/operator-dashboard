@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../useAuth.jsx'
 
@@ -71,7 +72,7 @@ export function ModalShell({ title, children, onClose }) {
       <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl dark:bg-slate-900">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><X size={16} /></button>
         </div>
         {children}
       </div>
