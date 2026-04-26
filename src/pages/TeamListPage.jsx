@@ -96,8 +96,10 @@ export function TeamListPage() {
             {listBody}
           </ListPane>
         }
+        listLabel="Список команд"
+        detailLabel="Команда"
       >
-        <Outlet context={{ rows, reload, callerId: user?.id, user }} />
+        <Outlet context={{ rows, reload }} />
       </MasterDetailLayout>
 
       {createOpen && (
@@ -122,12 +124,13 @@ export function TeamDetailEmpty() {
 
 // Detail child route — pulls teamId from URL and shared data from outlet context.
 export function TeamDetailRoute() {
+  const { user } = useAuth()
   const { teamId } = useParams()
   const navigate = useNavigate()
-  const { rows, reload, callerId, user } = useOutletContext()
+  const { rows, reload } = useOutletContext()
   return (
     <TeamDetailPanel
-      callerId={callerId}
+      callerId={user?.id}
       user={user}
       teamId={Number(teamId)}
       siblings={rows}

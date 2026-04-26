@@ -140,8 +140,10 @@ export function ClientListPage() {
             {listBody}
           </ListPane>
         }
+        listLabel="Список клиентов"
+        detailLabel="Профиль клиента"
       >
-        <Outlet context={{ rows, reload, callerId: user?.id }} />
+        <Outlet context={{ rows, reload }} />
       </MasterDetailLayout>
 
       {createOpen && (
@@ -165,11 +167,12 @@ export function ClientDetailEmpty() {
 
 // Detail child route — pulls clientId/tab from URL and shared data from outlet context.
 export function ClientDetailRoute() {
+  const { user } = useAuth()
   const { clientId, tab } = useParams()
-  const { rows, reload, callerId } = useOutletContext()
+  const { rows, reload } = useOutletContext()
   return (
     <ClientDetailPanel
-      callerId={callerId}
+      callerId={user?.id}
       clientId={clientId}
       activeTab={tab || 'profile'}
       siblings={rows}

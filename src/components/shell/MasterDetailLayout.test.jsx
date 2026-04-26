@@ -22,4 +22,28 @@ describe('<MasterDetailLayout>', () => {
     const root = container.firstChild
     expect(root.className).toMatch(/grid-cols-\[320px_1fr\]/)
   })
+
+  it('renders aria-label on aside and section when listLabel/detailLabel provided', () => {
+    render(
+      <MasterDetailLayout
+        listPane={<div data-testid="lp" />}
+        listLabel="Список клиентов"
+        detailLabel="Профиль клиента"
+      >
+        <div data-testid="main" />
+      </MasterDetailLayout>,
+    )
+    expect(screen.getByLabelText('Список клиентов').tagName).toBe('ASIDE')
+    expect(screen.getByLabelText('Профиль клиента').tagName).toBe('SECTION')
+  })
+
+  it('omits aria-label attribute when labels are undefined', () => {
+    const { container } = render(
+      <MasterDetailLayout listPane={<div />}>
+        <div />
+      </MasterDetailLayout>,
+    )
+    expect(container.querySelector('aside')).not.toHaveAttribute('aria-label')
+    expect(container.querySelector('section')).not.toHaveAttribute('aria-label')
+  })
 })

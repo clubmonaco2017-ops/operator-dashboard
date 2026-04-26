@@ -184,13 +184,13 @@ export function TaskListPage() {
             {listBody}
           </ListPane>
         }
+        listLabel="Список задач"
+        detailLabel="Задача"
       >
         <Outlet
           context={{
             rows: displayRows,
             reload,
-            callerId: user?.id,
-            user,
             box,
             basePath,
           }}
@@ -219,12 +219,13 @@ export function TaskDetailEmpty() {
 
 // Detail child route — pulls taskId from URL and shared data from outlet context.
 export function TaskDetailRoute() {
+  const { user } = useAuth()
   const { taskId } = useParams()
   const navigate = useNavigate()
-  const { rows, reload, callerId, user, basePath } = useOutletContext()
+  const { rows, reload, basePath } = useOutletContext()
   return (
     <TaskDetailPanel
-      callerId={callerId}
+      callerId={user?.id}
       user={user}
       taskId={Number(taskId)}
       siblings={rows}
