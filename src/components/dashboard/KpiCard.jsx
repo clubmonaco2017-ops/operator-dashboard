@@ -1,0 +1,50 @@
+const ACCENT_BORDER = {
+  blue: 'border-l-[3px] border-l-blue-500',
+  green: 'border-l-[3px] border-l-green-500',
+  purple: 'border-l-[3px] border-l-purple-500',
+  orange: 'border-l-[3px] border-l-orange-500',
+  red: 'border-l-[3px] border-l-red-500',
+}
+
+const DELTA_CLASS = {
+  up: 'text-green-600',
+  down: 'text-red-600',
+  neutral: 'text-muted-foreground',
+}
+
+const DELTA_ARROW = {
+  up: '↗',
+  down: '↘',
+  neutral: '→',
+}
+
+export function KpiCard({
+  label,
+  value,
+  icon: Icon,
+  sublabel,
+  delta,
+  accentColor,
+  sparkline, // reserved — render only if real time-series data passed; no Sparkline component yet
+  children,
+}) {
+  const accentClass = accentColor ? ACCENT_BORDER[accentColor] || '' : ''
+  return (
+    <article className={`bg-card border border-border rounded-lg p-4 ${accentClass}`}>
+      <header className="flex items-center justify-between">
+        <span className="text-xs text-muted-foreground font-medium">{label}</span>
+        {Icon && <Icon size={16} className="text-muted-foreground" />}
+      </header>
+      <div className="text-2xl font-bold mt-1 flex items-baseline gap-2 text-foreground">
+        <span>{value}</span>
+        {delta && (
+          <span className={`text-xs font-medium ${DELTA_CLASS[delta.direction]}`}>
+            {DELTA_ARROW[delta.direction]} {Math.abs(delta.value)}%
+          </span>
+        )}
+      </div>
+      {sublabel && <p className="text-xs text-muted-foreground mt-1">{sublabel}</p>}
+      {children}
+    </article>
+  )
+}
