@@ -1,29 +1,23 @@
 import { useState } from 'react'
 import { useAuth } from '../useAuth.jsx'
 import { isSuperadmin } from '../lib/permissions.js'
-import { Sidebar } from '../components/Sidebar.jsx'
 import { useDeletionRequests } from '../hooks/useDeletionRequests.js'
 import { ApprovalReviewModal } from '../components/staff/ApprovalReviewModal.jsx'
 
 export function NotificationsPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { rows, loading, error, reload } = useDeletionRequests(user?.id, 'pending')
   const [reviewing, setReviewing] = useState(null)
 
   if (!isSuperadmin(user)) {
     return (
-      <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
-        <Sidebar user={user} onLogout={logout} />
-        <main className="flex-1 p-6 text-sm text-slate-500">Недоступно</main>
-      </div>
+      <div className="p-6 text-sm text-slate-500">Недоступно</div>
     )
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
-      <Sidebar user={user} onLogout={logout} />
-      <main className="flex-1 p-4 sm:p-6">
-        <div className="mx-auto max-w-3xl">
+    <div className="p-4 sm:p-6">
+      <div className="mx-auto max-w-3xl">
           <h1 className="mb-4 text-2xl font-bold text-slate-800 dark:text-slate-100">
             Оповещения
           </h1>
@@ -72,7 +66,6 @@ export function NotificationsPage() {
             />
           )}
         </div>
-      </main>
     </div>
   )
 }

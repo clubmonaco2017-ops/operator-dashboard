@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from './useAuth.jsx'
 import LoginPage from './LoginPage.jsx'
 import AdminLayout from './AdminLayout.jsx'
+import { AppShell } from './components/shell/AppShell.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { StaffListPage } from './pages/StaffListPage.jsx'
 import { StaffCreatePage } from './pages/StaffCreatePage.jsx'
@@ -22,23 +23,25 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<DashboardPage />} />
-      <Route path="/staff" element={<StaffListPage />} />
-      <Route path="/staff/new" element={<StaffCreatePage />} />
-      <Route path="/staff/:refCode" element={<StaffDetailPage />} />
-      <Route path="/staff/:refCode/:tab" element={<StaffDetailPage />} />
-      <Route path="/clients" element={<ClientListPage />} />
-      <Route path="/clients/:clientId" element={<ClientListPage />} />
-      <Route path="/clients/:clientId/:tab" element={<ClientListPage />} />
-      <Route path="/teams" element={<TeamListPage />} />
-      <Route path="/teams/:teamId" element={<TeamListPage />} />
-      <Route path="/tasks" element={<TaskListPage />} />
-      <Route path="/tasks/outbox" element={<TaskListPage />} />
-      <Route path="/tasks/all" element={<TaskListPage />} />
-      <Route path="/tasks/outbox/:taskId" element={<TaskListPage />} />
-      <Route path="/tasks/all/:taskId" element={<TaskListPage />} />
-      <Route path="/tasks/:taskId" element={<TaskListPage />} />
-      <Route path="/notifications" element={<NotificationsPage />} />
+      <Route element={<AppShell />}>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/staff" element={<StaffListPage />} />
+        <Route path="/staff/new" element={<StaffCreatePage />} />
+        <Route path="/staff/:refCode" element={<StaffDetailPage />} />
+        <Route path="/staff/:refCode/:tab" element={<StaffDetailPage />} />
+        <Route path="/clients" element={<ClientListPage />} />
+        <Route path="/clients/:clientId" element={<ClientListPage />} />
+        <Route path="/clients/:clientId/:tab" element={<ClientListPage />} />
+        <Route path="/teams" element={<TeamListPage />} />
+        <Route path="/teams/:teamId" element={<TeamListPage />} />
+        <Route path="/tasks" element={<TaskListPage />} />
+        <Route path="/tasks/outbox" element={<TaskListPage />} />
+        <Route path="/tasks/all" element={<TaskListPage />} />
+        <Route path="/tasks/outbox/:taskId" element={<TaskListPage />} />
+        <Route path="/tasks/all/:taskId" element={<TaskListPage />} />
+        <Route path="/tasks/:taskId" element={<TaskListPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+      </Route>
       {isSuperadmin(user) && (
         <Route
           path="/admin/*"
