@@ -1,6 +1,15 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { UserMenuDropdown } from './UserMenuDropdown.jsx'
+
+// matchMedia is not implemented in jsdom — stub it
+beforeAll(() => {
+  vi.stubGlobal('matchMedia', () => ({
+    matches: false,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }))
+})
 
 const sampleUser = {
   alias: 'Артём Ш.',
@@ -41,5 +50,23 @@ describe('<UserMenuDropdown>', () => {
       />,
     )
     expect(screen.getByText('И')).toBeInTheDocument()
+  })
+
+  it('renders theme menu items (Системная / Светлая / Тёмная)', async () => {
+    const user = { alias: 'Test', email: 't@e' }
+    render(<UserMenuDropdown user={user} onLogout={() => {}} />)
+    fireEvent.click(screen.getByLabelText('Меню пользователя'))
+    expect(await screen.findByText('Системная')).toBeInTheDocument()
+    expect(screen.getByText('Светлая')).toBeInTheDocument()
+    expect(screen.getByText('Тёмная')).toBeInTheDocument()
+  })
+
+  it('clicking theme item writes localStorage.theme', async () => {
+    localStorage.clear()
+    const user = { alias: 'Test', email: 't@e' }
+    render(<UserMenuDropdown user={user} onLogout={() => {}} />)
+    fireEvent.click(screen.getByLabelText('Меню пользователя'))
+    fireEvent.click(await screen.findByText('Тёмная'))
+    expect(localStorage.getItem('theme')).toBe('dark')
   })
 })
