@@ -72,7 +72,7 @@ export function SummaryCard({ client }) {
         <button
           type="button"
           onClick={() => alert('Откроется реальный Tableau dashboard когда подключим интеграцию (D-5)')}
-          className="mt-1 inline-flex items-center gap-1 text-primary hover:underline focus-ds rounded"
+          className="mt-1 inline-flex items-center gap-1 text-primary hover:underline rounded"
         >
           Открыть в Tableau →
         </button>
@@ -96,7 +96,7 @@ function PeriodToggle({ value, onChange }) {
           onClick={() => onChange(opt.key)}
           aria-pressed={value === opt.key}
           className={[
-            'rounded px-2 py-0.5 text-[11px] font-medium transition-colors focus-ds',
+            'rounded px-2 py-0.5 text-[11px] font-medium transition-colors',
             value === opt.key
               ? 'bg-muted text-foreground'
               : 'text-muted-foreground hover:text-foreground',

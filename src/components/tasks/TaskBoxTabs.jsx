@@ -32,7 +32,7 @@ export function TaskBoxTabs({ box, hasViewAll }) {
             aria-selected={active}
             onClick={() => navigate(tab.path)}
             className={[
-              '-mb-px px-3 py-2 text-sm transition-colors outline-none focus-ds',
+              '-mb-px px-3 py-2 text-sm transition-colors outline-none',
               active
                 ? 'border-b-2 border-primary text-foreground font-semibold'
                 : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground',

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { Outlet, useOutletContext, useParams } from 'react-router-dom'
-import { Search } from 'lucide-react'
 import { useAuth } from '../useAuth.jsx'
 import { useClientList } from '../hooks/useClientList.js'
 import { usePlatforms } from '../hooks/usePlatforms.js'
@@ -13,7 +12,7 @@ import { DetailEmptyHint } from '../components/clients/DetailEmptyHint.jsx'
 import { ClientDetailPanel } from '../components/clients/ClientDetailPanel.jsx'
 import { CreateClientSlideOut } from '../components/clients/CreateClientSlideOut.jsx'
 import { hasPermission } from '../lib/permissions.js'
-import { MasterDetailLayout, ListPane } from '../components/shell/index.js'
+import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
 
 const DEFAULT_FILTERS = { active: 'active', platformId: null, agencyId: null }
 
@@ -93,7 +92,14 @@ export function ClientListPage() {
     </button>
   ) : null
 
-  const searchNode = <SearchInput value={search} onChange={setSearch} />
+  const searchNode = (
+    <SearchInput
+      placeholder="Поиск по name / alias…"
+      value={search}
+      onChange={setSearch}
+      ariaLabel="Поиск клиентов"
+    />
+  )
 
   const filtersNode = !isZeroEmpty ? (
     <ClientFilterChips
@@ -134,8 +140,10 @@ export function ClientListPage() {
             {listBody}
           </ListPane>
         }
+        listLabel="Список клиентов"
+        detailLabel="Профиль клиента"
       >
-        <Outlet context={{ rows, reload, callerId: user?.id }} />
+        <Outlet context={{ rows, reload }} />
       </MasterDetailLayout>
 
       {createOpen && (
@@ -159,11 +167,12 @@ export function ClientDetailEmpty() {
 
 // Detail child route — pulls clientId/tab from URL and shared data from outlet context.
 export function ClientDetailRoute() {
+  const { user } = useAuth()
   const { clientId, tab } = useParams()
-  const { rows, reload, callerId } = useOutletContext()
+  const { rows, reload } = useOutletContext()
   return (
     <ClientDetailPanel
-      callerId={callerId}
+      callerId={user?.id}
       clientId={clientId}
       activeTab={tab || 'profile'}
       siblings={rows}
@@ -172,21 +181,3 @@ export function ClientDetailRoute() {
   )
 }
 
-function SearchInput({ value, onChange }) {
-  return (
-    <label className="relative flex items-center">
-      <Search
-        aria-hidden
-        className="pointer-events-none absolute left-3 h-4 w-4 text-[var(--fg4)]"
-      />
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Поиск по name / alias…"
-        aria-label="Поиск клиентов"
-        className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-1.5 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
-      />
-    </label>
-  )
-}

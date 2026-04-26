@@ -43,7 +43,7 @@ export function TeamMembershipBlock({ callerId, user, staff }) {
             <>
               <Link
                 to={`/teams/${data.team_id}`}
-                className="block truncate text-sm font-semibold text-foreground hover:text-primary focus-ds rounded"
+                className="block truncate text-sm font-semibold text-foreground hover:text-primary rounded"
                 title={data.team_name}
               >
                 {data.team_name}

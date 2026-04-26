@@ -108,7 +108,7 @@ function Chip({ children, active, onClear }) {
         <button
           type="button"
           onClick={onClear}
-          className="ml-0.5 rounded-full p-0.5 text-[var(--primary-ink)]/70 hover:bg-[var(--primary-soft)] hover:text-[var(--primary-ink)] focus-ds"
+          className="ml-0.5 rounded-full p-0.5 text-[var(--primary-ink)]/70 hover:bg-[var(--primary-soft)] hover:text-[var(--primary-ink)]"
           aria-label="Снять фильтр"
         >
           <X size={12} />

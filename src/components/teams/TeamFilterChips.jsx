@@ -29,7 +29,7 @@ function Chip({ children, active, onClick }) {
       aria-selected={active}
       onClick={onClick}
       className={[
-        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors focus-ds outline-none',
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors outline-none',
         active
           ? 'border-primary bg-[var(--primary-soft)] text-[var(--primary-ink)]'
           : 'border-border text-[var(--fg2)] hover:border-border-strong',

@@ -144,7 +144,7 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
             onClick={() => !submitting && onClose()}
             disabled={submitting}
             aria-label="Закрыть форму создания команды"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
+            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X size={20} />
           </button>

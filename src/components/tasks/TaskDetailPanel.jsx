@@ -131,7 +131,7 @@ export function TaskDetailPanel({
         <button
           type="button"
           onClick={() => (onBack ? onBack() : navigate('/tasks'))}
-          className="mt-3 text-sm text-primary hover:underline focus-ds rounded"
+          className="mt-3 text-sm text-primary hover:underline rounded"
         >
           ← К списку
         </button>
@@ -159,7 +159,7 @@ export function TaskDetailPanel({
           <button
             type="button"
             onClick={() => (onBack ? onBack() : navigate('/tasks'))}
-            className="rounded hover:text-foreground focus-ds"
+            className="rounded hover:text-foreground"
             aria-label="Вернуться к списку задач"
           >
             <span className="lg:hidden">← Список</span>
@@ -365,7 +365,7 @@ function Pagination({ position, total, prev, next, onGo }) {
         disabled={!prev}
         title={prev ? prev.title : 'Это первая задача'}
         aria-label={prev ? `Предыдущая: ${prev.title}` : 'Предыдущая — недоступно'}
-        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40 focus-ds"
+        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40"
       >
         ‹
       </button>
@@ -381,7 +381,7 @@ function Pagination({ position, total, prev, next, onGo }) {
         disabled={!next}
         title={next ? next.title : 'Это последняя задача'}
         aria-label={next ? `Следующая: ${next.title}` : 'Следующая — недоступно'}
-        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40 focus-ds"
+        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40"
       >
         ›
       </button>

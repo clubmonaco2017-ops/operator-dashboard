@@ -104,7 +104,7 @@ function DeadlineField({ callerId, task, editable, onChanged }) {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="rounded-md p-0.5 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
+            className="rounded-md p-0.5 text-[var(--fg4)] hover:bg-muted hover:text-foreground"
             aria-label="Редактировать дедлайн"
           >
             <Pencil size={14} />
@@ -148,7 +148,7 @@ function DeadlineField({ callerId, task, editable, onChanged }) {
                 type="button"
                 onClick={() => setDraft('')}
                 disabled={saving}
-                className="text-xs text-muted-foreground hover:text-foreground focus-ds rounded"
+                className="text-xs text-muted-foreground hover:text-foreground rounded"
               >
                 Очистить
               </button>
@@ -216,7 +216,7 @@ function AssigneeField({ callerId, task, editable, canReassign, onChanged }) {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="rounded-md p-0.5 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
+            className="rounded-md p-0.5 text-[var(--fg4)] hover:bg-muted hover:text-foreground"
             aria-label="Изменить исполнителя"
           >
             <Pencil size={14} />

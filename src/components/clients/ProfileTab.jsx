@@ -211,7 +211,7 @@ function ProfileFilesCard({ callerId, client, onChanged }) {
           <button
             type="button"
             onClick={() => alert('Замена аватара — Stage 8')}
-            className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-[var(--primary-soft)] focus-ds"
+            className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-[var(--primary-soft)]"
           >
             Заменить
           </button>
@@ -423,7 +423,7 @@ function IconButton({ children, ...props }) {
   return (
     <button
       type="button"
-      className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
+      className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground"
       {...props}
     >
       {children}

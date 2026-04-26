@@ -47,7 +47,7 @@ export function CuratorBlock({ callerId, user, staff }) {
             data.ref_code ? (
               <Link
                 to={`/staff/${data.ref_code}`}
-                className="block truncate text-sm font-semibold text-foreground hover:text-primary focus-ds rounded"
+                className="block truncate text-sm font-semibold text-foreground hover:text-primary rounded"
                 title={name}
               >
                 {name}

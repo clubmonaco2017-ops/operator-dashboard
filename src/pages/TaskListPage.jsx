@@ -6,7 +6,6 @@ import {
   useOutletContext,
   useParams,
 } from 'react-router-dom'
-import { Search } from 'lucide-react'
 import { useAuth } from '../useAuth.jsx'
 import { useTaskList } from '../hooks/useTaskList.js'
 import { hasPermission } from '../lib/permissions.js'
@@ -19,7 +18,7 @@ import { TaskEmptyFilter } from '../components/tasks/EmptyFilter.jsx'
 import { TaskDetailEmptyHint } from '../components/tasks/DetailEmptyHint.jsx'
 import { CreateTaskSlideOut } from '../components/tasks/CreateTaskSlideOut.jsx'
 import { TaskDetailPanel } from '../components/tasks/TaskDetailPanel.jsx'
-import { MasterDetailLayout, ListPane } from '../components/shell/index.js'
+import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
 
 const DEFAULT_STATUS = 'all'
 const DEFAULT_DEADLINE = 'all'
@@ -126,7 +125,14 @@ export function TaskListPage() {
     </button>
   ) : null
 
-  const searchNode = <SearchInput value={search} onChange={setSearch} />
+  const searchNode = (
+    <SearchInput
+      placeholder="Поиск по задаче, автору или исполнителю…"
+      value={search}
+      onChange={setSearch}
+      ariaLabel="Поиск задач"
+    />
+  )
 
   const filtersNode = (
     <div className="flex flex-col gap-3">
@@ -178,13 +184,13 @@ export function TaskListPage() {
             {listBody}
           </ListPane>
         }
+        listLabel="Список задач"
+        detailLabel="Задача"
       >
         <Outlet
           context={{
             rows: displayRows,
             reload,
-            callerId: user?.id,
-            user,
             box,
             basePath,
           }}
@@ -213,12 +219,13 @@ export function TaskDetailEmpty() {
 
 // Detail child route — pulls taskId from URL and shared data from outlet context.
 export function TaskDetailRoute() {
+  const { user } = useAuth()
   const { taskId } = useParams()
   const navigate = useNavigate()
-  const { rows, reload, callerId, user, basePath } = useOutletContext()
+  const { rows, reload, basePath } = useOutletContext()
   return (
     <TaskDetailPanel
-      callerId={callerId}
+      callerId={user?.id}
       user={user}
       taskId={Number(taskId)}
       siblings={rows}
@@ -292,18 +299,3 @@ function useSlowFlag(thresholdMs) {
   return slow
 }
 
-function SearchInput({ value, onChange }) {
-  return (
-    <label className="relative flex items-center">
-      <Search aria-hidden className="pointer-events-none absolute left-3 h-4 w-4 text-[var(--fg4)]" />
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Поиск по задаче, автору или исполнителю…"
-        aria-label="Поиск задач"
-        className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-1.5 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
-      />
-    </label>
-  )
-}

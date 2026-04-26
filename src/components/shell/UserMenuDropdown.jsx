@@ -25,7 +25,7 @@ export function UserMenuDropdown({ user, onLogout }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="rounded-full focus-ds" aria-label="Меню пользователя">
+        <button className="rounded-full" aria-label="Меню пользователя">
           <Avatar className="h-9 w-9">
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>

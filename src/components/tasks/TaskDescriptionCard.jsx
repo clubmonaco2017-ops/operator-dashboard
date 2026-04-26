@@ -58,7 +58,7 @@ export function TaskDescriptionCard({ callerId, user, task, onChanged }) {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
+            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground"
             aria-label="Редактировать описание"
           >
             <Pencil size={14} />

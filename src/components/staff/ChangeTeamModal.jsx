@@ -111,7 +111,7 @@ export function ChangeTeamModal({ callerId, operatorId, currentTeamId, onClose, 
             onClick={() => !submitting && onClose()}
             disabled={submitting}
             aria-label="Закрыть"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
+            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X size={16} />
           </button>
@@ -149,7 +149,7 @@ export function ChangeTeamModal({ callerId, operatorId, currentTeamId, onClose, 
                         name="new-team"
                         checked={isSelected}
                         onChange={() => setSelected(t.id)}
-                        className="h-4 w-4 shrink-0 cursor-pointer accent-[var(--primary)] focus-ds"
+                        className="h-4 w-4 shrink-0 cursor-pointer accent-[var(--primary)]"
                         aria-label={t.name}
                       />
                       <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground" title={t.name}>

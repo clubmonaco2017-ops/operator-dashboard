@@ -53,7 +53,7 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
         <button
           type="button"
           onClick={() => navigate('/clients')}
-          className="mt-3 text-sm text-primary hover:underline focus-ds rounded"
+          className="mt-3 text-sm text-primary hover:underline rounded"
         >
           ← К списку
         </button>
@@ -108,7 +108,7 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
           <button
             type="button"
             onClick={() => navigate('/clients')}
-            className="rounded hover:text-foreground focus-ds"
+            className="rounded hover:text-foreground"
             // 8.H: на узких экранах — это «← Назад к списку»
             aria-label="Вернуться к списку клиентов"
           >
@@ -178,7 +178,7 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
                 onClick={() => navigate(path)}
                 aria-current={isActive ? 'page' : undefined}
                 className={[
-                  'flex items-center gap-2 border-b-2 py-3 text-sm transition-colors focus-ds rounded-t',
+                  'flex items-center gap-2 border-b-2 py-3 text-sm transition-colors rounded-t',
                   isActive
                     ? 'border-primary font-semibold text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -247,7 +247,7 @@ function StatusToggle({ active, busy, onToggle }) {
       onClick={onToggle}
       disabled={busy}
       className={[
-        'inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 focus-ds',
+        'inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50',
         active
           ? 'border-[var(--success-soft)] bg-[var(--success-soft)] text-[var(--success-ink)] hover:opacity-80'
           : 'border-border bg-muted text-muted-foreground hover:bg-[var(--surface-3)]',
@@ -274,7 +274,7 @@ function Pagination({ position, total, prev, next, onGo }) {
         disabled={!prev}
         title={prev ? prev.name : 'Это первый клиент'}
         aria-label={prev ? `Предыдущий: ${prev.name}` : 'Предыдущий — недоступно'}
-        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40 focus-ds"
+        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40"
       >
         ‹
       </button>
@@ -287,7 +287,7 @@ function Pagination({ position, total, prev, next, onGo }) {
         disabled={!next}
         title={next ? next.name : 'Это последний клиент'}
         aria-label={next ? `Следующий: ${next.name}` : 'Следующий — недоступно'}
-        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40 focus-ds"
+        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40"
       >
         ›
       </button>
