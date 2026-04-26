@@ -38,7 +38,7 @@
 | **D-4** | Use shadcnblocks (premium registry, MCP-connected, already в `components.json`). Specifically `application-shell7` per design-system README L108 explicit reference. | DS explicitly references shadcnblocks blocks as inspiration. Premium subscription paid for. MCP enables fast install/search. Custom-build shell from scratch wastes effort. |
 | **D-5** | Iconography sweep — full sweep (option C). Replace all custom `function XxxIcon()` definitions across components + emoji. Use `lucide-react` (already в `package.json`). | `lucide-react` in package, shadcn config `iconLibrary: lucide`, DS spec L182 mandates Lucide. Mixed-icon legacy if не sweep — Subplan 6A потом тащит проблему. Foundation = до конца. |
 | **D-6** | DashboardPage emoji-fix only in Subplan 6. Полное переписывание под new shell + DS — Subplan 6A. | Memory: «DashboardPage legacy pre-CRM, будет полностью переписан». Минимум-fix в 6 чтобы не оставлять mixed icon style. |
-| **D-7** | Optional: introduce `src/lib/icons.js` central re-export of Lucide icons. | Single point для future renames + curated icon set (avoid bundle bloat). YAGNI-trigger: skip if implementer judges direct imports cleaner. **Default: include** (single import line per file simpler). |
+| **D-7** | `src/lib/icons.js` central re-export — **skip** (default). Use direct `import { Pencil } from 'lucide-react'` per file. | YAGNI: tree-shaking works equally well with direct imports; central re-export adds an extra hop without concrete benefit until we actually need to swap libraries. Revisit if Subplan 6A discovers a real need. |
 | **D-8** | shadcnblocks pilot install includes 3 primitives (Card, Sheet, Dialog) + application-shell7. Files installed, build verifies, **никакая интеграция в pages**. | Готовая база для 6A. Если установка fails (registry token issue) — Stage stops, fix infra first. |
 | **D-9** | Stage 8 utility-classes (`.btn-primary`, `.btn-ghost`, `.btn-danger-ghost`, `.surface-card`, `.focus-ds`, `.label-caps`, `.tabular`, `.editable-text`) сохраняются в `src/index.css`. | Они уже built вокруг tokens. Refactor существующих usages под shadcn primitives — это 6A. Не ломаем работающее. |
 | **D-10** | Token apply — extend, не replace. Token имена что уже existing (DS values из Stage 8 предыдущих subplan'ов) keep value. Token имена missing in current `src/index.css` — добавить из DS. Conflicting values — DS wins (single source of truth). | Минимум disruption + reach DS spec compliance. |
@@ -129,24 +129,9 @@ Authoritative mapping (used by Stage 2 implementer). All Lucide imports come fro
 
 **Implementation pattern:** delete the local function, add `import { Pencil } from 'lucide-react'`, replace `<PencilIcon />` with `<Pencil size={14} />`. Preserve existing styling props (className, etc.) — Lucide accepts `className` and `style`.
 
-### 4.2. Optional `src/lib/icons.js`
+### 4.2. ~~Optional `src/lib/icons.js`~~ — SKIP (per D-7)
 
-```js
-// Central re-export. Single update point if Lucide renames or we swap icon library.
-export {
-  Pencil, X as Close, ChevronLeft, ChevronRight,
-  Download, MoreHorizontal as Dots, Maximize2 as Expand,
-  Check, AlertTriangle as Warn, Loader2 as Spinner,
-  Upload, CloudOff, GripVertical as Grip, Calendar,
-  Image, Film, Play, Eye, DollarSign, FileText, Link,
-  Lock, FilterX, UserPlus, MousePointer2, Square, CheckSquare,
-  Globe, Briefcase, Plus, Archive, BarChart3,
-  Inbox, Trophy, Users, ClipboardList, Bell, Search,
-  Settings, ChevronDown, ChevronUp, Trash2, Filter,
-} from 'lucide-react'
-```
-
-Implementer: include if simpler. Skip if reading "import {Pencil} from '../../lib/icons'" feels overengineered vs direct import.
+Central re-export не вводим. Каждый компонент импортирует напрямую: `import { Pencil, X } from 'lucide-react'`. Tree-shaking работает одинаково; revisit если Subplan 6A обнаружит реальную потребность (e.g. swap к Tabler).
 
 ### 4.3. Emoji replacements
 
@@ -158,7 +143,7 @@ Implementer: include if simpler. Skip if reading "import {Pencil} from '../../li
 | `src/components/clients/ClientDetailPanel.jsx:161` | `📊 tableau_id` | `<BarChart3 size={12} className="inline mr-1" /> {tableau_id}` |
 | `src/pages/DashboardPage.jsx:311` | `📊` (h1 logo) | `<BarChart3 size={20} />` |
 | `src/pages/DashboardPage.jsx:461` | `📊 Выручка по часам` | `<BarChart3 size={14} className="inline mr-1.5" /> Выручка по часам` |
-| `src/pages/DashboardPage.jsx:555` (medals array) | `['🥇','🥈','🥉','4️⃣','5️⃣']` | Just numeric `[1,2,3,4,5]` displayed as `<span class="font-mono tabular text-sm">{`#${n}`}</span>` (per DS rule "no emoji"). Optionally first 3 get `<Trophy />` of yellow/silver/bronze tones — but minimal version: just `#1 #2 ...`. |
+| `src/pages/DashboardPage.jsx:555` (medals array) | `['🥇','🥈','🥉','4️⃣','5️⃣']` | **SKIP в Subplan 6.** User предоставит custom SVG отдельно (mini-PR или в Subplan 6A где DashboardPage всё равно переписывается). Оставить emoji as-is — НЕ заменять. |
 
 `📭` and `⚠️` — locate в DashboardPage (similar pattern), replace with `<Inbox />` / `<AlertTriangle />` respectively.
 
@@ -188,7 +173,7 @@ npx shadcn add @shadcnblocks/sheet
 npx shadcn add @shadcnblocks/dialog
 ```
 
-If `@shadcnblocks/<name>` not found (Premium content not включает указанный block) — **fallback to base shadcn registry**: `npx shadcn@latest add card sheet dialog`. Document fallback inline.
+Block `@shadcnblocks/application-shell7` подтверждён скриншотом из shadcnblocks UI (имя точно такое). Если install fails — **stop Stage 3, treat as infra blocker** (token expired / registry config drift), фиксим и retry. НЕ подменяем base shadcn fallback'ом — base не имеет application-shell7, такая подмена бессмысленна.
 
 ### 5.3. Verify
 
@@ -258,7 +243,7 @@ After all 3 stages:
 
 - `src/index.css` contains all DS tokens from `colors_and_type.css` (verify by diff).
 - Zero custom inline `function XxxIcon()` definitions in `src/components/`.
-- Zero emoji in production code (`grep -rE "[\u{1F300}-\u{1F9FF}]" src/` → empty).
+- Zero emoji in production code (`grep -rE "[\u{1F300}-\u{1F9FF}]" src/` → empty) **except** medals array в `src/pages/DashboardPage.jsx` (строка ~555) — explicitly deferred to user-provided custom SVG (mini-PR или Subplan 6A).
 - `lucide-react` imports in all swept components.
 - `src/components/ui/application-shell7/` (or wherever) exists with installed files.
 - 3 primitives (Card, Sheet, Dialog) installed.
