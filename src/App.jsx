@@ -13,8 +13,16 @@ import {
   ClientDetailRoute,
   ClientDetailEmpty,
 } from './pages/ClientListPage.jsx'
-import { TeamListPage } from './pages/TeamListPage.jsx'
-import { TaskListPage } from './pages/TaskListPage.jsx'
+import {
+  TeamListPage,
+  TeamDetailRoute,
+  TeamDetailEmpty,
+} from './pages/TeamListPage.jsx'
+import {
+  TaskListPage,
+  TaskDetailRoute,
+  TaskDetailEmpty,
+} from './pages/TaskListPage.jsx'
 import { isSuperadmin } from './lib/permissions.js'
 
 export default function App() {
@@ -38,14 +46,18 @@ export default function App() {
           <Route path=":clientId" element={<ClientDetailRoute />} />
           <Route path=":clientId/:tab" element={<ClientDetailRoute />} />
         </Route>
-        <Route path="/teams" element={<TeamListPage />} />
-        <Route path="/teams/:teamId" element={<TeamListPage />} />
-        <Route path="/tasks" element={<TaskListPage />} />
-        <Route path="/tasks/outbox" element={<TaskListPage />} />
-        <Route path="/tasks/all" element={<TaskListPage />} />
-        <Route path="/tasks/outbox/:taskId" element={<TaskListPage />} />
-        <Route path="/tasks/all/:taskId" element={<TaskListPage />} />
-        <Route path="/tasks/:taskId" element={<TaskListPage />} />
+        <Route path="/teams" element={<TeamListPage />}>
+          <Route index element={<TeamDetailEmpty />} />
+          <Route path=":teamId" element={<TeamDetailRoute />} />
+        </Route>
+        <Route path="/tasks" element={<TaskListPage />}>
+          <Route index element={<TaskDetailEmpty />} />
+          <Route path=":taskId" element={<TaskDetailRoute />} />
+          <Route path="outbox" element={<TaskDetailEmpty />} />
+          <Route path="outbox/:taskId" element={<TaskDetailRoute />} />
+          <Route path="all" element={<TaskDetailEmpty />} />
+          <Route path="all/:taskId" element={<TaskDetailRoute />} />
+        </Route>
         <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
       {isSuperadmin(user) && (
