@@ -30,7 +30,7 @@
 - **Date selector** (per Subplan 6A2 light mockup design): pill «Сегодня» + range text + chevron → dropdown popover with 3 sections (preset tabs / date pickers / hour slider). Lives in section header (top-right) of «Аналитика периода».
 - **Period comparison delta** for numeric cards: `↗ +18.5%` (green), `↘ -12.3%` (red), `→ 0%` (grey). Qualitative cards (Лидер дня = name) skip delta.
 - **Cloudflare-inspired card visuals**: subtle white-card + lucide icons (no emoji except user-provided custom SVGs later) + accent colors + optional sparkline (only where time-series data exists).
-- **AppHeader extension**: `<AppHeader>` accepts optional `title` + `icon` props for left-side rendering (in addition to existing breadcrumb logic). On `/` route, Dashboard sets `title="Дашборд"` + dashboard icon. Other routes unaffected.
+- **Remove AppHeader entirely** from `<AppShell>` (D-14 revised). `<AppShell>` becomes rail + `<main>` with `grid-rows-[1fr]` (no header row). Delete `src/components/shell/AppHeader.jsx` + `AppHeader.test.jsx`. Update `AppShell.jsx`, `AppShell.test.jsx`, `index.js` (drop `AppHeader` and `useDerivedBreadcrumb` exports). Page-level breadcrumb component for sub-routes — defer (lazy add when first needed).
 - **UserMenuDropdown extension**: add theme submenu (3 items: System / Light / Dark with checkmark on active). Reads/writes `localStorage.theme`.
 - **Hourly operator table** preserved as-is functionally (search + shift filter pills + only-active toggle + sort), only visual repaint to DS tokens. Lives at bottom of «Аналитика периода» section.
 - **Top operators list** (5 + expand) refactored to live alongside chart in 2/3 + 1/3 grid (chart left, top-5 right). Medals: lucide icons by default (Crown/Award/Medal placeholders); user-provided custom SVG can be swapped in via mini-PR.
@@ -44,7 +44,8 @@
 - **Per-role dedicated dashboards** (operator dashboard with personal metrics, TL dashboard with team scope). 6A3 uses permission-gated cards on shared registry; specialized operator/TL dashboards are separate brainstorm.
 - **Activity feed / Оповещения / Чат sections** — placeholders documented in architecture but not implemented in 6A3.
 - **Mobile responsive** — `<lg` breakpoint behavior. Subplan 6B.
-- **Search bar in shell header** (per light mockup) — Subplan 6A4 or 7.
+- **Search bar / global actions** в shell — moot (no shell header). Если когда-то понадобится — отдельный subplan возродит header или придумает другой паттерн.
+- **Page-level `<PageBreadcrumb>` component** для complex sub-routes (e.g., `/staff/<refCode>/<tab>`) — defer until first concrete need.
 - **Periodic auto-refresh polling** (every N minutes) — future enhancement.
 - **TZ selector UI** (Settings page) — future subplan.
 - **Activity log RPC** for activity feed — needs new DB infrastructure.
@@ -72,7 +73,7 @@
 | **D-11** | Card visual style = Cloudflare-inspired (subtle white-card + lucide icons + accent colors + optional sparkline). NO emoji (per Subplan 6 sweep — uses lucide; user may supply custom SVG for medals later). | Q7 brainstorm = B + «icons not emoji». Cloudflare matches user's stated preference. Scales для 13 cards без noise. |
 | **D-12** | KpiCard contract = hybrid. Base `<KpiCard>` shared component (label/value/icon/sublabel/delta/color slots) + specialized wrappers where custom viz needed (`<TeamDistributionCard>` mini-bar list, `<ShiftCard>` with trend-bar, `<TotalRevenueCard>` with peak-hour callout). | Q10 brainstorm = C. Base general-purpose + wrappers где нужны custom visualizations. Avoids over-genericizing base while maintaining shared layout/spacing. |
 | **D-13** | Filter toolbar (Subplan 6A2) gets fully removed. Date pickers + hour slider → new dropdown date selector. Refresh button → small icon button next to date selector. TZ selector → removed from UI (hardcoded Europe/Kiev for MVP, localStorage value retained). ThemeSwitcher → moved to `UserMenuDropdown`. | Q9 brainstorm = A. Clean header, modern pattern. TZ rarely changed in CRM context. |
-| **D-14** | AppHeader extension: optional `title` + `icon` props for left-side rendering on `/` route. Other routes (with breadcrumb) unaffected. | Q8 confirmed. «Дашборд» title + section icon left of empty breadcrumb. Small AppHeader.jsx extension (~5 lines + new prop). |
+| **D-14 (revised)** | **Remove `<AppHeader />` from `<AppShell />`** entirely. AppShell grid: `grid-cols-[56px_1fr] grid-rows-[1fr] h-screen` (no header row). Delete `AppHeader.jsx`, `AppHeader.test.jsx`, drop exports from `index.js`. Section «Аналитика периода» (and any future top-level section) provides its own header with title + actions. | Final brainstorm: AppHeader currently shows redundant breadcrumb (active rail icon + list pane title уже передают section context) или пуст на `/`. 48px вертикали без явной пользы. Page-level breadcrumb для complex sub-routes — lazy add when first needed (none currently). Date selector (D-8) живёт в section header, не shell header — actions slot для shell не нужен. |
 | **D-15** | UserMenuDropdown extension: add theme submenu (3 items System / Light / Dark with active checkmark). Reads/writes `localStorage.theme`. | Q9 = A. Theme toggle migration from inline toolbar. UserMenuDropdown already exists from Subplan 6A. |
 | **D-16** | Auto-refresh on period change (data re-fetches via useEffect dependency). Manual refresh icon next to date selector. NO periodic polling in 6A3. | Q9 = A. Auto re-fetch on period change covers 95% UX. Manual refresh for explicit re-pull. Periodic = future. |
 | **D-17** | Section collapsible state persisted in `localStorage` per-section ID. Default: all sections expanded. | Pragmatic decision — simple persistence, no DB. User opens dashboard, last collapse state restored. |
@@ -85,9 +86,7 @@
 ### 3.1. Page structure
 
 ```
-<DashboardPage>
-  ├── <AppHeader title="Дашборд" icon={LayoutDashboard} /> ← shell header, set via prop
-  └── <main>  (inside AppShell's <Outlet>)
+<DashboardPage>  ← rendered inside AppShell's <main> (no shell header anymore)
        ├── <SectionAnalytics>  ← contains DashboardPeriodProvider
        │     ├── <SectionHeader title="Аналитика периода" actions={<DateSelector /> + <RefreshButton />} collapsible />
        │     ├── <SubSection title="Производительность">  ← grid of cards
@@ -193,43 +192,30 @@ Sub-sections can take a slice of registry (e.g., `ANALYTICS_CARDS.slice(0, 4)` f
 - **Tasks data**: existing hooks (`useUserOverdueCount` for own, new lightweight hook for all-overdue or use `count_overdue_tasks(null)` for admin-scope) — TBD in plan.
 - **No new RPCs** required. All data computable from existing queries + client-side aggregation (shift sums, team aggregates).
 
-### 3.5. AppHeader extension
+### 3.5. AppShell after AppHeader removal
 
 ```jsx
-// AppHeader.jsx (extended)
-export function AppHeader({ title, icon: Icon, actions }) {
-  const location = useLocation()
-  const crumbs = useDerivedBreadcrumb(location.pathname)
-
-  const showTitle = title && crumbs.length === 0  // title only on root-like routes
-
+// AppShell.jsx (simplified — D-14 revised)
+export function AppShell() {
   return (
-    <header className="h-12 border-b border-border bg-background flex items-center px-4 gap-3">
-      {showTitle ? (
-        <div className="flex items-center gap-2 font-semibold">
-          {Icon && <Icon size={16} />}
-          <span>{title}</span>
-        </div>
-      ) : (
-        crumbs.length > 0 && <Breadcrumb>...</Breadcrumb>
-      )}
-      {actions && <div className="ml-auto">{actions}</div>}
-    </header>
+    <TooltipProvider delayDuration={300}>
+      <div className="grid grid-cols-[56px_1fr] grid-rows-[1fr] h-screen">
+        <RailNav />
+        <main className="overflow-auto">
+          <Outlet />
+        </main>
+      </div>
+    </TooltipProvider>
   )
 }
 ```
 
-Page calls `<AppHeader title="Дашборд" icon={LayoutDashboard} />` via context or directly. Actually since AppHeader is rendered by AppShell (not page), we need a different approach:
+- `grid-rows-[1fr]` instead of `[48px_1fr]`. No `<AppHeader>` import or render.
+- `RailNav` no longer needs `row-span-2` (single row now).
+- Pages render their content directly. If a page needs visible heading or breadcrumb, page does it itself (e.g., Section «Аналитика периода» has its own bordered header with title + date selector).
+- Section pattern (per §3.6) replaces shell header for visual organization.
 
-**Approach: page-set context via `useLayoutEffect`**
-- New `<HeaderProvider>` in AppShell. Pages call `useSetHeader({ title, icon })` on mount.
-- AppHeader reads from HeaderContext.
-
-OR simpler: route config map
-- AppHeader has internal map: `{'/': {title: 'Дашборд', icon: LayoutDashboard}}`
-- Reads pathname, looks up title, falls back to breadcrumb.
-
-**Default for 6A3: route config map** — simpler, no context plumbing. If more pages want headers, add to map.
+`AppHeader.jsx` + `AppHeader.test.jsx` + `useDerivedBreadcrumb` deleted. `index.js` drops those exports.
 
 ### 3.6. Section components
 
@@ -381,9 +367,11 @@ Uses shadcn `<Popover>` (already installed) + native `<input type="date">` for d
 
 5 stages — each = one commit, sequential.
 
-### Stage 1 — Period context + DateSelector + AppHeader title extension
+### Stage 1 — Remove AppHeader + Period context + DateSelector
 
-Build foundation: `DashboardPeriodProvider`/`useDashboardPeriod`, `derivePreviousPeriod` helper, `<DateSelector>` component, AppHeader extension with title/icon for `/` route. Tests for context + period derivation.
+**Stage 1a (cleanup):** Remove `<AppHeader />` from `<AppShell>`, adjust grid to `grid-rows-[1fr]`, delete `AppHeader.jsx` + `AppHeader.test.jsx`, update `index.js` exports, update `AppShell.test.jsx` (remove breadcrumb-related assertions). Verify all 8 routes still render (no broken layout).
+
+**Stage 1b (period foundation):** Build `DashboardPeriodProvider`/`useDashboardPeriod`, `derivePreviousPeriod` helper, `<DateSelector>` component. Tests for context + period derivation + DateSelector behavior.
 
 ### Stage 2 — Section components + base KpiCard
 
@@ -399,7 +387,7 @@ Refactor existing recharts logic into `<RevenueByHourChart>` + `<TopOperatorsLis
 
 ### Stage 5 — Wire DashboardPage + UserMenuDropdown theme + cleanup
 
-Compose `<DashboardPage>` from sections, set AppHeader title via route config. Add theme submenu to `UserMenuDropdown` (3 items + checkmark + localStorage). Delete legacy `DashboardPage.jsx` content (replace with new). Final smoke + commit + push + PR.
+Compose `<DashboardPage>` from sections (no shell header to set — page renders Section «Аналитика периода» directly as first content). Add theme submenu to `UserMenuDropdown` (3 items + checkmark + localStorage). Delete legacy `DashboardPage.jsx` content (replace with new). Final smoke + commit + push + PR.
 
 ---
 
@@ -418,9 +406,9 @@ Compose `<DashboardPage>` from sections, set AppHeader title via route config. A
 | `Section.test.jsx` | renders title + actions + children, collapse/expand toggles via button, localStorage persists state |
 | `KpiCard.test.jsx` | renders label/value/icon/sublabel, delta shows arrow + color (up=green, down=red, neutral=grey), sparkline renders when data provided, accent border when accentColor set |
 | `cardRegistry.test.jsx` | renderCards filters by hasPermission, props passed through, key=card.id |
-| `AppHeader.test.jsx` (extension) | renders title+icon when prop set + crumbs empty, falls back to breadcrumb when no title prop, actions slot renders on right |
+| `AppShell.test.jsx` (update) | rail + main grid (single row); no header rendered; outlet content visible. Existing breadcrumb-related test cases removed. |
 
-Target: ~25-30 new test assertions. Total ~225-230 tests after 6A3.
+Target: ~25-30 new test assertions. Removed: ~12-14 (AppHeader.test.jsx full file = 10 useDerivedBreadcrumb + 2 visual; AppShell breadcrumb-related ~2 cases). **Net: 201 baseline - ~13 removed + ~25 new = ~213 tests after 6A3.**
 
 ### 7.3. Visual smoke
 
@@ -440,14 +428,14 @@ After 5 stages merged into `main`:
 
 - `src/pages/DashboardPage.jsx` rewritten (~150 lines, no legacy code).
 - `src/components/dashboard/` contains: `cardRegistry.js`, `DashboardPeriodProvider.jsx`, `DateSelector.jsx`, `Section.jsx`, `SubSection.jsx`, `KpiCard.jsx`, 13 individual card components, `RevenueByHourChart.jsx`, `TopOperatorsList.jsx`, `HourlyOperatorTable.jsx` + tests.
-- `src/components/shell/AppHeader.jsx` extended with optional title/icon (route config map for `/` → «Дашборд»).
+- `src/components/shell/AppHeader.jsx` + `AppHeader.test.jsx` DELETED. `AppShell.jsx` simplified (single-row grid, no header). `index.js` drops `AppHeader` and `useDerivedBreadcrumb` exports.
 - `src/components/shell/UserMenuDropdown.jsx` extended with theme submenu (3 items).
 - `src/hooks/useDashboardData.js` (or similar) centralized fetch hook.
 - Old `DashboardPage.jsx` content replaced (no legacy 742 lines remain).
 - Permission-gated cards work: admin sees ~12 cards, operator with `view_own_tasks` only sees «Мои просрочки».
 - Date selector at section header of «Аналитика периода» — period changes re-fetch data, comparison delta shows on numeric cards.
 - Sections collapsible with persisted state.
-- ~225-230 tests pass.
+- ~213 tests pass (net of 12-14 AppHeader-related test removals).
 - `npx vite build` clean.
 - Visual smoke through dashboard for admin + operator role works.
 
@@ -479,7 +467,9 @@ These were not explicitly debated in brainstorm but I picked sensible defaults:
 - [Subplan 6A spec](2026-04-26-crm-subplan-6a-shell-rebuild-design.md) — AppShell, AppHeader, RailNav, MasterDetailLayout (current contracts).
 - [Subplan 6A2 spec](2026-04-26-crm-subplan-6a2-handoff-cleanup-design.md) — SearchInput, MasterDetailLayout aria-labels.
 - `src/pages/DashboardPage.jsx` — current 742-line legacy (target for rewrite).
-- `src/components/shell/{AppHeader,UserMenuDropdown}.jsx` — files to extend.
+- `src/components/shell/AppHeader.jsx` — file to DELETE (along with `AppHeader.test.jsx`).
+- `src/components/shell/AppShell.jsx` — file to modify (drop AppHeader render, single-row grid).
+- `src/components/shell/UserMenuDropdown.jsx` — file to extend (theme submenu).
 - `src/lib/permissions.js` — `hasPermission`, `isSuperadmin` for card gating.
 - `src/lib/defaultPermissions.js` — permission names (`view_all_revenue`, `view_own_revenue`, `view_all_tasks`, `view_own_tasks`).
 - `docs/design-system/preview/components-kpi.html` — visual reference for card style.
