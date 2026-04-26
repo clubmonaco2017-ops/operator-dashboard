@@ -1,6 +1,5 @@
 export { AppShell } from './AppShell.jsx'
 export { RailNav } from './RailNav.jsx'
-export { AppHeader, useDerivedBreadcrumb } from './AppHeader.jsx'
 export { UserMenuDropdown } from './UserMenuDropdown.jsx'
 export { MasterDetailLayout } from './MasterDetailLayout.jsx'
 export { ListPane } from './ListPane.jsx'

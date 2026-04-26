@@ -21,7 +21,7 @@ vi.mock('../../hooks/useUserTeamMembership.js', () => ({
 import { AppShell } from './AppShell.jsx'
 
 describe('<AppShell>', () => {
-  it('renders rail, header, and outlet content', () => {
+  it('renders rail nav and outlet content (single-row grid, no header)', () => {
     render(
       <MemoryRouter initialEntries={['/clients']}>
         <Routes>
@@ -32,11 +32,10 @@ describe('<AppShell>', () => {
       </MemoryRouter>,
     )
     expect(screen.getByLabelText('Главное меню')).toBeInTheDocument()
-    expect(screen.getByText('Клиенты')).toBeInTheDocument()
     expect(screen.getByTestId('page')).toHaveTextContent('Page Body')
   })
 
-  it('renders empty header on root /', () => {
+  it('does not render any breadcrumb navigation', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
