@@ -412,13 +412,6 @@ body {
     letter-spacing: var(--ls-caps);
     color: var(--fg3);
   }
-  .ref-code {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    letter-spacing: 0.02em;
-    color: var(--fg3);
-    white-space: nowrap;
-  }
   .num,
   td.num,
   .tabular {
@@ -489,13 +482,5 @@ body {
     box-shadow: var(--elev-1);
   }
 
-  /* --- Focus ring helper --- */
-  .focus-ds:focus-visible {
-    outline: none;
-    box-shadow: var(--focus-ring);
-  }
-
-  /* --- Subtle cursor change for editable plain-text fields (R2.2) --- */
-  .editable-text:hover { cursor: text; }
 }
 

@@ -207,7 +207,7 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
             onClick={attemptClose}
             disabled={submitting}
             aria-label="Закрыть форму создания клиента"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
+            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X size={20} />
           </button>
@@ -498,7 +498,7 @@ function AvatarDropZone({ file, error, onSelect, onRemove, disabled }) {
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={disabled}
-            className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-[var(--primary-soft)] disabled:opacity-50 focus-ds"
+            className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-[var(--primary-soft)] disabled:opacity-50"
           >
             Заменить
           </button>
@@ -506,7 +506,7 @@ function AvatarDropZone({ file, error, onSelect, onRemove, disabled }) {
             type="button"
             onClick={onRemove}
             disabled={disabled}
-            className="rounded-md px-2 py-1 text-xs font-medium text-[var(--danger-ink)] hover:bg-[var(--danger-soft)] disabled:opacity-50 focus-ds"
+            className="rounded-md px-2 py-1 text-xs font-medium text-[var(--danger-ink)] hover:bg-[var(--danger-soft)] disabled:opacity-50"
           >
             Удалить
           </button>

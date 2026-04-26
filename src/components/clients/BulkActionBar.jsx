@@ -41,7 +41,7 @@ export function BulkActionBar({
           type="button"
           onClick={onSelectAll}
           disabled={busy}
-          className="text-sm font-medium text-[var(--primary-ink)] hover:underline disabled:opacity-50 focus-ds rounded"
+          className="text-sm font-medium text-[var(--primary-ink)] hover:underline disabled:opacity-50 rounded"
         >
           Выбрать все {totalCount}
         </button>
@@ -51,7 +51,7 @@ export function BulkActionBar({
           type="button"
           onClick={onClearAll}
           disabled={busy}
-          className="text-sm font-medium text-muted-foreground hover:underline disabled:opacity-50 focus-ds rounded"
+          className="text-sm font-medium text-muted-foreground hover:underline disabled:opacity-50 rounded"
         >
           Снять {allSelected ? 'все' : 'выделение'}
         </button>
@@ -61,7 +61,7 @@ export function BulkActionBar({
         type="button"
         onClick={onDownload}
         disabled={busy || !hasSelection}
-        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-[var(--fg2)] hover:bg-muted disabled:opacity-50 focus-ds"
+        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-[var(--fg2)] hover:bg-muted disabled:opacity-50"
       >
         <Download size={13} /> Скачать {hasSelection ? selectedCount : ''}
       </button>
@@ -69,7 +69,7 @@ export function BulkActionBar({
         type="button"
         onClick={onDelete}
         disabled={busy || !hasSelection}
-        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--danger-soft)] bg-card px-3 py-1.5 text-xs font-semibold text-[var(--danger-ink)] hover:bg-[var(--danger-soft)] disabled:opacity-50 focus-ds"
+        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--danger-soft)] bg-card px-3 py-1.5 text-xs font-semibold text-[var(--danger-ink)] hover:bg-[var(--danger-soft)] disabled:opacity-50"
       >
         <Trash2 size={13} /> Удалить {hasSelection ? selectedCount : ''}
       </button>

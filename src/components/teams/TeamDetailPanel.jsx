@@ -90,7 +90,7 @@ export function TeamDetailPanel({ callerId, user, teamId, siblings = [], onChang
         <button
           type="button"
           onClick={() => (onBack ? onBack() : navigate('/teams'))}
-          className="mt-3 text-sm text-primary hover:underline focus-ds rounded"
+          className="mt-3 text-sm text-primary hover:underline rounded"
         >
           ← К списку
         </button>
@@ -118,7 +118,7 @@ export function TeamDetailPanel({ callerId, user, teamId, siblings = [], onChang
           <button
             type="button"
             onClick={() => (onBack ? onBack() : navigate('/teams'))}
-            className="rounded hover:text-foreground focus-ds"
+            className="rounded hover:text-foreground"
             aria-label="Вернуться к списку команд"
           >
             <span className="lg:hidden">← Список</span>
@@ -198,7 +198,7 @@ export function TeamDetailPanel({ callerId, user, teamId, siblings = [], onChang
                 aria-current={isActive ? 'page' : undefined}
                 onClick={() => setTab(key)}
                 className={[
-                  'flex shrink-0 items-center gap-2 border-b-2 py-3 text-sm transition-colors focus-ds rounded-t',
+                  'flex shrink-0 items-center gap-2 border-b-2 py-3 text-sm transition-colors rounded-t',
                   isActive
                     ? 'border-primary font-semibold text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -256,7 +256,7 @@ export function TeamDetailPanel({ callerId, user, teamId, siblings = [], onChang
 
 function StatusToggle({ active, busy, canToggle, onToggle }) {
   const base =
-    'inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors focus-ds'
+    'inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors'
   const styled = active
     ? 'border-[var(--success-soft)] bg-[var(--success-soft)] text-[var(--success-ink)]'
     : 'border-border bg-muted text-muted-foreground'
@@ -302,7 +302,7 @@ function Pagination({ position, total, prev, next, onGo }) {
         disabled={!prev}
         title={prev ? prev.name : 'Это первая команда'}
         aria-label={prev ? `Предыдущая: ${prev.name}` : 'Предыдущая — недоступно'}
-        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40 focus-ds"
+        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40"
       >
         ‹
       </button>
@@ -315,7 +315,7 @@ function Pagination({ position, total, prev, next, onGo }) {
         disabled={!next}
         title={next ? next.name : 'Это последняя команда'}
         aria-label={next ? `Следующая: ${next.name}` : 'Следующая — недоступно'}
-        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40 focus-ds"
+        className="rounded-md border border-border px-1.5 py-0.5 hover:bg-muted disabled:opacity-40"
       >
         ›
       </button>

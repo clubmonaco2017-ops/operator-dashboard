@@ -81,7 +81,7 @@ export function AddClientsModal({ callerId, onClose, onAdd }) {
             onClick={() => !submitting && onClose()}
             disabled={submitting}
             aria-label="Закрыть"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
+            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X size={18} />
           </button>
@@ -101,7 +101,7 @@ export function AddClientsModal({ callerId, onClose, onAdd }) {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск клиента по имени или alias…"
               aria-label="Поиск клиентов"
-              className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
+              className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary"
             />
           </label>
         </div>
@@ -132,7 +132,7 @@ export function AddClientsModal({ callerId, onClose, onAdd }) {
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggle(c.id)}
-                        className="h-4 w-4 shrink-0 cursor-pointer rounded border-border accent-[var(--primary)] focus-ds"
+                        className="h-4 w-4 shrink-0 cursor-pointer rounded border-border accent-[var(--primary)]"
                         aria-label={`Выбрать ${c.name ?? ''}`}
                       />
                       <ClientAvatar avatarUrl={c.avatar_url} name={c.name} />

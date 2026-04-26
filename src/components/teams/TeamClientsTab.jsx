@@ -55,7 +55,7 @@ export function TeamClientsTab({ callerId, user, row, reload }) {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Поиск по имени или alias…"
             aria-label="Поиск клиентов команды"
-            className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
+            className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary"
           />
         </div>
         <div className="flex-1" />
@@ -101,7 +101,7 @@ export function TeamClientsTab({ callerId, user, row, reload }) {
                   onClick={() => setConfirmRemove(c)}
                   disabled={mutating}
                   aria-label={`Снять клиента ${c.name ?? ''} с команды`}
-                  className="rounded-md p-1.5 text-[var(--fg4)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-ink)] disabled:opacity-50 focus-ds"
+                  className="rounded-md p-1.5 text-[var(--fg4)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-ink)] disabled:opacity-50"
                 >
                   <X size={14} />
                 </button>

@@ -27,7 +27,7 @@ export function TaskListItem({ task, isActive, basePath }) {
       to={`${basePath}/${task.id}`}
       className={[
         'group relative flex items-start gap-3 px-4 py-2.5 outline-none transition-colors',
-        'border-l-2 focus-ds',
+        'border-l-2',
         isActive
           ? 'border-l-primary bg-muted'
           : 'border-l-transparent hover:bg-muted/60',

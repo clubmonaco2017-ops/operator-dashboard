@@ -101,7 +101,7 @@ export function AssigneeSelector({ callerId, value, onChange, error, disabled })
           type="button"
           onClick={handleChange}
           disabled={disabled}
-          className="text-xs font-medium text-[var(--primary-ink)] hover:underline disabled:opacity-50 focus-ds rounded outline-none"
+          className="text-xs font-medium text-[var(--primary-ink)] hover:underline disabled:opacity-50 rounded outline-none"
         >
           Изменить
         </button>
@@ -125,7 +125,7 @@ export function AssigneeSelector({ callerId, value, onChange, error, disabled })
           disabled={disabled}
           placeholder="Поиск по имени или коду…"
           aria-label="Поиск исполнителя"
-          className="w-full rounded-md bg-transparent px-2 py-1 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus-ds"
+          className="w-full rounded-md bg-transparent px-2 py-1 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none"
         />
       </div>
       <div
@@ -155,7 +155,7 @@ export function AssigneeSelector({ callerId, value, onChange, error, disabled })
                 onClick={() => handleSelect(opt)}
                 title={tooltip}
                 className={[
-                  'flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition-colors outline-none focus-ds',
+                  'flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition-colors outline-none',
                   isSelected
                     ? 'bg-[var(--primary-soft)]'
                     : 'hover:bg-muted',

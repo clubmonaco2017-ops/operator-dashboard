@@ -115,7 +115,7 @@ export function CuratedOperatorsBlock({ callerId, user, staff }) {
                   {linked ? (
                     <Link
                       to={`/staff/${op.ref_code}`}
-                      className="block hover:bg-muted/40 focus-ds rounded px-1 -mx-1"
+                      className="block hover:bg-muted/40 rounded px-1 -mx-1"
                     >
                       {inner}
                     </Link>

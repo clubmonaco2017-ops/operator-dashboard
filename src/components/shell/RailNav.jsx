@@ -29,7 +29,7 @@ function RailItem({ to, end, icon, label, badge }) {
           end={end}
           aria-label={label}
           className={({ isActive }) =>
-            `relative w-10 h-10 rounded-lg flex items-center justify-center transition-colors focus-ds ${
+            `relative w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
               isActive
                 ? 'bg-primary text-primary-foreground'
                 : 'text-[var(--fg2)] hover:bg-muted'

@@ -15,7 +15,7 @@ export function ActivityCard({ callerId, clientId, totalLimit = 12 }) {
         {rows.length > 0 && (
           <button
             type="button"
-            className="text-xs font-medium text-primary hover:underline focus-ds rounded"
+            className="text-xs font-medium text-primary hover:underline rounded"
             onClick={() => alert('Полная история событий — Stage 8')}
           >
             Все {pluralizeEvents(rows.length)}

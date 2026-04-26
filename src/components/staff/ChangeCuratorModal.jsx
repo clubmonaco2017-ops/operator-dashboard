@@ -107,7 +107,7 @@ export function ChangeCuratorModal({ callerId, operatorId, currentCuratorId, onC
             onClick={() => !submitting && onClose()}
             disabled={submitting}
             aria-label="Закрыть"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
+            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X size={16} />
           </button>
@@ -146,7 +146,7 @@ export function ChangeCuratorModal({ callerId, operatorId, currentCuratorId, onC
                         name="new-curator"
                         checked={isSelected}
                         onChange={() => setSelected(u.id)}
-                        className="h-4 w-4 shrink-0 cursor-pointer accent-[var(--primary)] focus-ds"
+                        className="h-4 w-4 shrink-0 cursor-pointer accent-[var(--primary)]"
                         aria-label={name}
                       />
                       <Avatar name={name} avatarUrl={u.avatar_url} />

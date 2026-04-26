@@ -331,7 +331,7 @@ export function VideoGalleryTab({ callerId, client, onChanged }) {
           onClick={toggleSelectMode}
           aria-pressed={selectMode}
           className={[
-            'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-ds',
+            'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
             selectMode
               ? 'bg-foreground text-background hover:opacity-90'
               : 'btn-ghost',
@@ -465,7 +465,7 @@ function VideoSearch({ value, onChange }) {
         onChange={(e) => onChange(e.target.value)}
         placeholder="Поиск по имени файла или подписи…"
         aria-label="Поиск видео"
-        className="rounded-lg border border-border bg-card pl-8 pr-2 py-1.5 text-xs text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds w-64"
+        className="rounded-lg border border-border bg-card pl-8 pr-2 py-1.5 text-xs text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary w-64"
       />
     </label>
   )
@@ -491,7 +491,7 @@ function DurationFilter({ value, onChange }) {
           onClick={() => onChange(o.key)}
           aria-pressed={value === o.key}
           className={[
-            'rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus-ds',
+            'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
             value === o.key
               ? 'bg-[var(--primary-soft)] text-[var(--primary-ink)]'
               : 'text-muted-foreground hover:text-foreground',
@@ -552,7 +552,7 @@ function SortToggle({ value, onChange, disabled }) {
           disabled={disabled}
           aria-pressed={value === o.key}
           className={[
-            'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors focus-ds',
+            'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors',
             value === o.key
               ? 'bg-muted text-foreground'
               : 'text-muted-foreground hover:text-foreground',
@@ -928,7 +928,7 @@ function UploadBanner({ upload, onClose }) {
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
+          className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground"
           aria-label="Закрыть уведомление"
         >
           <X size={14} />

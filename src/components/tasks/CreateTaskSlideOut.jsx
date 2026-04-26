@@ -145,7 +145,7 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
             onClick={attemptClose}
             disabled={submitting}
             aria-label="Закрыть форму создания задачи"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
+            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X size={20} />
           </button>

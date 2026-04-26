@@ -70,7 +70,7 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
             type="button"
             onClick={onClose}
             aria-label="Закрыть"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
+            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground"
           >
             <X size={18} />
           </button>
@@ -90,7 +90,7 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск оператора по имени или ref-коду…"
               aria-label="Поиск операторов"
-              className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
+              className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary"
             />
           </label>
         </div>

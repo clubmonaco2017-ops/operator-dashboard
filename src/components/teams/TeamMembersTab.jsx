@@ -44,7 +44,7 @@ export function TeamMembersTab({ callerId, user, row, reload }) {
             <button
               type="button"
               onClick={() => setLeadOpen(true)}
-              className="text-xs font-medium text-primary hover:underline focus-ds rounded"
+              className="text-xs font-medium text-primary hover:underline rounded"
             >
               Сменить лида
             </button>
@@ -117,7 +117,7 @@ export function TeamMembersTab({ callerId, user, row, reload }) {
                     onClick={() => setConfirmRemove(m)}
                     disabled={mutating}
                     aria-label={`Убрать ${m.name ?? 'оператора'} из команды`}
-                    className="rounded-md p-1.5 text-[var(--fg4)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-ink)] disabled:opacity-50 focus-ds"
+                    className="rounded-md p-1.5 text-[var(--fg4)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-ink)] disabled:opacity-50"
                   >
                     <X size={14} />
                   </button>
