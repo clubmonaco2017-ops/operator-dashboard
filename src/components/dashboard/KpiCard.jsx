@@ -18,6 +18,9 @@ const DELTA_ARROW = {
   neutral: '→',
 }
 
+// Note: callers may pass a `sparkline` prop, but Stage 6A3 ships without
+// a Sparkline component, so it's silently ignored (not destructured). Re-add
+// the destructure + render when the component lands.
 export function KpiCard({
   label,
   value,
@@ -25,7 +28,6 @@ export function KpiCard({
   sublabel,
   delta,
   accentColor,
-  sparkline, // reserved — render only if real time-series data passed; no Sparkline component yet
   children,
 }) {
   const accentClass = accentColor ? ACCENT_BORDER[accentColor] || '' : ''
