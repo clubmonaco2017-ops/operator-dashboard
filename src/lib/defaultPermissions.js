@@ -10,6 +10,7 @@ const DEFAULTS = {
   ],
   moderator: [
     'create_tasks',
+    'manage_teams',
     'view_own_tasks',
     'view_team_revenue',
   ],

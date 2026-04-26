@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from './supabaseClient'
+import { invalidateAllUserTeamMembership } from './hooks/useUserTeamMembership.js'
 
 const SESSION_KEY = 'auth_session'
 
@@ -95,6 +96,7 @@ export function useAuth() {
   }
 
   const logout = () => {
+    invalidateAllUserTeamMembership()
     localStorage.removeItem(SESSION_KEY)
     setUser(null)
   }

@@ -8,6 +8,7 @@ import { StaffCreatePage } from './pages/StaffCreatePage.jsx'
 import { StaffDetailPage } from './pages/StaffDetailPage.jsx'
 import { NotificationsPage } from './pages/NotificationsPage.jsx'
 import { ClientListPage } from './pages/ClientListPage.jsx'
+import { TeamListPage } from './pages/TeamListPage.jsx'
 import { isSuperadmin } from './lib/permissions.js'
 
 export default function App() {
@@ -28,6 +29,8 @@ export default function App() {
       <Route path="/clients" element={<ClientListPage />} />
       <Route path="/clients/:clientId" element={<ClientListPage />} />
       <Route path="/clients/:clientId/:tab" element={<ClientListPage />} />
+      <Route path="/teams" element={<TeamListPage />} />
+      <Route path="/teams/:teamId" element={<TeamListPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
       {isSuperadmin(user) && (
         <Route

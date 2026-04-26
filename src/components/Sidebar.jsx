@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom'
 import { hasPermission, isSuperadmin } from '../lib/permissions.js'
 import { usePendingDeletionCount } from '../hooks/usePendingDeletionCount.js'
+import { canSeeTeamsNav } from '../lib/teams.js'
+import { useUserTeamMembership } from '../hooks/useUserTeamMembership.js'
 
 const linkBase =
   'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors focus-ds'
@@ -12,6 +14,8 @@ export function Sidebar({ user, onLogout }) {
   const canSeeClients = hasPermission(user, 'manage_clients')
   const canSeeNotifications = isSuperadmin(user)
   const pending = usePendingDeletionCount({ enabled: canSeeNotifications })
+  const { has: hasTeamMembership } = useUserTeamMembership(user?.id)
+  const canSeeTeams = canSeeTeamsNav(user, hasTeamMembership)
 
   return (
     <aside
@@ -60,6 +64,17 @@ export function Sidebar({ user, onLogout }) {
             }
           >
             Клиенты
+          </NavLink>
+        )}
+
+        {canSeeTeams && (
+          <NavLink
+            to="/teams"
+            className={({ isActive }) =>
+              `${linkBase} ${isActive ? linkActive : linkIdle}`
+            }
+          >
+            Команды
           </NavLink>
         )}
 
