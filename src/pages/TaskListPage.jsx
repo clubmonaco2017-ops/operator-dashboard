@@ -13,6 +13,7 @@ import { TaskEmptyZero } from '../components/tasks/EmptyZero.jsx'
 import { TaskEmptyFilter } from '../components/tasks/EmptyFilter.jsx'
 import { TaskDetailEmptyHint } from '../components/tasks/DetailEmptyHint.jsx'
 import { CreateTaskSlideOut } from '../components/tasks/CreateTaskSlideOut.jsx'
+import { TaskDetailPanel } from '../components/tasks/TaskDetailPanel.jsx'
 
 const DEFAULT_STATUS = 'all'
 const DEFAULT_DEADLINE = 'all'
@@ -202,9 +203,14 @@ export function TaskListPage() {
             aria-label="Детали задачи"
           >
             {detailIsOpen ? (
-              <DetailPlaceholder
+              <TaskDetailPanel
+                callerId={user?.id}
+                user={user}
                 taskId={selectedId}
+                siblings={displayRows}
+                onChanged={reload}
                 onBack={() => navigate(basePath)}
+                onDeleted={() => navigate(basePath)}
               />
             ) : (
               <TaskDetailEmptyHint />
@@ -229,26 +235,8 @@ export function TaskListPage() {
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton + placeholder + search
+// Skeleton + search
 // ---------------------------------------------------------------------------
-
-function DetailPlaceholder({ taskId, onBack }) {
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center relative">
-      <button
-        type="button"
-        onClick={onBack}
-        className="lg:hidden absolute top-4 left-4 text-sm text-muted-foreground hover:text-foreground focus-ds rounded outline-none"
-      >
-        ← Список
-      </button>
-      <p className="text-base font-semibold text-foreground">Задача #{taskId}</p>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Детали будут реализованы в Stage 7.
-      </p>
-    </div>
-  )
-}
 
 function TaskListSkeleton() {
   const widths = [70, 60, 80, 55, 65, 50]
