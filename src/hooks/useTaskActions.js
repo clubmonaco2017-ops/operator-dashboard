@@ -55,7 +55,10 @@ export function useTaskActions(callerId) {
   )
 
   const updateTask = useCallback(
-    async (taskId, { title, description, deadline, assignedTo } = {}) => {
+    async (
+      taskId,
+      { title, description, deadline, assignedTo, clearDeadline = false } = {},
+    ) => {
       begin()
       try {
         const { error: err } = await supabase.rpc('update_task', {
@@ -65,6 +68,7 @@ export function useTaskActions(callerId) {
           p_description: description ?? null,
           p_deadline: deadline ?? null,
           p_assigned_to: assignedTo ?? null,
+          p_clear_deadline: clearDeadline,
         })
         if (err) throw new Error(err.message)
         invalidate(assignedTo)

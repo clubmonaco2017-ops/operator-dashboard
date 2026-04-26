@@ -75,7 +75,11 @@ function DeadlineField({ callerId, task, editable, onChanged }) {
     setSaving(true)
     setError(null)
     try {
-      await updateTask(task.id, { deadline: next })
+      if (next === null) {
+        await updateTask(task.id, { clearDeadline: true })
+      } else {
+        await updateTask(task.id, { deadline: next })
+      }
       setEditing(false)
       onChanged?.()
     } catch (e) {

@@ -6,6 +6,21 @@ import { supabase } from '../supabaseClient'
 // на каждый рендер сайдбара.
 const cache = new Map()
 
+// Module-level subscriber set — нужен, чтобы invalidate*() уведомлял
+// уже смонтированные инстансы хука и они перезагрузили счётчик
+// (иначе Sidebar показывал бы устаревшее значение до перезагрузки страницы).
+const subscribers = new Set()
+
+function notifyAll() {
+  subscribers.forEach((cb) => {
+    try {
+      cb()
+    } catch {
+      /* swallow per-subscriber errors */
+    }
+  })
+}
+
 /**
  * Сбросить кэш счётчика для пользователя (после create/update/cancel/etc).
  * Без аргумента — очистить весь кэш.
@@ -14,9 +29,11 @@ const cache = new Map()
 export function invalidateUserOverdueCount(userId) {
   if (userId == null) {
     cache.clear()
+    notifyAll()
     return
   }
   cache.delete(userId)
+  notifyAll()
 }
 
 /**
@@ -24,12 +41,14 @@ export function invalidateUserOverdueCount(userId) {
  */
 export function invalidateAllUserOverdueCount() {
   cache.clear()
+  notifyAll()
 }
 
 /**
  * Кол-во просроченных задач у пользователя (RPC count_overdue_tasks).
  * Кэшируется в памяти модуля; инвалидация — invalidateUserOverdueCount.
- * Пока считается — count = 0 (не показываем устаревшее значение, если userId сменился).
+ * Подписан на module-level notifyAll, поэтому после invalidate перезагружается
+ * автоматически без перезагрузки страницы.
  *
  * @param {number|null} userId
  * @returns {{count: number, loading: boolean, reload: () => void}}
@@ -39,7 +58,16 @@ export function useUserOverdueCount(userId) {
     userId != null && cache.has(userId) ? cache.get(userId) : 0,
   )
   const [loading, setLoading] = useState(() => userId != null && !cache.has(userId))
-  const [reloadKey, setReloadKey] = useState(0)
+  const [version, setVersion] = useState(0)
+
+  // Subscribe to cache invalidation — bump version → re-run fetch effect.
+  useEffect(() => {
+    const cb = () => setVersion((v) => v + 1)
+    subscribers.add(cb)
+    return () => {
+      subscribers.delete(cb)
+    }
+  }, [])
 
   useEffect(() => {
     if (userId == null) {
@@ -47,7 +75,7 @@ export function useUserOverdueCount(userId) {
       setLoading(false)
       return
     }
-    if (cache.has(userId) && reloadKey === 0) {
+    if (cache.has(userId)) {
       setCount(cache.get(userId))
       setLoading(false)
       return
@@ -82,11 +110,11 @@ export function useUserOverdueCount(userId) {
     return () => {
       cancelled = true
     }
-  }, [userId, reloadKey])
+  }, [userId, version])
 
   const reload = useCallback(() => {
     if (userId != null) cache.delete(userId)
-    setReloadKey((k) => k + 1)
+    setVersion((v) => v + 1)
   }, [userId])
 
   return { count, loading, reload }
