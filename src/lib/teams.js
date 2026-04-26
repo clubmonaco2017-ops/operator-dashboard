@@ -6,9 +6,6 @@ import { pluralRu } from './clients.js'
 export const pluralizeOperators = (n) =>
   `${n} ${pluralRu(n, { one: 'оператор', few: 'оператора', many: 'операторов' })}`
 
-export const pluralizeTeams = (n) =>
-  `${n} ${pluralRu(n, { one: 'команда', few: 'команды', many: 'команд' })}`
-
 /**
  * Форматирует роль лида команды для отображения.
  * @param {string|null|undefined} role

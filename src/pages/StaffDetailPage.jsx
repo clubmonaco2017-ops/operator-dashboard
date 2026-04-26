@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../useAuth.jsx'
 import { useStaff } from '../hooks/useStaff.js'
-import { Sidebar } from '../components/Sidebar.jsx'
 import { StaffPageShell } from '../components/staff/StaffPageShell.jsx'
 import { ProfileTab } from '../components/staff/ProfileTab.jsx'
 import { AttributesTab } from '../components/staff/AttributesTab.jsx'
@@ -14,7 +13,7 @@ import { DeleteRequestModal } from '../components/staff/DeleteRequestModal.jsx'
 import { hasPermission, isSuperadmin } from '../lib/permissions.js'
 
 export function StaffDetailPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { refCode, tab } = useParams()
   const { row, loading, error, reload } = useStaff(user?.id, refCode)
   const [pwOpen, setPwOpen] = useState(false)
@@ -54,9 +53,7 @@ export function StaffDetailPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
-      <Sidebar user={user} onLogout={logout} />
-      <main className="flex-1 p-4 sm:p-6">
+    <div className="p-4 sm:p-6">
         {loading && <p className="text-sm text-slate-500">Загрузка…</p>}
         {error && <p className="text-sm text-red-500">Ошибка: {error}</p>}
         {row && (
@@ -122,7 +119,6 @@ export function StaffDetailPage() {
           />
         )}
         {delError && <p className="fixed bottom-4 right-4 rounded-lg bg-red-600 px-4 py-2 text-sm text-white">{delError}</p>}
-      </main>
     </div>
   )
 }

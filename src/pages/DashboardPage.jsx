@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../useAuth'
-import { hasPermission, isSuperadmin } from '../lib/permissions.js'
+import { hasPermission } from '../lib/permissions.js'
 import {
   BarChart, Bar, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
@@ -128,7 +127,7 @@ function ThemeSwitcher({ theme, setTheme }) {
 
 // ── Dashboard Page ────────────────────────────────────────────────────────────
 export function DashboardPage() {
-  const { user, logout, updateTimezone } = useAuth()
+  const { user, updateTimezone } = useAuth()
   const [theme, setTheme] = useTheme()
   const tz = user?.timezone || 'Europe/Kiev'
   const tzOffset = getTzOffset(tz)
@@ -305,104 +304,79 @@ export function DashboardPage() {
   const canViewTop     = hasPermission(user, 'view_top')
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 transition-colors">
-      {/* Header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white"><BarChart3 size={20} /></div>
-          <div>
-            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">Дашборд операторов</h1>
-            <p className="text-xs text-slate-400">Почасовая выручка</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Date range */}
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={dateFrom}
-              max={dateTo}
-              onChange={e => setDateFrom(e.target.value)}
-              className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-            <span className="text-slate-400 text-sm">—</span>
-            <input
-              type="date"
-              value={dateTo}
-              min={dateFrom}
-              onChange={e => setDateTo(e.target.value)}
-              className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
+    <div className="transition-colors">
+      {/* Filter toolbar — replaces decorative header (logo/h1/subtitle and duplicate nav links removed). */}
+      {/* Functional controls preserved: date range, hour filter, "Сегодня", refresh, timestamp, TZ, ThemeSwitcher. */}
+      <div className="px-6 pt-4 pb-3 flex items-center gap-3 flex-wrap">
+        {/* Date range */}
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={dateFrom}
+            max={dateTo}
+            onChange={e => setDateFrom(e.target.value)}
+            className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+          <span className="text-slate-400 text-sm">—</span>
+          <input
+            type="date"
+            value={dateTo}
+            min={dateFrom}
+            onChange={e => setDateTo(e.target.value)}
+            className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
 
-            {/* Clock icon — toggle hour slider */}
-            <button
-              onClick={() => setShowHourSlider(v => !v)}
-              title="Фильтр по часам"
-              className={`relative p-1.5 rounded-lg border transition-colors ${
-                showHourSlider
-                  ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
-                  : 'border-slate-300 dark:border-slate-600 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-              }`}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              {/* Dot indicator if range is not default */}
-              {(hourRange[0] !== 0 || hourRange[1] !== 23) && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full" />
-              )}
-            </button>
-
-            {!isToday && (
-              <button
-                onClick={() => { setDateFrom(today); setDateTo(today) }}
-                className="text-xs text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium whitespace-nowrap"
-              >
-                Сегодня
-              </button>
-            )}
-          </div>
-
+          {/* Clock icon — toggle hour slider */}
           <button
-            onClick={load}
-            disabled={loading}
-            className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            onClick={() => setShowHourSlider(v => !v)}
+            title="Фильтр по часам"
+            className={`relative p-1.5 rounded-lg border transition-colors ${
+              showHourSlider
+                ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                : 'border-slate-300 dark:border-slate-600 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+            }`}
           >
-            {loading ? '...' : '↻ Обновить'}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            {/* Dot indicator if range is not default */}
+            {(hourRange[0] !== 0 || hourRange[1] !== 23) && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full" />
+            )}
           </button>
-          {lastUpdated && (
-            <span className="text-xs text-slate-400">{lastUpdated.toLocaleTimeString('uk-UA')}</span>
-          )}
-          <select
-            value={tz}
-            onChange={e => updateTimezone(e.target.value)}
-            className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          >
-            {TIMEZONES.map(t => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
-          <ThemeSwitcher theme={theme} setTheme={setTheme} />
 
-          {hasPermission(user, 'create_users') && (
-            <Link
-              to="/staff"
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          {!isToday && (
+            <button
+              onClick={() => { setDateFrom(today); setDateTo(today) }}
+              className="text-xs text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium whitespace-nowrap"
             >
-              Сотрудники
-            </Link>
-          )}
-          {isSuperadmin(user) && (
-            <Link
-              to="/admin"
-              className="rounded-lg border border-purple-300 px-3 py-1.5 text-sm font-medium text-purple-600 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-400 dark:hover:bg-purple-900/30"
-            >
-              Админка
-            </Link>
+              Сегодня
+            </button>
           )}
         </div>
-      </header>
+
+        <button
+          onClick={load}
+          disabled={loading}
+          className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+        >
+          {loading ? '...' : '↻ Обновить'}
+        </button>
+        {lastUpdated && (
+          <span className="text-xs text-slate-400">{lastUpdated.toLocaleTimeString('uk-UA')}</span>
+        )}
+        <select
+          value={tz}
+          onChange={e => updateTimezone(e.target.value)}
+          className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        >
+          {TIMEZONES.map(t => (
+            <option key={t.value} value={t.value}>{t.label}</option>
+          ))}
+        </select>
+        <ThemeSwitcher theme={theme} setTheme={setTheme} />
+      </div>
 
       {/* Hour range slider — collapsible */}
       {showHourSlider && (

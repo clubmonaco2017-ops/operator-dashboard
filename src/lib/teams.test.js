@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   pluralizeOperators,
-  pluralizeTeams,
   formatLeadRole,
   validateTeamName,
   canEditTeam,
@@ -24,22 +23,6 @@ describe('pluralizeOperators', () => {
     expect(pluralizeOperators(5)).toBe('5 операторов')
     expect(pluralizeOperators(11)).toBe('11 операторов')
     expect(pluralizeOperators(25)).toBe('25 операторов')
-  })
-})
-
-describe('pluralizeTeams', () => {
-  it('one form', () => {
-    expect(pluralizeTeams(1)).toBe('1 команда')
-    expect(pluralizeTeams(101)).toBe('101 команда')
-  })
-  it('few form', () => {
-    expect(pluralizeTeams(3)).toBe('3 команды')
-    expect(pluralizeTeams(24)).toBe('24 команды')
-  })
-  it('many form', () => {
-    expect(pluralizeTeams(0)).toBe('0 команд')
-    expect(pluralizeTeams(5)).toBe('5 команд')
-    expect(pluralizeTeams(12)).toBe('12 команд')
   })
 })
 

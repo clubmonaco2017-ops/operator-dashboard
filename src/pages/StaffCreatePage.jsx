@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../useAuth.jsx'
-import { Sidebar } from '../components/Sidebar.jsx'
 import { RefCodePreview } from '../components/staff/RefCodePreview.jsx'
 import { defaultPermissions } from '../lib/defaultPermissions.js'
 import { permissionGroups } from '../lib/permissionGroups.js'
@@ -15,7 +14,7 @@ const ROLES = [
 ]
 
 export function StaffCreatePage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const [role, setRole] = useState('moderator')
@@ -87,10 +86,8 @@ export function StaffCreatePage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
-      <Sidebar user={user} onLogout={logout} />
-      <main className="flex-1 p-4 sm:p-6">
-        <div className="mx-auto max-w-2xl">
+    <div className="p-4 sm:p-6">
+      <div className="mx-auto max-w-2xl">
           <nav className="mb-4 text-sm text-slate-500 dark:text-slate-400">
             <Link to="/staff" className="hover:underline">Сотрудники</Link>
             <span className="mx-2">›</span>
@@ -214,7 +211,6 @@ export function StaffCreatePage() {
             </div>
           </form>
         </div>
-      </main>
     </div>
   )
 }

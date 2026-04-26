@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  Outlet,
+  useLocation,
+  useNavigate,
+  useOutletContext,
+  useParams,
+} from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { useAuth } from '../useAuth.jsx'
-import { Sidebar } from '../components/Sidebar.jsx'
 import { useTaskList } from '../hooks/useTaskList.js'
 import { hasPermission } from '../lib/permissions.js'
-import { pluralizeTasks } from '../lib/tasks.js'
 
 import { TaskBoxTabs } from '../components/tasks/TaskBoxTabs.jsx'
 import { TaskFilterChips } from '../components/tasks/TaskFilterChips.jsx'
@@ -15,6 +19,7 @@ import { TaskEmptyFilter } from '../components/tasks/EmptyFilter.jsx'
 import { TaskDetailEmptyHint } from '../components/tasks/DetailEmptyHint.jsx'
 import { CreateTaskSlideOut } from '../components/tasks/CreateTaskSlideOut.jsx'
 import { TaskDetailPanel } from '../components/tasks/TaskDetailPanel.jsx'
+import { MasterDetailLayout, ListPane } from '../components/shell/index.js'
 
 const DEFAULT_STATUS = 'all'
 const DEFAULT_DEADLINE = 'all'
@@ -37,8 +42,7 @@ function applyDeadlineFilter(rows, filter, now = new Date()) {
     return rows.filter((r) => (r.effective_status || r.status) === 'overdue')
   }
   if (filter === 'today') {
-    const day = (d) =>
-      `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+    const day = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
     const todayKey = day(now)
     return rows.filter((r) => {
       if (!r.deadline) return false
@@ -60,8 +64,7 @@ function applyDeadlineFilter(rows, filter, now = new Date()) {
 }
 
 export function TaskListPage() {
-  const { user, logout } = useAuth()
-  const { taskId } = useParams()
+  const { user } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -93,11 +96,10 @@ export function TaskListPage() {
   const isZeroEmpty = isEmpty && !hasSearch && !hasFilter
   const isFilterEmpty = isEmpty && (hasSearch || hasFilter)
 
-  const detailIsOpen = !!taskId
-  const showMasterOnNarrow = !detailIsOpen
-  const showDetailOnNarrow = detailIsOpen
-
-  const selectedId = useMemo(() => (taskId ? Number(taskId) : null), [taskId])
+  // selectedId is read inside TaskDetailRoute via useParams; here we use the
+  // outermost taskId to keep <TaskList> highlight in sync.
+  const taskIdParam = useParams().taskId
+  const selectedId = taskIdParam ? Number(taskIdParam) : null
   const totalForTitle = displayRows.length
 
   function clearFilters() {
@@ -105,120 +107,89 @@ export function TaskListPage() {
     setDeadlineFilter(DEFAULT_DEADLINE)
   }
 
+  const titleNode = (
+    <span className="flex items-baseline gap-2">
+      Задачи
+      <span className="text-xs font-medium text-[var(--fg4)] tabular">
+        {totalForTitle}
+      </span>
+    </span>
+  )
+
+  const createButtonNode = canCreate ? (
+    <button
+      type="button"
+      onClick={() => setCreateOpen(true)}
+      className="btn-primary text-xs px-2.5 py-1.5"
+    >
+      + Новая
+    </button>
+  ) : null
+
+  const searchNode = <SearchInput value={search} onChange={setSearch} />
+
+  const filtersNode = (
+    <div className="flex flex-col gap-3">
+      <TaskBoxTabs box={box} hasViewAll={hasViewAll} />
+      {!isZeroEmpty && (
+        <TaskFilterChips
+          status={status}
+          deadlineFilter={deadlineFilter}
+          onStatusChange={setStatus}
+          onDeadlineChange={setDeadlineFilter}
+        />
+      )}
+    </div>
+  )
+
+  const listBody = error ? (
+    <div className="px-4 py-6 text-sm text-[var(--danger-ink)]" role="alert">
+      Ошибка: {error}
+    </div>
+  ) : loading ? (
+    <TaskListSkeletonWithSlowHint />
+  ) : isZeroEmpty ? (
+    <TaskEmptyZero
+      box={box}
+      canCreate={canCreate}
+      onCreate={() => setCreateOpen(true)}
+    />
+  ) : isFilterEmpty ? (
+    <TaskEmptyFilter
+      hasSearch={hasSearch}
+      hasFilter={hasFilter}
+      onClearSearch={() => setSearch('')}
+      onClearFilters={clearFilters}
+    />
+  ) : (
+    <TaskList rows={displayRows} selectedId={selectedId} basePath={basePath} />
+  )
+
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar user={user} onLogout={logout} />
-      <main className="flex flex-1">
-        {/* Master panel */}
-        <section
-          className={[
-            'flex flex-col border-r border-border bg-card',
-            isZeroEmpty || isFilterEmpty ? 'flex-1' : 'lg:w-[440px] lg:shrink-0',
-            !isZeroEmpty && !isFilterEmpty && (showMasterOnNarrow ? 'flex-1 lg:flex-initial' : 'hidden lg:flex'),
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          aria-label="Список задач"
-        >
-          <header className="flex items-center gap-3 px-5 pt-5 pb-3">
-            <h1 className="flex items-baseline gap-2 text-xl font-bold text-foreground">
-              Задачи
-              <span className="text-sm font-medium text-[var(--fg4)] tabular">
-                {totalForTitle}
-              </span>
-            </h1>
-            <div className="flex-1" />
-            {canCreate && (
-              <button
-                type="button"
-                onClick={() => setCreateOpen(true)}
-                className="btn-primary"
-              >
-                + Новая задача
-              </button>
-            )}
-          </header>
-
-          <div className="px-5 pb-3">
-            <TaskBoxTabs box={box} hasViewAll={hasViewAll} />
-          </div>
-
-          <div className="px-5 pb-3">
-            <SearchInput value={search} onChange={setSearch} />
-          </div>
-
-          {!isZeroEmpty && (
-            <div className="px-5 pb-3">
-              <TaskFilterChips
-                status={status}
-                deadlineFilter={deadlineFilter}
-                onStatusChange={setStatus}
-                onDeadlineChange={setDeadlineFilter}
-              />
-            </div>
-          )}
-
-          <div className="flex-1 overflow-auto">
-            {error ? (
-              <div className="px-4 py-6 text-sm text-[var(--danger-ink)]" role="alert">
-                Ошибка: {error}
-              </div>
-            ) : loading ? (
-              <TaskListSkeletonWithSlowHint />
-            ) : isZeroEmpty ? (
-              <TaskEmptyZero
-                box={box}
-                canCreate={canCreate}
-                onCreate={() => setCreateOpen(true)}
-              />
-            ) : isFilterEmpty ? (
-              <TaskEmptyFilter
-                hasSearch={hasSearch}
-                hasFilter={hasFilter}
-                onClearSearch={() => setSearch('')}
-                onClearFilters={clearFilters}
-              />
-            ) : (
-              <TaskList
-                rows={displayRows}
-                selectedId={selectedId}
-                basePath={basePath}
-              />
-            )}
-          </div>
-
-          {!loading && !error && displayRows.length > 0 && (
-            <footer className="border-t border-border px-5 py-2.5 text-xs text-muted-foreground">
-              <span className="tabular">{pluralizeTasks(displayRows.length)}</span>
-            </footer>
-          )}
-        </section>
-
-        {/* Detail panel */}
-        {!(isZeroEmpty || isFilterEmpty) && (
-          <section
-            className={[
-              'flex-1 overflow-hidden bg-card',
-              showDetailOnNarrow ? 'flex' : 'hidden lg:flex',
-            ].join(' ')}
-            aria-label="Детали задачи"
+    <>
+      <MasterDetailLayout
+        listPane={
+          <ListPane
+            title={titleNode}
+            search={searchNode}
+            filters={filtersNode}
+            createButton={createButtonNode}
           >
-            {detailIsOpen ? (
-              <TaskDetailPanel
-                callerId={user?.id}
-                user={user}
-                taskId={selectedId}
-                siblings={displayRows}
-                onChanged={reload}
-                onBack={() => navigate(basePath)}
-                onDeleted={() => navigate(basePath)}
-              />
-            ) : (
-              <TaskDetailEmptyHint />
-            )}
-          </section>
-        )}
-      </main>
+            {listBody}
+          </ListPane>
+        }
+      >
+        <Outlet
+          context={{
+            rows: displayRows,
+            reload,
+            callerId: user?.id,
+            user,
+            box,
+            basePath,
+          }}
+        />
+      </MasterDetailLayout>
 
       {createOpen && (
         <CreateTaskSlideOut
@@ -231,7 +202,30 @@ export function TaskListPage() {
           }}
         />
       )}
-    </div>
+    </>
+  )
+}
+
+// Index child route — shows the empty hint when no task is selected.
+export function TaskDetailEmpty() {
+  return <TaskDetailEmptyHint />
+}
+
+// Detail child route — pulls taskId from URL and shared data from outlet context.
+export function TaskDetailRoute() {
+  const { taskId } = useParams()
+  const navigate = useNavigate()
+  const { rows, reload, callerId, user, basePath } = useOutletContext()
+  return (
+    <TaskDetailPanel
+      callerId={callerId}
+      user={user}
+      taskId={Number(taskId)}
+      siblings={rows}
+      onChanged={reload}
+      onBack={() => navigate(basePath)}
+      onDeleted={() => navigate(basePath)}
+    />
   )
 }
 
@@ -308,7 +302,7 @@ function SearchInput({ value, onChange }) {
         onChange={(e) => onChange(e.target.value)}
         placeholder="Поиск по задаче, автору или исполнителю…"
         aria-label="Поиск задач"
-        className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
+        className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-1.5 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
       />
     </label>
   )

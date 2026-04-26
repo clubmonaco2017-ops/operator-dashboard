@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Outlet, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { useAuth } from '../useAuth.jsx'
-import { Sidebar } from '../components/Sidebar.jsx'
 import { useTeamList } from '../hooks/useTeamList.js'
 import { TeamList } from '../components/teams/TeamList.jsx'
 import { TeamFilterChips } from '../components/teams/TeamFilterChips.jsx'
@@ -11,10 +10,10 @@ import { TeamEmptyFilter } from '../components/teams/EmptyFilter.jsx'
 import { TeamDetailEmptyHint } from '../components/teams/DetailEmptyHint.jsx'
 import { CreateTeamSlideOut } from '../components/teams/CreateTeamSlideOut.jsx'
 import { TeamDetailPanel } from '../components/teams/TeamDetailPanel.jsx'
-import { pluralizeTeams } from '../lib/teams.js'
+import { MasterDetailLayout, ListPane } from '../components/shell/index.js'
 
 export function TeamListPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { teamId } = useParams()
   const navigate = useNavigate()
 
@@ -31,116 +30,69 @@ export function TeamListPage() {
   const isZeroEmpty = isEmpty && !hasSearch && !hasActiveFilter
   const isFilterEmpty = isEmpty && (hasSearch || hasActiveFilter)
 
-  const detailIsOpen = !!teamId
+  const selectedId = teamId ? Number(teamId) : null
   const totalForTitle = rows.length
 
-  // 1024-px breakpoint: master-detail collapses to single panel.
-  // When teamId set on narrow → show detail; иначе — master.
-  const showMasterOnNarrow = !detailIsOpen
-  const showDetailOnNarrow = detailIsOpen
+  const titleNode = (
+    <span className="flex items-baseline gap-2">
+      Команды
+      <span className="text-xs font-medium text-[var(--fg4)] tabular">
+        {totalForTitle}
+      </span>
+    </span>
+  )
 
-  const selectedId = useMemo(() => (teamId ? Number(teamId) : null), [teamId])
+  const createButtonNode = isAdmin ? (
+    <button
+      type="button"
+      onClick={() => setCreateOpen(true)}
+      className="btn-primary text-xs px-2.5 py-1.5"
+    >
+      + Новая
+    </button>
+  ) : null
+
+  const searchNode = <SearchInput value={search} onChange={setSearch} />
+
+  const filtersNode = !isZeroEmpty ? (
+    <TeamFilterChips value={active} onChange={setActive} />
+  ) : null
+
+  const listBody = error ? (
+    <div className="px-4 py-6 text-sm text-[var(--danger-ink)]" role="alert">
+      Ошибка: {error}
+    </div>
+  ) : loading ? (
+    <TeamListSkeleton />
+  ) : isZeroEmpty ? (
+    <TeamEmptyZero canCreate={isAdmin} onCreate={() => setCreateOpen(true)} />
+  ) : isFilterEmpty ? (
+    <TeamEmptyFilter
+      hasSearch={hasSearch}
+      hasActiveFilter={hasActiveFilter}
+      onClearSearch={() => setSearch('')}
+      onClearActive={() => setActive('active')}
+    />
+  ) : (
+    <TeamList rows={rows} selectedId={selectedId} user={user} />
+  )
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar user={user} onLogout={logout} />
-      <main className="flex flex-1">
-        {/* Master panel */}
-        <section
-          className={[
-            'flex flex-col border-r border-border bg-card',
-            isZeroEmpty || isFilterEmpty ? 'flex-1' : 'lg:w-[440px] lg:shrink-0',
-            !isZeroEmpty && !isFilterEmpty && (showMasterOnNarrow ? 'flex-1 lg:flex-initial' : 'hidden lg:flex'),
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          aria-label="Список команд"
-        >
-          <header className="flex items-center gap-3 px-5 pt-5 pb-3">
-            <h1 className="flex items-baseline gap-2 text-xl font-bold text-foreground">
-              Команды
-              <span className="text-sm font-medium text-[var(--fg4)] tabular">
-                {totalForTitle}
-              </span>
-            </h1>
-            <div className="flex-1" />
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setCreateOpen(true)}
-                className="btn-primary"
-              >
-                + Создать команду
-              </button>
-            )}
-          </header>
-
-          {/* Search */}
-          <div className="px-5 pb-3">
-            <SearchInput value={search} onChange={setSearch} />
-          </div>
-
-          {/* Filter chips */}
-          {!isZeroEmpty && (
-            <div className="px-5 pb-3">
-              <TeamFilterChips value={active} onChange={setActive} />
-            </div>
-          )}
-
-          {/* Body: list / empty / loading / error */}
-          <div className="flex-1 overflow-auto">
-            {error ? (
-              <div className="px-4 py-6 text-sm text-[var(--danger-ink)]" role="alert">
-                Ошибка: {error}
-              </div>
-            ) : loading ? (
-              <TeamListSkeleton />
-            ) : isZeroEmpty ? (
-              <TeamEmptyZero canCreate={isAdmin} onCreate={() => setCreateOpen(true)} />
-            ) : isFilterEmpty ? (
-              <TeamEmptyFilter
-                hasSearch={hasSearch}
-                hasActiveFilter={hasActiveFilter}
-                onClearSearch={() => setSearch('')}
-                onClearActive={() => setActive('active')}
-              />
-            ) : (
-              <TeamList rows={rows} selectedId={selectedId} user={user} />
-            )}
-          </div>
-
-          {/* Footer counter */}
-          {!loading && !error && rows.length > 0 && (
-            <footer className="border-t border-border px-5 py-2.5 text-xs text-muted-foreground">
-              <span className="tabular">{pluralizeTeams(rows.length)}</span>
-            </footer>
-          )}
-        </section>
-
-        {/* Detail panel */}
-        {!(isZeroEmpty || isFilterEmpty) && (
-          <section
-            className={[
-              'flex-1 overflow-hidden bg-card',
-              showDetailOnNarrow ? 'flex' : 'hidden lg:flex',
-            ].join(' ')}
-            aria-label="Профиль команды"
+    <>
+      <MasterDetailLayout
+        listPane={
+          <ListPane
+            title={titleNode}
+            search={searchNode}
+            filters={filtersNode}
+            createButton={createButtonNode}
           >
-            {detailIsOpen ? (
-              <TeamDetailPanel
-                callerId={user?.id}
-                user={user}
-                teamId={Number(teamId)}
-                siblings={rows}
-                onChanged={reload}
-                onBack={() => navigate('/teams')}
-              />
-            ) : (
-              <TeamDetailEmptyHint />
-            )}
-          </section>
-        )}
-      </main>
+            {listBody}
+          </ListPane>
+        }
+      >
+        <Outlet context={{ rows, reload, callerId: user?.id, user }} />
+      </MasterDetailLayout>
 
       {createOpen && (
         <CreateTeamSlideOut
@@ -153,12 +105,34 @@ export function TeamListPage() {
           }}
         />
       )}
-    </div>
+    </>
+  )
+}
+
+// Index child route — shows the empty hint when no team is selected.
+export function TeamDetailEmpty() {
+  return <TeamDetailEmptyHint />
+}
+
+// Detail child route — pulls teamId from URL and shared data from outlet context.
+export function TeamDetailRoute() {
+  const { teamId } = useParams()
+  const navigate = useNavigate()
+  const { rows, reload, callerId, user } = useOutletContext()
+  return (
+    <TeamDetailPanel
+      callerId={callerId}
+      user={user}
+      teamId={Number(teamId)}
+      siblings={rows}
+      onChanged={reload}
+      onBack={() => navigate('/teams')}
+    />
   )
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton + placeholder + search
+// Skeleton + search
 // ---------------------------------------------------------------------------
 
 function TeamListSkeleton() {
@@ -206,7 +180,7 @@ function SearchInput({ value, onChange }) {
         onChange={(e) => onChange(e.target.value)}
         placeholder="Поиск по названию или лиду…"
         aria-label="Поиск команд по названию или лиду"
-        className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
+        className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-1.5 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
       />
     </label>
   )

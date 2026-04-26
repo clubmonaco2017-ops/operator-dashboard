@@ -2,14 +2,13 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../useAuth.jsx'
 import { useStaffList } from '../hooks/useStaffList.js'
-import { Sidebar } from '../components/Sidebar.jsx'
 import { StaffFilterChips } from '../components/staff/StaffFilterChips.jsx'
 import { StaffTable } from '../components/staff/StaffTable.jsx'
 import { StaffCardList } from '../components/staff/StaffCardList.jsx'
 import { hasPermission } from '../lib/permissions.js'
 
 export function StaffListPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { rows, counts, loading, error } = useStaffList(user?.id)
   const [role, setRole] = useState('all')
   const [search, setSearch] = useState('')
@@ -32,10 +31,8 @@ export function StaffListPage() {
   const canCreate = hasPermission(user, 'create_users')
 
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
-      <Sidebar user={user} onLogout={logout} />
-      <main className="flex-1 p-4 sm:p-6">
-        <div className="mx-auto max-w-6xl">
+    <div className="p-4 sm:p-6">
+      <div className="mx-auto max-w-6xl">
           <header className="mb-4 flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
               Сотрудники
@@ -80,7 +77,6 @@ export function StaffListPage() {
             </>
           )}
         </div>
-      </main>
     </div>
   )
 }

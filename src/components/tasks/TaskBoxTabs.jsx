@@ -20,7 +20,7 @@ export function TaskBoxTabs({ box, hasViewAll }) {
     <div
       role="tablist"
       aria-label="Тип задач"
-      className="flex items-center gap-1 border-b border-border"
+      className="flex items-center gap-1"
     >
       {tabs.map((tab) => {
         const active = box === tab.key
