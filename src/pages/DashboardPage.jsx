@@ -304,10 +304,10 @@ export function DashboardPage() {
   const canViewTop     = hasPermission(user, 'view_top')
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 transition-colors">
+    <div className="transition-colors">
       {/* Filter toolbar — replaces decorative header (logo/h1/subtitle and duplicate nav links removed). */}
       {/* Functional controls preserved: date range, hour filter, "Сегодня", refresh, timestamp, TZ, ThemeSwitcher. */}
-      <div className="px-6 pt-4 pb-3 flex items-center gap-3 flex-wrap border-b border-border bg-background">
+      <div className="px-6 pt-4 pb-3 flex items-center gap-3 flex-wrap">
         {/* Date range */}
         <div className="flex items-center gap-2">
           <input

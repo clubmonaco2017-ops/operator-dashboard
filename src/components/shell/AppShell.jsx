@@ -9,7 +9,7 @@ export function AppShell() {
       <div className="grid grid-cols-[56px_1fr] grid-rows-[48px_1fr] h-screen">
         <RailNav className="row-span-2" />
         <AppHeader />
-        <main className="overflow-hidden">
+        <main className="overflow-auto">
           <Outlet />
         </main>
       </div>
