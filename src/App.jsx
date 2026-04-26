@@ -9,6 +9,7 @@ import { StaffDetailPage } from './pages/StaffDetailPage.jsx'
 import { NotificationsPage } from './pages/NotificationsPage.jsx'
 import { ClientListPage } from './pages/ClientListPage.jsx'
 import { TeamListPage } from './pages/TeamListPage.jsx'
+import { TaskListPage } from './pages/TaskListPage.jsx'
 import { isSuperadmin } from './lib/permissions.js'
 
 export default function App() {
@@ -31,6 +32,12 @@ export default function App() {
       <Route path="/clients/:clientId/:tab" element={<ClientListPage />} />
       <Route path="/teams" element={<TeamListPage />} />
       <Route path="/teams/:teamId" element={<TeamListPage />} />
+      <Route path="/tasks" element={<TaskListPage />} />
+      <Route path="/tasks/outbox" element={<TaskListPage />} />
+      <Route path="/tasks/all" element={<TaskListPage />} />
+      <Route path="/tasks/outbox/:taskId" element={<TaskListPage />} />
+      <Route path="/tasks/all/:taskId" element={<TaskListPage />} />
+      <Route path="/tasks/:taskId" element={<TaskListPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
       {isSuperadmin(user) && (
         <Route

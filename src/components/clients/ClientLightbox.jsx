@@ -119,7 +119,10 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
 
   const url = useMemo(() => {
     if (!current) return ''
-    const bucket = current.type === 'video' ? 'client-videos' : 'client-photos'
+    // Subplan 5+: each item can specify its own bucket (e.g. 'task-reports').
+    // Subplan 3 fallback: derive bucket from media type.
+    const bucket =
+      current.bucket || (current.type === 'video' ? 'client-videos' : 'client-photos')
     return supabase.storage.from(bucket).getPublicUrl(current.storage_path).data.publicUrl
   }, [current])
 
