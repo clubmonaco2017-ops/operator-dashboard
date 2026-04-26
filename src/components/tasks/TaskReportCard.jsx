@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Pencil, Play, Upload, X } from 'lucide-react'
 import { supabase } from '../../supabaseClient.js'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import {
@@ -127,7 +128,7 @@ function ReportDoneView({ callerId, user, task, onChanged }) {
             className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
             aria-label="Редактировать отчёт"
           >
-            <PencilIcon />
+            <Pencil size={14} />
           </button>
         )}
       </div>
@@ -214,7 +215,7 @@ function ReportMediaTile({ media, onOpen }) {
           />
           <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <span className="rounded-full bg-black/60 p-2 text-white">
-              <PlayIcon />
+              <Play size={16} />
             </span>
           </span>
           {media.duration_ms && (
@@ -481,7 +482,7 @@ function ReportForm({
           disabled={isUploading || submitting}
           className="btn-ghost text-xs"
         >
-          <UploadIcon /> Прикрепить файл
+          <Upload size={14} /> Прикрепить файл
         </button>
         <span className="ml-2 text-xs text-muted-foreground">
           или перетащите · фото до 25 МБ · видео до 500 МБ
@@ -598,7 +599,7 @@ function MediaUploadTile({ media, onRemove, disabled }) {
         aria-label={`Убрать ${media.filename}`}
         className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white opacity-0 transition-opacity hover:bg-black/90 group-hover:opacity-100 focus-visible:opacity-100 disabled:opacity-50"
       >
-        <CloseIcon />
+        <X size={10} />
       </button>
     </div>
   )
@@ -720,57 +721,3 @@ function readVideoMetadata(file) {
   })
 }
 
-// ============================================================================
-// Icons
-// ============================================================================
-
-function PencilIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path
-        d="M2 12l1-3 7-7 2 2-7 7-3 1zM9 3l2 2"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        fill="none"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function UploadIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path
-        d="M7 9V2.5M7 2.5l-2.5 2.5M7 2.5l2.5 2.5M2.5 9.5v1.5a1 1 0 001 1h7a1 1 0 001-1V9.5"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
-      <path
-        d="M2 2l6 6M8 2l-6 6"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function PlayIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <path d="M5 3l8 5-8 5z" fill="currentColor" />
-    </svg>
-  )
-}

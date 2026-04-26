@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Pencil } from 'lucide-react'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import { canEditTask } from '../../lib/tasks.js'
 
@@ -60,7 +61,7 @@ export function TaskDescriptionCard({ callerId, user, task, onChanged }) {
             className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
             aria-label="Редактировать описание"
           >
-            <PencilIcon />
+            <Pencil size={14} />
           </button>
         )}
       </header>
@@ -111,17 +112,3 @@ export function TaskDescriptionCard({ callerId, user, task, onChanged }) {
   )
 }
 
-function PencilIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path
-        d="M2 12l1-3 7-7 2 2-7 7-3 1zM9 3l2 2"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        fill="none"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}

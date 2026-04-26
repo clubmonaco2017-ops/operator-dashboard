@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Pencil } from 'lucide-react'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import { canEditTask, formatDeadlineRelative } from '../../lib/tasks.js'
 import { AssigneeSelector } from './AssigneeSelector.jsx'
@@ -106,7 +107,7 @@ function DeadlineField({ callerId, task, editable, onChanged }) {
             className="rounded-md p-0.5 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
             aria-label="Редактировать дедлайн"
           >
-            <PencilIcon />
+            <Pencil size={14} />
           </button>
         )}
       </div>
@@ -218,7 +219,7 @@ function AssigneeField({ callerId, task, editable, canReassign, onChanged }) {
             className="rounded-md p-0.5 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
             aria-label="Изменить исполнителя"
           >
-            <PencilIcon />
+            <Pencil size={14} />
           </button>
         )}
       </div>
@@ -293,17 +294,3 @@ function formatAbsoluteDeadline(iso) {
   return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-function PencilIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path
-        d="M2 12l1-3 7-7 2 2-7 7-3 1zM9 3l2 2"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        fill="none"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
