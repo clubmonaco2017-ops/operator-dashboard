@@ -35,13 +35,15 @@ export function UserMenuDropdown({ user, onLogout }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="rounded-full" aria-label="Меню пользователя">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-        </button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <button className="rounded-full" aria-label="Меню пользователя">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+          </button>
+        }
+      />
       <DropdownMenuContent side="right" align="end" className="min-w-[200px]">
         <div className="px-2 py-1.5">
           <div className="text-sm font-semibold">{displayName}</div>

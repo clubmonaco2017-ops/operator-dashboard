@@ -23,30 +23,32 @@ import { UserMenuDropdown } from './UserMenuDropdown.jsx'
 function RailItem({ to, end, icon, label, badge }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <NavLink
-          to={to}
-          end={end}
-          aria-label={label}
-          className={({ isActive }) =>
-            `relative w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-              isActive
-                ? 'bg-primary text-primary-foreground'
-                : 'text-[var(--fg2)] hover:bg-muted'
-            }`
-          }
-        >
-          {icon}
-          {badge > 0 && (
-            <span
-              className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-[var(--danger)] text-white text-[9px] font-semibold rounded-full px-1 flex items-center justify-center tabular"
-              aria-label={`${badge} непрочитанных`}
-            >
-              {badge > 99 ? '99+' : badge}
-            </span>
-          )}
-        </NavLink>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <NavLink
+            to={to}
+            end={end}
+            aria-label={label}
+            className={({ isActive }) =>
+              `relative w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-[var(--fg2)] hover:bg-muted'
+              }`
+            }
+          >
+            {icon}
+            {badge > 0 && (
+              <span
+                className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-[var(--danger)] text-white text-[9px] font-semibold rounded-full px-1 flex items-center justify-center tabular"
+                aria-label={`${badge} непрочитанных`}
+              >
+                {badge > 99 ? '99+' : badge}
+              </span>
+            )}
+          </NavLink>
+        }
+      />
       <TooltipContent side="right">{label}</TooltipContent>
     </Tooltip>
   )
