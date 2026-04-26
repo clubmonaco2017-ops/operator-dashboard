@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import {
-  pluralizeTasks,
   formatDeadlineRelative,
   computeEffectiveStatus,
   canEditTask,
@@ -11,27 +10,6 @@ import {
   validateTaskTitle,
   validateReport,
 } from './tasks.js'
-
-describe('pluralizeTasks', () => {
-  it('one form', () => {
-    expect(pluralizeTasks(1)).toBe('1 задача')
-    expect(pluralizeTasks(21)).toBe('21 задача')
-    expect(pluralizeTasks(101)).toBe('101 задача')
-  })
-  it('few form', () => {
-    expect(pluralizeTasks(2)).toBe('2 задачи')
-    expect(pluralizeTasks(3)).toBe('3 задачи')
-    expect(pluralizeTasks(4)).toBe('4 задачи')
-    expect(pluralizeTasks(22)).toBe('22 задачи')
-  })
-  it('many form', () => {
-    expect(pluralizeTasks(0)).toBe('0 задач')
-    expect(pluralizeTasks(5)).toBe('5 задач')
-    expect(pluralizeTasks(11)).toBe('11 задач')
-    expect(pluralizeTasks(15)).toBe('15 задач')
-    expect(pluralizeTasks(25)).toBe('25 задач')
-  })
-})
 
 describe('formatDeadlineRelative', () => {
   const now = new Date('2026-04-25T12:00:00')

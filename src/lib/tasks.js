@@ -5,14 +5,6 @@
 import { pluralRu } from './clients.js'
 
 /**
- * Plural-форма для слова «задача».
- * @param {number} n
- * @returns {string}
- */
-export const pluralizeTasks = (n) =>
-  `${n} ${pluralRu(n, { one: 'задача', few: 'задачи', many: 'задач' })}`
-
-/**
  * Форматирует дедлайн относительно `now`:
  *  - null/невалидная дата → '';
  *  - просрочено → 'просрочено N дней';
