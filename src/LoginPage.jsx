@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BarChart3 } from 'lucide-react'
 
 export default function LoginPage({ onLogin, loading }) {
   const [email, setEmail] = useState('')
@@ -25,8 +26,8 @@ export default function LoginPage({ onLogin, loading }) {
       <div className="w-full max-w-sm">
         {/* Logo / title */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-3xl mb-4 shadow-lg">
-            📊
+          <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg">
+            <BarChart3 size={28} />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Дашборд операторов</h1>
           <p className="text-sm text-slate-400 mt-1">Войдите в свой аккаунт</p>

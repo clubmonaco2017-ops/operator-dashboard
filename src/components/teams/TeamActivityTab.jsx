@@ -1,3 +1,16 @@
+import {
+  Activity,
+  Archive,
+  ArchiveRestore,
+  ArrowLeftRight,
+  Crown,
+  Link as LinkIcon,
+  Pencil,
+  Plus,
+  Unlink,
+  UserMinus,
+  UserPlus,
+} from 'lucide-react'
 import { useTeamActivity } from '../../hooks/useTeamActivity.js'
 
 /**
@@ -30,7 +43,9 @@ export function TeamActivityTab({ callerId, teamId }) {
       <ul className="flex flex-col gap-3">
         {rows.map((evt) => (
           <li key={evt.id} className="flex items-start gap-2.5">
-            <EventIcon type={evt.event_type} />
+            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[var(--fg4)]">
+              {eventIcon(evt.event_type)}
+            </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm leading-snug text-[var(--fg2)]">
                 <span className="font-medium text-foreground">
@@ -146,62 +161,33 @@ function formatRelative(iso) {
 // Icons
 // ---------------------------------------------------------------------------
 
-function EventIcon({ type }) {
-  let kind = 'default'
-  if (type === 'team_created' || type === 'team_restored') kind = 'create'
-  else if (type === 'member_added' || type === 'member_removed' || type === 'member_moved' || type === 'lead_changed') {
-    kind = 'member'
-  } else if (
-    type === 'clients_assigned' ||
-    type === 'client_unassigned' ||
-    type === 'client_moved'
-  ) {
-    kind = 'client'
-  } else if (type === 'team_archived') kind = 'archive'
-
-  return (
-    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[var(--fg4)]">
-      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-        {kind === 'create' && (
-          <path
-            d="M3 6.5l2 2 4-5"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        )}
-        {kind === 'member' && (
-          <>
-            <circle cx="6" cy="4.5" r="1.8" fill="none" stroke="currentColor" strokeWidth="1.2" />
-            <path
-              d="M2.5 10.5c.4-2 1.7-3 3.5-3s3.1 1 3.5 3"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-            />
-          </>
-        )}
-        {kind === 'client' && (
-          <>
-            <rect x="2" y="3" width="8" height="7" rx="1" fill="none" stroke="currentColor" strokeWidth="1.1" />
-            <path d="M4 5.5h4M4 7.5h4M4 9h2.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-          </>
-        )}
-        {kind === 'archive' && (
-          <>
-            <path d="M2 4h8v6H2z" fill="none" stroke="currentColor" strokeWidth="1.2" />
-            <path d="M4 6h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-          </>
-        )}
-        {kind === 'default' && (
-          <circle cx="6" cy="6" r="1.4" fill="currentColor" />
-        )}
-      </svg>
-    </span>
-  )
+function eventIcon(type) {
+  switch (type) {
+    case 'team_created':
+      return <Plus size={12} aria-hidden />
+    case 'team_renamed':
+      return <Pencil size={12} aria-hidden />
+    case 'lead_changed':
+      return <Crown size={12} aria-hidden />
+    case 'member_added':
+      return <UserPlus size={12} aria-hidden />
+    case 'member_removed':
+      return <UserMinus size={12} aria-hidden />
+    case 'member_moved':
+      return <ArrowLeftRight size={12} aria-hidden />
+    case 'clients_assigned':
+      return <LinkIcon size={12} aria-hidden />
+    case 'client_unassigned':
+      return <Unlink size={12} aria-hidden />
+    case 'client_moved':
+      return <ArrowLeftRight size={12} aria-hidden />
+    case 'team_archived':
+      return <Archive size={12} aria-hidden />
+    case 'team_restored':
+      return <ArchiveRestore size={12} aria-hidden />
+    default:
+      return <Activity size={12} aria-hidden />
+  }
 }
 
 function ListSkeleton() {

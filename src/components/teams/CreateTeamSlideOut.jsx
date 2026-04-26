@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Check, Loader2, X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useTeamActions } from '../../hooks/useTeamActions.js'
 import { validateTeamName, formatLeadRole } from '../../lib/teams.js'
@@ -145,7 +146,7 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
             aria-label="Закрыть форму создания команды"
             className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
           >
-            <CloseIcon />
+            <X size={20} />
           </button>
         </header>
 
@@ -235,10 +236,10 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
               >
                 {submitting ? (
                   <>
-                    <Spinner /> Создаётся…
+                    <Loader2 size={14} className="animate-spin" /> Создаётся…
                   </>
                 ) : (
-                  <>✓ Создать команду</>
+                  <><Check size={14} className="inline mr-1.5" />Создать команду</>
                 )}
               </button>
             </div>
@@ -296,30 +297,3 @@ function selectCls(hasError) {
   return inputCls(hasError) + ' cursor-pointer'
 }
 
-function CloseIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
-      <path
-        d="M5 5l10 10M15 5L5 15"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function Spinner() {
-  return (
-    <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
-      <path
-        d="M12.5 7a5.5 5.5 0 00-5.5-5.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}

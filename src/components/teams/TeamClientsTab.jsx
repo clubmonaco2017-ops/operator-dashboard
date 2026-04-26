@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Search, X } from 'lucide-react'
 import { useTeamClients } from '../../hooks/useTeamClients.js'
 import { canEditTeam } from '../../lib/teams.js'
 import { initials } from '../../lib/clients.js'
@@ -43,7 +44,11 @@ export function TeamClientsTab({ callerId, user, row, reload }) {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-0 flex-1 sm:max-w-sm">
-          <SearchIcon />
+          <Search
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg4)]"
+            aria-hidden
+          />
           <input
             type="search"
             value={search}
@@ -98,7 +103,7 @@ export function TeamClientsTab({ callerId, user, row, reload }) {
                   aria-label={`Снять клиента ${c.name ?? ''} с команды`}
                   className="rounded-md p-1.5 text-[var(--fg4)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-ink)] disabled:opacity-50 focus-ds"
                 >
-                  <CloseIcon />
+                  <X size={14} />
                 </button>
               )}
             </li>
@@ -178,23 +183,3 @@ function ClientAvatar({ avatarUrl, name }) {
   )
 }
 
-function CloseIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--fg4)]"
-      viewBox="0 0 20 20"
-      aria-hidden
-    >
-      <circle cx="9" cy="9" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M14 14l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}

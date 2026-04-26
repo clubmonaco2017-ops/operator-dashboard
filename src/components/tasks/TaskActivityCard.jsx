@@ -1,3 +1,14 @@
+import {
+  Ban,
+  Calendar,
+  CheckCircle2,
+  FileText,
+  Pencil,
+  PlayCircle,
+  Plus,
+  UserCog,
+} from 'lucide-react'
+
 /**
  * Карточка «История» в TaskDetailPanel.
  * Читает activity (last-12) напрямую из task.activity payload (loaded by useTask).
@@ -14,7 +25,9 @@ export function TaskActivityCard({ activity = [] }) {
         <ul className="flex flex-col gap-3">
           {activity.map((evt) => (
             <li key={evt.id} className="flex items-start gap-2.5">
-              <EventIcon type={evt.event_type} />
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[var(--fg4)]">
+                {eventIcon(evt.event_type)}
+              </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm leading-snug text-[var(--fg2)]">
                   <span className="font-medium text-foreground">
@@ -92,54 +105,25 @@ function formatRelative(iso) {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 
-function EventIcon({ type }) {
-  return (
-    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[var(--fg4)]">
-      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-        {type === 'task_created' ? (
-          <path
-            d="M6 2v8M2 6h8"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-          />
-        ) : type === 'taken_in_progress' ? (
-          <path
-            d="M3 6.5l2 2 4-5"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        ) : type === 'report_submitted' || type === 'report_updated' ? (
-          <path
-            d="M2 3h8v6H2zM4 6l1.5-1.5L7 6l3-3"
-            stroke="currentColor"
-            strokeWidth="1.2"
-            fill="none"
-            strokeLinejoin="round"
-          />
-        ) : type === 'task_cancelled' ? (
-          <path
-            d="M3 3l6 6M9 3l-6 6"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-          />
-        ) : type === 'task_reassigned' ? (
-          <path
-            d="M3 4h6l-2-2M9 8H3l2 2"
-            stroke="currentColor"
-            strokeWidth="1.2"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        ) : (
-          <path d="M2 6h8" stroke="currentColor" strokeWidth="1.2" />
-        )}
-      </svg>
-    </span>
-  )
+function eventIcon(eventType) {
+  switch (eventType) {
+    case 'task_created':
+      return <Plus size={12} />
+    case 'task_updated':
+      return <Pencil size={12} />
+    case 'taken_in_progress':
+      return <PlayCircle size={12} />
+    case 'report_submitted':
+      return <CheckCircle2 size={12} />
+    case 'report_updated':
+      return <FileText size={12} />
+    case 'task_cancelled':
+      return <Ban size={12} />
+    case 'deadline_changed':
+      return <Calendar size={12} />
+    case 'task_reassigned':
+      return <UserCog size={12} />
+    default:
+      return <Plus size={12} />
+  }
 }

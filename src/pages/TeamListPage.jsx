@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { Search } from 'lucide-react'
 import { useAuth } from '../useAuth.jsx'
 import { Sidebar } from '../components/Sidebar.jsx'
 import { useTeamList } from '../hooks/useTeamList.js'
@@ -198,7 +199,7 @@ function TeamListSkeleton() {
 function SearchInput({ value, onChange }) {
   return (
     <label className="relative flex items-center">
-      <SearchIcon />
+      <Search aria-hidden className="pointer-events-none absolute left-3 h-4 w-4 text-[var(--fg4)]" />
       <input
         type="search"
         value={value}
@@ -208,18 +209,5 @@ function SearchInput({ value, onChange }) {
         className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
       />
     </label>
-  )
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      className="pointer-events-none absolute left-3 h-4 w-4 text-[var(--fg4)]"
-      viewBox="0 0 20 20"
-      aria-hidden
-    >
-      <circle cx="9" cy="9" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M14 14l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
   )
 }

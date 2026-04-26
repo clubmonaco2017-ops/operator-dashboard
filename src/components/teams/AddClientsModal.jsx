@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Search, X } from 'lucide-react'
 import { useUnassignedClients } from '../../hooks/useUnassignedClients.js'
 import { initials, pluralizeClients } from '../../lib/clients.js'
 
@@ -82,13 +83,17 @@ export function AddClientsModal({ callerId, onClose, onAdd }) {
             aria-label="Закрыть"
             className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
           >
-            <CloseIcon />
+            <X size={18} />
           </button>
         </header>
 
         <div className="border-b border-border px-5 py-3">
           <label className="relative block">
-            <SearchIcon />
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg4)]"
+              aria-hidden
+            />
             <input
               ref={searchRef}
               type="search"
@@ -222,23 +227,3 @@ function ListSkeleton() {
   )
 }
 
-function CloseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-      <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--fg4)]"
-      viewBox="0 0 20 20"
-      aria-hidden
-    >
-      <circle cx="9" cy="9" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M14 14l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}

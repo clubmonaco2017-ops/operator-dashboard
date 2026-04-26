@@ -1,3 +1,5 @@
+import { ClipboardList } from 'lucide-react'
+
 /**
  * Empty state когда задач нет (под текущий box).
  *
@@ -14,7 +16,7 @@ export function TaskEmptyZero({ box, canCreate, onCreate }) {
     <div className="flex h-full items-center justify-center px-6 py-10">
       <div className="max-w-sm rounded-xl border border-dashed border-border-strong px-6 py-10 text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary-ink)]">
-          <ClipboardIcon />
+          <ClipboardList size={22} />
         </div>
         <h2 className="text-base font-semibold text-foreground">
           {copy.title}
@@ -49,29 +51,3 @@ const COPY = {
   },
 }
 
-function ClipboardIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-      <path
-        d="M9 4h6a1 1 0 011 1v1H8V5a1 1 0 011-1z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6 6h12v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 12h6M9 16h4"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}

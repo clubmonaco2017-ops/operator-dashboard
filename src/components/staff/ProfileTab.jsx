@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Lock } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../useAuth.jsx'
 import { hasPermission } from '../../lib/permissions.js'
@@ -49,8 +50,8 @@ export function ProfileTab({ row, onSaved }) {
         <Field label="Фамилия" value={lastName} onChange={setLastName} disabled={!canEdit} required />
         <Field label="Псевдоним" value={alias} onChange={setAlias} disabled={!canEdit} />
         <Field label="Email" value={email} onChange={setEmail} type="email" disabled={!canEdit} required />
-        <ReadOnly label="Реф-код 🔒" value={row.ref_code} mono />
-        <ReadOnly label="Роль 🔒" value={row.role} />
+        <ReadOnly label={<>Реф-код <Lock size={12} className="ml-1 inline opacity-60" /></>} value={row.ref_code} mono />
+        <ReadOnly label={<>Роль <Lock size={12} className="ml-1 inline opacity-60" /></>} value={row.role} />
         {error && <p className="text-sm text-red-500 sm:col-span-2" role="alert">{error}</p>}
         {canEdit && (
           <div className="sm:col-span-2">
