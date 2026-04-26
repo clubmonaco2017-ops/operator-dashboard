@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Outlet, useNavigate, useOutletContext, useParams } from 'react-router-dom'
-import { Search } from 'lucide-react'
 import { useAuth } from '../useAuth.jsx'
 import { useTeamList } from '../hooks/useTeamList.js'
 import { TeamList } from '../components/teams/TeamList.jsx'
@@ -10,7 +9,7 @@ import { TeamEmptyFilter } from '../components/teams/EmptyFilter.jsx'
 import { TeamDetailEmptyHint } from '../components/teams/DetailEmptyHint.jsx'
 import { CreateTeamSlideOut } from '../components/teams/CreateTeamSlideOut.jsx'
 import { TeamDetailPanel } from '../components/teams/TeamDetailPanel.jsx'
-import { MasterDetailLayout, ListPane } from '../components/shell/index.js'
+import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
 
 export function TeamListPage() {
   const { user } = useAuth()
@@ -52,7 +51,14 @@ export function TeamListPage() {
     </button>
   ) : null
 
-  const searchNode = <SearchInput value={search} onChange={setSearch} />
+  const searchNode = (
+    <SearchInput
+      placeholder="Поиск по названию или лиду…"
+      value={search}
+      onChange={setSearch}
+      ariaLabel="Поиск команд по названию или лиду"
+    />
+  )
 
   const filtersNode = !isZeroEmpty ? (
     <TeamFilterChips value={active} onChange={setActive} />
@@ -170,18 +176,3 @@ function TeamListSkeleton() {
   )
 }
 
-function SearchInput({ value, onChange }) {
-  return (
-    <label className="relative flex items-center">
-      <Search aria-hidden className="pointer-events-none absolute left-3 h-4 w-4 text-[var(--fg4)]" />
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Поиск по названию или лиду…"
-        aria-label="Поиск команд по названию или лиду"
-        className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-1.5 text-sm text-foreground placeholder:text-[var(--fg4)] outline-none focus:border-primary focus-ds"
-      />
-    </label>
-  )
-}
