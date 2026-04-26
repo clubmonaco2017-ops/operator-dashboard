@@ -3,6 +3,7 @@ import { hasPermission, isSuperadmin } from '../lib/permissions.js'
 import { usePendingDeletionCount } from '../hooks/usePendingDeletionCount.js'
 import { canSeeTeamsNav } from '../lib/teams.js'
 import { useUserTeamMembership } from '../hooks/useUserTeamMembership.js'
+import { useUserOverdueCount } from '../hooks/useUserOverdueCount.js'
 
 const linkBase =
   'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors focus-ds'
@@ -16,6 +17,8 @@ export function Sidebar({ user, onLogout }) {
   const pending = usePendingDeletionCount({ enabled: canSeeNotifications })
   const { has: hasTeamMembership } = useUserTeamMembership(user?.id)
   const canSeeTeams = canSeeTeamsNav(user, hasTeamMembership)
+  const canSeeTasks = hasPermission(user, 'view_own_tasks') || hasPermission(user, 'view_all_tasks')
+  const { count: overdueCount } = useUserOverdueCount(canSeeTasks ? user?.id : null)
 
   return (
     <aside
@@ -75,6 +78,25 @@ export function Sidebar({ user, onLogout }) {
             }
           >
             Команды
+          </NavLink>
+        )}
+
+        {canSeeTasks && (
+          <NavLink
+            to="/tasks"
+            className={({ isActive }) =>
+              `${linkBase} ${isActive ? linkActive : linkIdle}`
+            }
+          >
+            <span className="flex-1">Задачи</span>
+            {overdueCount > 0 && (
+              <span
+                className="rounded-full bg-[var(--danger)] px-2 py-0.5 text-xs font-semibold text-white tabular"
+                aria-label={`${overdueCount} просроченных задач`}
+              >
+                {overdueCount}
+              </span>
+            )}
           </NavLink>
         )}
 
