@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { useTeamMembers } from '../../hooks/useTeamMembers.js'
 import { canEditTeam, formatLeadRole } from '../../lib/teams.js'
 import { initials } from '../../lib/clients.js'
@@ -118,7 +119,7 @@ export function TeamMembersTab({ callerId, user, row, reload }) {
                     aria-label={`Убрать ${m.name ?? 'оператора'} из команды`}
                     className="rounded-md p-1.5 text-[var(--fg4)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-ink)] disabled:opacity-50 focus-ds"
                   >
-                    <CloseIcon />
+                    <X size={14} />
                   </button>
                 )}
               </li>
@@ -215,10 +216,3 @@ function InitialsAvatar({ name, avatarUrl, size = 'sm' }) {
   )
 }
 
-function CloseIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
