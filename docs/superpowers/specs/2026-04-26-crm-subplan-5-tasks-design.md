@@ -92,7 +92,9 @@ ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 CREATE TABLE task_reports (
   id           serial PRIMARY KEY,
   task_id      int NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-  reporter_id  int NOT NULL REFERENCES dashboard_users(id) ON DELETE SET NULL,
+  reporter_id  int REFERENCES dashboard_users(id) ON DELETE SET NULL,
+  -- nullable: ON DELETE SET NULL would otherwise contradict NOT NULL and block
+  -- dashboard_users deletion. Reports survive their author being removed.
   content      text,
   media        jsonb NOT NULL DEFAULT '[]'::jsonb,
   created_at   timestamptz NOT NULL DEFAULT now(),
