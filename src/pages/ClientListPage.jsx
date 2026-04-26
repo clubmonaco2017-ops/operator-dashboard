@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { Search } from 'lucide-react'
 import { useAuth } from '../useAuth.jsx'
 import { useClientList } from '../hooks/useClientList.js'
 import { usePlatforms } from '../hooks/usePlatforms.js'
@@ -198,7 +199,7 @@ export function ClientListPage() {
 function SearchInput({ value, onChange }) {
   return (
     <label className="relative flex items-center">
-      <SearchIcon />
+      <Search aria-hidden className="pointer-events-none absolute left-3 h-4 w-4 text-[var(--fg4)]" />
       <input
         type="search"
         value={value}
@@ -211,19 +212,6 @@ function SearchInput({ value, onChange }) {
         /
       </kbd>
     </label>
-  )
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      className="pointer-events-none absolute left-3 h-4 w-4 text-[var(--fg4)]"
-      viewBox="0 0 20 20"
-      aria-hidden
-    >
-      <circle cx="9" cy="9" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M14 14l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
   )
 }
 

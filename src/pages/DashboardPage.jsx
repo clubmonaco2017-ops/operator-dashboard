@@ -9,6 +9,7 @@ import {
 } from 'recharts'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
+import { BarChart3, DollarSign, Users, CheckCircle2, TrendingUp, Trophy, Search, AlertTriangle, Inbox } from 'lucide-react'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const DATA_START = { date: '2026-04-04', hour: 0 }
@@ -308,7 +309,7 @@ export function DashboardPage() {
       {/* Header */}
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-lg">📊</div>
+          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white"><BarChart3 size={20} /></div>
           <div>
             <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">Дашборд операторов</h1>
             <p className="text-xs text-slate-400">Почасовая выручка</p>
@@ -439,13 +440,13 @@ export function DashboardPage() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label={isToday ? 'Всего за день' : `Итого за период`} value={`${fmt(grandTotal)} $`} icon="💰" color="indigo" />
-          <KpiCard label="Операторов" value={filtered.length} icon="👥" color="slate" />
-          <KpiCard label="Активных (> 0)" value={activeCount} icon="✅" color="green" />
+          <KpiCard label={isToday ? 'Всего за день' : `Итого за период`} value={`${fmt(grandTotal)} $`} icon={<DollarSign size={18} />} color="indigo" />
+          <KpiCard label="Операторов" value={filtered.length} icon={<Users size={18} />} color="slate" />
+          <KpiCard label="Активных (> 0)" value={activeCount} icon={<CheckCircle2 size={18} />} color="green" />
           <KpiCard
             label="Средний доход"
             value={filtered.length ? `${fmt(Math.round(grandTotal / Math.max(activeCount, 1)))} $` : '—'}
-            icon="📈"
+            icon={<TrendingUp size={18} />}
             color="amber"
           />
         </div>
@@ -458,7 +459,7 @@ export function DashboardPage() {
                 onClick={() => setChartExpanded(v => !v)}
                 className="flex items-center gap-2 hover:opacity-70 transition-opacity"
               >
-                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">📊 Выручка по часам</h2>
+                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5"><BarChart3 size={14} />Выручка по часам</h2>
                 <svg
                   viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                   className={`w-4 h-4 text-slate-400 transition-transform ${chartExpanded ? 'rotate-180' : ''}`}
@@ -535,8 +536,9 @@ export function DashboardPage() {
               onClick={() => setTopSectionExpanded(v => !v)}
               className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
             >
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                🏆 Топ операторов за день
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+                <Trophy size={14} />
+                Топ операторов за день
                 <span className="ml-2 text-xs font-normal text-slate-400">
                   {topSectionExpanded ? (topExpanded ? `все ${top20.length}` : `топ-5 из ${top20.length}`) : `${top20.length} операторов`}
                 </span>
@@ -586,12 +588,13 @@ export function DashboardPage() {
         {canViewRevenue && <>
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <input
               type="text"
-              placeholder="🔍 Поиск оператора..."
+              placeholder="Поиск оператора..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 rounded-lg px-3 py-1.5 pr-7 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 rounded-lg pl-8 pr-7 py-1.5 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
             {search && (
               <button
@@ -651,12 +654,12 @@ export function DashboardPage() {
             </div>
           ) : error ? (
             <div className="p-16 text-center">
-              <div className="text-3xl mb-3">⚠️</div>
+              <div className="mb-3 flex justify-center"><AlertTriangle size={32} className="text-amber-500" /></div>
               <p className="text-red-500 text-sm">{error}</p>
             </div>
           ) : rows.length === 0 ? (
             <div className="p-16 text-center">
-              <div className="text-3xl mb-3">📭</div>
+              <div className="mb-3 flex justify-center"><Inbox size={32} className="text-slate-400" /></div>
               <p className="text-slate-400 text-sm">Нет данных за {dateFrom === dateTo ? dateFrom : `${dateFrom} — ${dateTo}`}</p>
             </div>
           ) : (
