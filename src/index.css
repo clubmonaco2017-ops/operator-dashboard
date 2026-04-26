@@ -359,7 +359,7 @@ body {
   html {
     @apply font-sans;
   }
-  :where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  :where(button, a, input, textarea, select, [tabindex]:not([tabindex="-1"])):focus-visible {
     outline: none;
     box-shadow: var(--focus-ring);
     border-radius: var(--radius-md);
