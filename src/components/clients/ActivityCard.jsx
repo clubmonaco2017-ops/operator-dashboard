@@ -1,3 +1,4 @@
+import { Plus, Archive, Image as ImageIcon, Pencil, FileText, RotateCcw } from 'lucide-react'
 import { useClientActivity } from '../../hooks/useClientActivity.js'
 import { pluralizeEvents } from '../../lib/clients.js'
 
@@ -30,7 +31,9 @@ export function ActivityCard({ callerId, clientId, totalLimit = 12 }) {
         <ul className="flex flex-col gap-3">
           {rows.slice(0, 4).map((evt) => (
             <li key={evt.id} className="flex items-start gap-2.5">
-              <EventIcon type={evt.event_type} />
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[var(--fg4)]">
+                {eventIcon(evt.event_type)}
+              </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm leading-snug text-[var(--fg2)]">
                   <span className="font-medium text-foreground">
@@ -100,22 +103,24 @@ function formatRelative(iso) {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 
-function EventIcon({ type }) {
-  return (
-    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[var(--fg4)]">
-      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-        {type === 'created' || type === 'restored' ? (
-          <path d="M3 6.5l2 2 4-5" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        ) : type === 'archived' ? (
-          <path d="M2 4h8v6H2zM4 6h4" stroke="currentColor" strokeWidth="1.2" fill="none" />
-        ) : type === 'media_uploaded' || type === 'media_deleted' || type === 'media_reordered' ? (
-          <path d="M2 3h8v6H2zM4 6l1.5-1.5L7 6l3-3" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinejoin="round" />
-        ) : (
-          <path d="M2 6h8M6 2v8" stroke="currentColor" strokeWidth="1.2" />
-        )}
-      </svg>
-    </span>
-  )
+function eventIcon(type) {
+  switch (type) {
+    case 'created':
+      return <Plus size={12} />
+    case 'restored':
+      return <RotateCcw size={12} />
+    case 'archived':
+      return <Archive size={12} />
+    case 'media_uploaded':
+    case 'media_deleted':
+    case 'media_reordered':
+      return <ImageIcon size={12} />
+    case 'updated_profile':
+    case 'updated_description':
+      return <Pencil size={12} />
+    default:
+      return <FileText size={12} />
+  }
 }
 
 function ListSkeleton() {

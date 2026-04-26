@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { X, Download, Pencil, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '../../supabaseClient.js'
 import { formatFileSize, formatDuration } from '../../lib/clients.js'
 
@@ -227,7 +228,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
             title="Редактировать подпись"
             aria-label="Редактировать подпись"
           >
-            <PencilIcon />
+            <Pencil size={16} />
           </button>
         )}
         <a
@@ -239,7 +240,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
           title="Скачать"
           aria-label="Скачать файл"
         >
-          <DownloadIcon />
+          <Download size={16} />
         </a>
         {onDelete && (
           <div className="relative">
@@ -251,7 +252,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
               aria-expanded={menuOpen}
               aria-haspopup="menu"
             >
-              <DotsIcon />
+              <MoreHorizontal size={16} />
             </button>
             {menuOpen && (
               <div role="menu" className="absolute right-0 top-full mt-1 min-w-[180px] rounded-lg bg-slate-800 p-1 shadow-xl">
@@ -275,7 +276,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
           className="rounded-md bg-white/10 p-2 text-white/90 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
           aria-label="Закрыть просмотр"
         >
-          <CloseIcon />
+          <X size={18} />
         </button>
       </div>
 
@@ -295,7 +296,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
         className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-md bg-white/10 p-3 text-white/90 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
         aria-label="Предыдущее"
       >
-        <ChevronIcon dir="left" />
+        <ChevronLeft size={22} />
       </button>
       <button
         type="button"
@@ -304,7 +305,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
         className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-md bg-white/10 p-3 text-white/90 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
         aria-label="Следующее"
       >
-        <ChevronIcon dir="right" />
+        <ChevronRight size={22} />
       </button>
 
       {/* Media */}
@@ -417,66 +418,6 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
         закрыть
       </div>
     </div>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-      <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function DownloadIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <path
-        d="M8 2v8M5 7l3 3 3-3M3 13h10"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function PencilIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <path
-        d="M2.5 13.5l1.2-3.4 8.1-8.1 2.2 2.2-8.1 8.1-3.4 1.2zM10.6 3.4l2.2 2.2"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        fill="none"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function DotsIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <circle cx="3.5" cy="8" r="1.4" fill="currentColor" />
-      <circle cx="8" cy="8" r="1.4" fill="currentColor" />
-      <circle cx="12.5" cy="8" r="1.4" fill="currentColor" />
-    </svg>
-  )
-}
-
-function ChevronIcon({ dir }) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
-      {dir === 'left' ? (
-        <path d="M14 4l-7 7 7 7" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      ) : (
-        <path d="M8 4l7 7-7 7" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      )}
-    </svg>
   )
 }
 

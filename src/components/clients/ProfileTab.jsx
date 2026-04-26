@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Pencil, Lock, Loader2 } from 'lucide-react'
 import { useClientActions } from '../../hooks/useClientActions.js'
 import { usePlatforms } from '../../hooks/usePlatforms.js'
 import { useAgencies } from '../../hooks/useAgencies.js'
@@ -72,7 +73,7 @@ function DescriptionCard({ callerId, client, onChanged }) {
         action={
           !editing && (
             <IconButton onClick={() => setEditing(true)} aria-label="Редактировать описание">
-              <PencilIcon />
+              <Pencil size={14} />
             </IconButton>
           )
         }
@@ -176,7 +177,7 @@ function ProfileFieldsCard({ callerId, client, onChanged }) {
             value={client.tableau_id}
             placeholder="например, TBL-2351"
             mono
-            iconLeft={<LockIcon />}
+            iconLeft={<Lock size={12} />}
             hint="read-only · из Tableau"
             validate={(v) => validateTableauId(v)}
             onSave={(next) => updateClient(client.id, { tableauId: next || null, clearTableauId: !next })}
@@ -315,7 +316,7 @@ function InlineTextField({ label, required, value, validate, placeholder, mono, 
         />
         {saving && (
           <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-600">
-            <SmallSpinner />
+            <Loader2 size={12} className="animate-spin" />
           </span>
         )}
       </div>
@@ -362,7 +363,7 @@ function InlineSelectField({ label, required, value, options, onSave, onChanged 
         </select>
         {saving && (
           <span className="absolute right-8 top-1/2 -translate-y-1/2 text-blue-600">
-            <SmallSpinner />
+            <Loader2 size={12} className="animate-spin" />
           </span>
         )}
       </div>
@@ -445,35 +446,3 @@ function inputCls(hasError) {
   ].join(' ')
 }
 
-function PencilIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path
-        d="M2 12l1-3 7-7 2 2-7 7-3 1zM9 3l2 2"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        fill="none"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function LockIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-      <rect x="2.5" y="5.5" width="7" height="5" rx="0.8" fill="none" stroke="currentColor" strokeWidth="1.1" />
-      <path d="M4 5.5V4a2 2 0 014 0v1.5" fill="none" stroke="currentColor" strokeWidth="1.1" />
-    </svg>
-  )
-}
-
-function SmallSpinner() {
-  return (
-    <svg className="animate-spin" width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-      <circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.3" opacity="0.3" />
-      <path d="M10.5 6a4.5 4.5 0 00-4.5-4.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  )
-}

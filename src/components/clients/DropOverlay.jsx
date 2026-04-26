@@ -1,3 +1,4 @@
+import { Upload, CloudOff } from 'lucide-react'
 import { pluralizePhotos, pluralizeVideos } from '../../lib/clients.js'
 
 /**
@@ -35,7 +36,7 @@ export function DropOverlay({ fileCount, type, reject = false, rejectMessage }) 
               : 'bg-[var(--primary-soft)] text-[var(--primary-ink)]',
           ].join(' ')}
         >
-          {reject ? <CloudXIcon /> : <CloudUploadIcon />}
+          {reject ? <CloudOff size={22} /> : <Upload size={22} />}
         </div>
         <p className="text-base font-semibold text-foreground">
           {reject
@@ -48,45 +49,3 @@ export function DropOverlay({ fileCount, type, reject = false, rejectMessage }) 
   )
 }
 
-function CloudUploadIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-      <path
-        d="M6 16c-2 0-3-1.5-3-3 0-1.8 1.3-3 3-3 0-3 2.5-5 5.5-5 2.7 0 5 2 5.3 4.6C19.4 9.7 21 11.3 21 13.5 21 15.4 19.5 17 17.5 17H6z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 21V11M9 14l3-3 3 3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function CloudXIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-      <path
-        d="M6 16c-2 0-3-1.5-3-3 0-1.8 1.3-3 3-3 0-3 2.5-5 5.5-5 2.7 0 5 2 5.3 4.6C19.4 9.7 21 11.3 21 13.5 21 15.4 19.5 17 17.5 17H6z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 14l6 6M15 14l-6 6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}

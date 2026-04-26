@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Globe, Briefcase, Calendar, BarChart3 } from 'lucide-react'
 import { useClient } from '../../hooks/useClient.js'
 import { useClientActions } from '../../hooks/useClientActions.js'
 import { initials } from '../../lib/clients.js'
@@ -155,10 +156,10 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
             <StatusPill active={row.is_active} />
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-            {row.platform_name && <Chip>🌐 {row.platform_name}</Chip>}
-            {row.agency_name && <Chip variant="violet">🛍 {row.agency_name}</Chip>}
-            <Chip variant="muted">📅 {formatRuDate(row.created_at)}</Chip>
-            {row.tableau_id && <Chip variant="muted">📊 {row.tableau_id}</Chip>}
+            {row.platform_name && <Chip><Globe size={12} className="inline mr-1" />{row.platform_name}</Chip>}
+            {row.agency_name && <Chip variant="violet"><Briefcase size={12} className="inline mr-1" />{row.agency_name}</Chip>}
+            <Chip variant="muted"><Calendar size={12} className="inline mr-1" />{formatRuDate(row.created_at)}</Chip>
+            {row.tableau_id && <Chip variant="muted"><BarChart3 size={12} className="inline mr-1" />{row.tableau_id}</Chip>}
           </div>
         </div>
       </header>

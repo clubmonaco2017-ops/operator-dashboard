@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Eye, DollarSign, FileText, Link as LinkIcon } from 'lucide-react'
 
 /**
  * Карточка «Сводка» в правой колонке Detail (D-5).
@@ -36,7 +37,7 @@ export function SummaryCard({ client }) {
       <div className="flex flex-col gap-3">
         <Metric
           label="Просмотры"
-          icon={<EyeIcon />}
+          icon={<Eye size={11} />}
           value={metrics.views.value.toLocaleString('ru-RU')}
           delta={metrics.views.delta}
           spark={metrics.views.spark}
@@ -44,7 +45,7 @@ export function SummaryCard({ client }) {
         />
         <Metric
           label="Доход"
-          icon={<DollarIcon />}
+          icon={<DollarSign size={11} />}
           value={`${metrics.revenue.value.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $`}
           delta={metrics.revenue.delta}
           spark={metrics.revenue.spark}
@@ -52,7 +53,7 @@ export function SummaryCard({ client }) {
         />
         <Metric
           label="Посты"
-          icon={<PostIcon />}
+          icon={<FileText size={11} />}
           value={metrics.posts.value.toString()}
           delta={metrics.posts.delta}
           spark={metrics.posts.spark}
@@ -63,7 +64,7 @@ export function SummaryCard({ client }) {
       <footer className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5">
-            <LinkIconInline />
+            <LinkIcon size={11} />
             <span className="font-mono">{client.tableau_id}</span>
             <span className="text-[var(--fg4)]">· обновлено только что</span>
           </span>
@@ -203,40 +204,3 @@ function buildMetrics(clientId, period) {
   }
 }
 
-// ============================================================================
-// Icons
-// ============================================================================
-
-function EyeIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden>
-      <path d="M1 6c1.5-2.5 3-4 5-4s3.5 1.5 5 4c-1.5 2.5-3 4-5 4S2.5 8.5 1 6z" fill="none" stroke="currentColor" strokeWidth="1.1" />
-      <circle cx="6" cy="6" r="1.5" fill="currentColor" />
-    </svg>
-  )
-}
-
-function DollarIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden>
-      <path d="M6 1.5v9M8.5 4c-.4-.7-1.3-1-2.5-1S3.6 3.4 3.6 4.4c0 1.8 4.8 1.1 4.8 2.9 0 1-1 1.4-2.4 1.4s-2.2-.4-2.6-1.1" stroke="currentColor" strokeWidth="1.1" fill="none" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function PostIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden>
-      <rect x="2" y="2" width="8" height="8" rx="1" fill="none" stroke="currentColor" strokeWidth="1.1" />
-      <path d="M4 5h4M4 7h3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function LinkIconInline() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden>
-      <path d="M5 7l-2 2a2 2 0 11-2.8-2.8l2-2M7 5l2-2a2 2 0 112.8 2.8l-2 2M4.5 7.5l3-3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" fill="none" />
-    </svg>
-  )
-}

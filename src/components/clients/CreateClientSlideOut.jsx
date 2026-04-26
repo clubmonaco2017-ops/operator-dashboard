@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { X, Link as LinkIcon, Image as ImageIcon, Upload, Loader2, Check } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useClientActions } from '../../hooks/useClientActions.js'
 import { usePlatforms } from '../../hooks/usePlatforms.js'
@@ -208,7 +209,7 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
             aria-label="Закрыть форму создания клиента"
             className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50 focus-ds"
           >
-            <CloseIcon />
+            <X size={20} />
           </button>
         </header>
 
@@ -322,7 +323,7 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
 
               <section className="rounded-lg bg-muted/60 p-4">
                 <h3 className="mb-3 flex items-center gap-1.5 label-caps">
-                  <LinkIcon />
+                  <LinkIcon size={12} />
                   Опционально · Интеграции
                 </h3>
                 <Field
@@ -380,10 +381,10 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
               >
                 {submitting ? (
                   <>
-                    <Spinner /> Создаётся…
+                    <Loader2 size={14} className="animate-spin" /> Создаётся…
                   </>
                 ) : (
-                  <>✓ Создать клиента</>
+                  <><Check size={14} className="inline mr-1.5" />Создать клиента</>
                 )}
               </button>
             </div>
@@ -543,7 +544,7 @@ function AvatarDropZone({ file, error, onSelect, onRemove, disabled }) {
         .join(' ')}
     >
       <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-muted text-[var(--fg4)]">
-        <ImageIcon />
+        <ImageIcon size={22} />
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-foreground">Аватар</p>
@@ -566,7 +567,7 @@ function AvatarDropZone({ file, error, onSelect, onRemove, disabled }) {
         disabled={disabled}
         className="btn-ghost text-xs px-3 py-1.5"
       >
-        <UploadIcon /> Загрузить
+        <Upload size={14} /> Загрузить
       </button>
       <input
         ref={inputRef}
@@ -579,89 +580,3 @@ function AvatarDropZone({ file, error, onSelect, onRemove, disabled }) {
   )
 }
 
-// ============================================================================
-// Icons
-// ============================================================================
-
-function CloseIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
-      <path
-        d="M5 5l10 10M15 5L5 15"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function LinkIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-      <path
-        d="M5 7l-2 2a2 2 0 11-2.8-2.8l2-2M7 5l2-2a2 2 0 112.8 2.8l-2 2M4.5 7.5l3-3"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        fill="none"
-      />
-    </svg>
-  )
-}
-
-function ImageIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
-      <rect
-        x="2.5"
-        y="3.5"
-        width="17"
-        height="15"
-        rx="2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-      <circle cx="8" cy="9" r="1.5" fill="currentColor" />
-      <path
-        d="M3.5 16.5L8 12l3.5 3.5L15 12l3.5 3.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function UploadIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path
-        d="M7 9V2.5M7 2.5l-2.5 2.5M7 2.5l2.5 2.5M2.5 9.5v1.5a1 1 0 001 1h7a1 1 0 001-1V9.5"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  )
-}
-
-function Spinner() {
-  return (
-    <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
-      <path
-        d="M12.5 7a5.5 5.5 0 00-5.5-5.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}

@@ -1,5 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  Upload,
+  GripVertical,
+  Calendar,
+  Image as ImageIcon,
+  Loader2,
+  Check,
+  AlertTriangle,
+  X,
+  Maximize2,
+  MoreHorizontal,
+  CheckSquare,
+} from 'lucide-react'
+import {
   DndContext,
   PointerSensor,
   KeyboardSensor,
@@ -311,7 +324,7 @@ export function PhotoGalleryTab({ callerId, client, onChanged }) {
               : 'btn-ghost',
           ].join(' ')}
         >
-          {selectMode ? <CheckIcon /> : <CheckboxIcon />}
+          {selectMode ? <Check size={16} /> : <CheckSquare size={14} />}
           {selectMode ? 'Готово' : 'Выбрать'}
         </button>
         <button
@@ -320,7 +333,7 @@ export function PhotoGalleryTab({ callerId, client, onChanged }) {
           disabled={!!upload && !upload.done}
           className="btn-primary"
         >
-          <UploadIcon /> Загрузить
+          <Upload size={14} /> Загрузить
         </button>
       </div>
 
@@ -410,8 +423,8 @@ export function PhotoGalleryTab({ callerId, client, onChanged }) {
 
 function SortToggle({ value, onChange, disabled }) {
   const opts = [
-    { key: 'manual', label: 'Вручную', icon: <GripIcon /> },
-    { key: 'date_desc', label: 'По дате', icon: <CalendarIcon /> },
+    { key: 'manual', label: 'Вручную', icon: <GripVertical size={12} /> },
+    { key: 'date_desc', label: 'По дате', icon: <Calendar size={12} /> },
   ]
   return (
     <div
@@ -609,7 +622,7 @@ function PhotoTile({ media, index, onOpen, onDelete, selectMode, selected, onTog
             title="Открыть"
             aria-label="Открыть"
           >
-            <ExpandIcon />
+            <Maximize2 size={14} />
           </button>
           <button
             type="button"
@@ -622,7 +635,7 @@ function PhotoTile({ media, index, onOpen, onDelete, selectMode, selected, onTog
             aria-label="Ещё"
             aria-expanded={menuOpen}
           >
-            <DotsIcon />
+            <MoreHorizontal size={14} />
           </button>
         </div>
       )}
@@ -657,14 +670,14 @@ function EmptyPhotos({ onUpload }) {
   return (
     <div className="rounded-xl border border-dashed border-border-strong bg-card px-6 py-12 text-center">
       <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary-ink)]">
-        <ImageIcon />
+        <ImageIcon size={22} />
       </div>
       <h3 className="text-base font-semibold text-foreground">Фото ещё нет</h3>
       <p className="mt-1 text-sm text-muted-foreground">
         Перетащите файлы сюда или нажмите кнопку.
       </p>
       <button type="button" onClick={onUpload} className="btn-primary mt-4">
-        <UploadIcon /> Загрузить первое фото
+        <Upload size={14} /> Загрузить первое фото
       </button>
     </div>
   )
@@ -724,7 +737,7 @@ function UploadBanner({ upload, onClose }) {
       aria-live={hasErrors ? 'assertive' : 'polite'}
     >
       <div className={hasErrors ? 'mt-0.5 text-[var(--warning-ink)]' : 'mt-0.5 text-primary'}>
-        {inProgress ? <Spinner /> : hasErrors ? <WarnIcon /> : <CheckIcon />}
+        {inProgress ? <Loader2 size={16} className="animate-spin" /> : hasErrors ? <AlertTriangle size={16} /> : <Check size={16} />}
       </div>
       <div className="min-w-0 flex-1">
         {inProgress ? (
@@ -770,7 +783,7 @@ function UploadBanner({ upload, onClose }) {
           className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground focus-ds"
           aria-label="Закрыть уведомление"
         >
-          <SmallCloseIcon />
+          <X size={14} />
         </button>
       )}
     </div>
@@ -816,135 +829,4 @@ function readImageDimensions(file) {
   })
 }
 
-// ============================================================================
-// Icons
-// ============================================================================
-
-function UploadIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path
-        d="M7 9V2.5M7 2.5l-2.5 2.5M7 2.5l2.5 2.5M2.5 9.5v1.5a1 1 0 001 1h7a1 1 0 001-1V9.5"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  )
-}
-
-function GripIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-      <circle cx="4" cy="3" r="0.9" fill="currentColor" />
-      <circle cx="8" cy="3" r="0.9" fill="currentColor" />
-      <circle cx="4" cy="6" r="0.9" fill="currentColor" />
-      <circle cx="8" cy="6" r="0.9" fill="currentColor" />
-      <circle cx="4" cy="9" r="0.9" fill="currentColor" />
-      <circle cx="8" cy="9" r="0.9" fill="currentColor" />
-    </svg>
-  )
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-      <rect x="1.5" y="2.5" width="9" height="8" rx="1" fill="none" stroke="currentColor" strokeWidth="1.1" />
-      <path d="M1.5 4.5h9M4 1.5v2M8 1.5v2" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function ImageIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
-      <rect x="2.5" y="3.5" width="17" height="15" rx="2" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="8" cy="9" r="1.5" fill="currentColor" />
-      <path
-        d="M3.5 16.5L8 12l3.5 3.5L15 12l3.5 3.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function Spinner() {
-  return (
-    <svg className="animate-spin" width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
-      <path d="M14 8a6 6 0 00-6-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function WarnIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-      <path d="M8 1.5l7 12.5H1L8 1.5z" fill="currentColor" />
-      <path d="M8 6.5v3.5M8 12v.5" stroke="white" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function SmallCloseIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function ExpandIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <path
-        d="M2 5V2h3M12 5V2H9M2 9v3h3M12 9v3H9"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function DotsIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <circle cx="3" cy="7" r="1.2" fill="currentColor" />
-      <circle cx="7" cy="7" r="1.2" fill="currentColor" />
-      <circle cx="11" cy="7" r="1.2" fill="currentColor" />
-    </svg>
-  )
-}
-
-function CheckboxIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <rect x="2" y="2" width="10" height="10" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <path
-        d="M4.5 7l2 2 3-4"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
 

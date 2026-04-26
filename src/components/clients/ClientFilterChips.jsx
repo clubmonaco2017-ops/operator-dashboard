@@ -1,3 +1,5 @@
+import { Globe, Briefcase, X } from 'lucide-react'
+
 /**
  * Filter chips для master-списка.
  *
@@ -53,7 +55,7 @@ export function ClientFilterChips({ value, onChange, platforms, agencies, counts
         active={platformChanged}
         onClear={platformChanged ? () => set({ platformId: null }) : null}
       >
-        <PlatformIcon />
+        <Globe size={14} />
         <select
           value={value.platformId ?? ''}
           onChange={(e) => set({ platformId: e.target.value || null })}
@@ -73,7 +75,7 @@ export function ClientFilterChips({ value, onChange, platforms, agencies, counts
         active={agencyChanged}
         onClear={agencyChanged ? () => set({ agencyId: null }) : null}
       >
-        <AgencyIcon />
+        <Briefcase size={14} />
         <select
           value={value.agencyId ?? ''}
           onChange={(e) => set({ agencyId: e.target.value || null })}
@@ -109,34 +111,10 @@ function Chip({ children, active, onClear }) {
           className="ml-0.5 rounded-full p-0.5 text-[var(--primary-ink)]/70 hover:bg-[var(--primary-soft)] hover:text-[var(--primary-ink)] focus-ds"
           aria-label="Снять фильтр"
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-            <path
-              d="M2.5 2.5l7 7m0-7l-7 7"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
+          <X size={12} />
         </button>
       )}
     </div>
   )
 }
 
-function PlatformIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M1.5 7h11M7 1.5c1.8 1.8 1.8 9.2 0 11M7 1.5c-1.8 1.8-1.8 9.2 0 11" fill="none" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  )
-}
-
-function AgencyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-      <rect x="1.5" y="3.5" width="11" height="8" rx="1" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M5 3.5v-1.5a1 1 0 011-1h2a1 1 0 011 1v1.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  )
-}

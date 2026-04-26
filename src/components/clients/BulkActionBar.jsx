@@ -1,3 +1,5 @@
+import { Download, Trash2 } from 'lucide-react'
+
 /**
  * Action bar для bulk-select режима. Используется в Photo и Video галереях.
  *
@@ -61,7 +63,7 @@ export function BulkActionBar({
         disabled={busy || !hasSelection}
         className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-[var(--fg2)] hover:bg-muted disabled:opacity-50 focus-ds"
       >
-        <DownloadIcon /> Скачать {hasSelection ? selectedCount : ''}
+        <Download size={13} /> Скачать {hasSelection ? selectedCount : ''}
       </button>
       <button
         type="button"
@@ -69,38 +71,8 @@ export function BulkActionBar({
         disabled={busy || !hasSelection}
         className="inline-flex items-center gap-1.5 rounded-md border border-[var(--danger-soft)] bg-card px-3 py-1.5 text-xs font-semibold text-[var(--danger-ink)] hover:bg-[var(--danger-soft)] disabled:opacity-50 focus-ds"
       >
-        <TrashIcon /> Удалить {hasSelection ? selectedCount : ''}
+        <Trash2 size={13} /> Удалить {hasSelection ? selectedCount : ''}
       </button>
     </div>
-  )
-}
-
-function DownloadIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 13 13" aria-hidden>
-      <path
-        d="M6.5 2v6.5M4 6l2.5 2.5L9 6M2.5 11h8"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function TrashIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 13 13" aria-hidden>
-      <path
-        d="M2.5 4h8M5 4V2.5h3V4M3.5 4l.5 7h5l.5-7M5.5 6v3M7.5 6v3"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   )
 }
