@@ -123,10 +123,10 @@ export function TaskDetailPanel({
     }
   }
 
-  if (loading && !row) return <TaskDetailSkeleton />
+  if (loading && !row) return <TaskDetailSkeletonWithSlowHint />
   if (error) {
     return (
-      <div className="px-6 py-10" role="alert">
+      <div className="px-6 py-10" role="alert" aria-live="assertive">
         <p className="text-sm text-[var(--danger-ink)]">Ошибка: {error}</p>
         <button
           type="button"
@@ -396,14 +396,24 @@ function TaskDetailSkeleton() {
       aria-busy="true"
       aria-label="Загрузка задачи"
     >
+      {/* Top bar */}
       <div className="flex items-center justify-between border-b border-border px-6 py-3">
         <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-        <div className="h-5 w-16 animate-pulse rounded bg-muted" />
+        <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
       </div>
+      {/* Header */}
       <header className="px-6 pt-5 pb-4">
-        <div className="h-6 w-2/3 animate-pulse rounded bg-muted" />
+        <div className="flex flex-wrap items-baseline gap-2">
+          <div className="h-7 w-3/5 animate-pulse rounded bg-muted" />
+          <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
+        </div>
         <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-muted/70" />
+        {/* Action row */}
+        <div className="mt-4 flex gap-2">
+          <div className="h-9 w-32 animate-pulse rounded-md bg-muted" />
+        </div>
       </header>
+      {/* Body cards */}
       <div className="flex-1 overflow-hidden bg-background px-4 py-5 sm:px-6">
         <div className="mx-auto flex max-w-3xl flex-col gap-4">
           <div className="surface-card h-32 animate-pulse" />
@@ -414,4 +424,33 @@ function TaskDetailSkeleton() {
       </div>
     </div>
   )
+}
+
+function TaskDetailSkeletonWithSlowHint() {
+  // 8.C: после 2 сек показываем «Загружается …» — даём пользователю понять,
+  // что система не зависла.
+  const slow = useSlowFlag(2000)
+  return (
+    <>
+      {slow && (
+        <p
+          className="px-6 pt-3 text-xs text-muted-foreground"
+          role="status"
+          aria-live="polite"
+        >
+          Загружается задача…
+        </p>
+      )}
+      <TaskDetailSkeleton />
+    </>
+  )
+}
+
+function useSlowFlag(thresholdMs) {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), thresholdMs)
+    return () => clearTimeout(t)
+  }, [thresholdMs])
+  return slow
 }

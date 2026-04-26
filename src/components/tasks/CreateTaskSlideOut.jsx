@@ -28,9 +28,18 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false)
 
   const titleInputRef = useRef(null)
+  const previouslyFocused = useRef(null)
 
   useEffect(() => {
+    previouslyFocused.current = document.activeElement
     titleInputRef.current?.focus()
+    return () => {
+      try {
+        previouslyFocused.current?.focus?.()
+      } catch {
+        /* unmounted */
+      }
+    }
   }, [])
 
   const isDirty =

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../useAuth.jsx'
 import { Sidebar } from '../components/Sidebar.jsx'
@@ -163,7 +163,7 @@ export function TaskListPage() {
                 Ошибка: {error}
               </div>
             ) : loading ? (
-              <TaskListSkeleton />
+              <TaskListSkeletonWithSlowHint />
             ) : isZeroEmpty ? (
               <TaskEmptyZero
                 box={box}
@@ -266,6 +266,35 @@ function TaskListSkeleton() {
       ))}
     </ul>
   )
+}
+
+function TaskListSkeletonWithSlowHint() {
+  // 8.C: после 2 сек показываем «Загружается …» — даём пользователю понять,
+  // что система не зависла.
+  const slow = useSlowFlag(2000)
+  return (
+    <>
+      {slow && (
+        <p
+          className="px-5 pt-3 text-xs text-muted-foreground"
+          role="status"
+          aria-live="polite"
+        >
+          Загружается список задач…
+        </p>
+      )}
+      <TaskListSkeleton />
+    </>
+  )
+}
+
+function useSlowFlag(thresholdMs) {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), thresholdMs)
+    return () => clearTimeout(t)
+  }, [thresholdMs])
+  return slow
 }
 
 function SearchInput({ value, onChange }) {
