@@ -41,13 +41,14 @@ describe('<CreateStaffSlideOut>', () => {
 
   it('calls onClose when backdrop is clicked', () => {
     const { props } = renderForm()
-    fireEvent.click(screen.getByTestId('create-staff-backdrop'))
+    const overlay = document.querySelector('[data-slot="sheet-overlay"]')
+    fireEvent.click(overlay)
     expect(props.onClose).toHaveBeenCalledTimes(1)
   })
 
   it('calls onClose on Escape key', () => {
     const { props } = renderForm()
-    fireEvent.keyDown(window, { key: 'Escape' })
+    fireEvent.keyDown(document.body, { key: 'Escape' })
     expect(props.onClose).toHaveBeenCalledTimes(1)
   })
 
