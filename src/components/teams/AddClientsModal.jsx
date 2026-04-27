@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Search, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { useUnassignedClients } from '../../hooks/useUnassignedClients.js'
 import { initials, pluralizeClients } from '../../lib/clients.js'
 
@@ -159,26 +160,25 @@ export function AddClientsModal({ callerId, onClose, onAdd }) {
             Выбрано: {selected.size}
           </span>
           <div className="flex-1" />
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => !submitting && onClose()}
             disabled={submitting}
-            className="btn-ghost text-xs px-3 py-1.5"
           >
             Отмена
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            size="sm"
             onClick={handleSubmit}
             disabled={submitting || selected.size === 0}
-            className="btn-primary text-xs px-3 py-1.5"
           >
             {submitting
               ? 'Назначаем…'
               : selected.size > 0
                 ? `Назначить ${pluralizeClients(selected.size)}`
                 : 'Назначить'}
-          </button>
+          </Button>
         </footer>
       </div>
     </div>
