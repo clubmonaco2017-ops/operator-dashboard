@@ -4,9 +4,11 @@ import LoginPage from './LoginPage.jsx'
 import AdminLayout from './AdminLayout.jsx'
 import { AppShell } from './components/shell/AppShell.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
-import { StaffListPage } from './pages/StaffListPage.jsx'
-import { StaffCreatePage } from './pages/StaffCreatePage.jsx'
-import { StaffDetailPage } from './pages/StaffDetailPage.jsx'
+import { StaffListPage, StaffDetailRoute, StaffDetailEmpty } from './pages/StaffListPage.jsx'
+import { ProfileTab } from './components/staff/ProfileTab.jsx'
+import { AttributesTab } from './components/staff/AttributesTab.jsx'
+import { PermissionsTab } from './components/staff/PermissionsTab.jsx'
+import { ActivityTab } from './components/staff/ActivityTab.jsx'
 import { NotificationsPage } from './pages/NotificationsPage.jsx'
 import {
   ClientListPage,
@@ -37,10 +39,16 @@ export default function App() {
     <Routes>
       <Route element={<AppShell />}>
         <Route path="/" element={<DashboardPage />} />
-        <Route path="/staff" element={<StaffListPage />} />
-        <Route path="/staff/new" element={<StaffCreatePage />} />
-        <Route path="/staff/:refCode" element={<StaffDetailPage />} />
-        <Route path="/staff/:refCode/:tab" element={<StaffDetailPage />} />
+        <Route path="/staff" element={<StaffListPage />}>
+          <Route index element={<StaffDetailEmpty />} />
+          <Route path=":refCode" element={<StaffDetailRoute />}>
+            <Route index element={<ProfileTab />} />
+            <Route path="attributes" element={<AttributesTab />} />
+            <Route path="permissions" element={<PermissionsTab />} />
+            <Route path="activity" element={<ActivityTab />} />
+          </Route>
+        </Route>
+        <Route path="/staff/new" element={<Navigate to="/staff" replace />} />
         <Route path="/clients" element={<ClientListPage />}>
           <Route index element={<ClientDetailEmpty />} />
           <Route path=":clientId" element={<ClientDetailRoute />} />

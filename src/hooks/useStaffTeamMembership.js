@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient'
 
 /**
  * Возвращает членство оператора в команде (или null).
- * Используется в StaffDetailPage для блока «Команда».
+ * Используется в ProfileTab (внутри StaffDetailPanel) для блока «Команда».
  *
  * @param {number|null} callerId
  * @param {number|null} operatorUserId

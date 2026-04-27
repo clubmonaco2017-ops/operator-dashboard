@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient'
 
 /**
  * Возвращает текущего куратора оператора (или null).
- * Используется в StaffDetailPage для блока «Куратор».
+ * Используется в ProfileTab (внутри StaffDetailPanel) для блока «Куратор».
  *
  * @param {number|null} callerId
  * @param {number|null} operatorUserId

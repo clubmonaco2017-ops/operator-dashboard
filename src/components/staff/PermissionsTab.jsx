@@ -1,7 +1,27 @@
+import { useOutletContext } from 'react-router-dom'
+import { supabase } from '../../supabaseClient'
+import { hasPermission } from '../../lib/permissions.js'
 import { permissionGroups } from '../../lib/permissionGroups.js'
 
-export function PermissionsTab({ row, canEdit, onToggle }) {
+export function PermissionsTab() {
+  const { row, user, onChanged } = useOutletContext()
+  const canEdit = hasPermission(user, 'manage_roles')
   const active = new Set(row.permissions ?? [])
+
+  async function onToggle(key, next) {
+    const rpcName = next ? 'grant_permission' : 'revoke_permission'
+    const { error } = await supabase.rpc(rpcName, {
+      p_caller_id: user.id,
+      p_target_user: row.id,
+      p_permission: key,
+    })
+    if (error) {
+      alert(error.message)
+      return
+    }
+    onChanged?.()
+  }
+
   return (
     <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
       {permissionGroups.map((g) => (
@@ -29,9 +49,6 @@ export function PermissionsTab({ row, canEdit, onToggle }) {
           </div>
         </div>
       ))}
-      {!canEdit && (
-        <p className="text-xs text-slate-400">Редактирование прав требует права <code>manage_roles</code>.</p>
-      )}
     </div>
   )
 }
