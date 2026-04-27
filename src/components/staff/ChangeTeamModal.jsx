@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { invalidateUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
+import { Button } from '@/components/ui/button'
 
 /**
  * Модалка «Перевести оператора в другую команду» (или назначить, если он не в команде).
@@ -164,22 +165,21 @@ export function ChangeTeamModal({ callerId, operatorId, currentTeamId, onClose, 
         </div>
 
         <footer className="flex items-center justify-end gap-2 border-t border-border bg-muted/40 px-5 py-3">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => !submitting && onClose()}
             disabled={submitting}
-            className="btn-ghost text-xs px-3 py-1.5"
           >
             Отмена
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            size="sm"
             onClick={handleSubmit}
             disabled={submitting || selected == null}
-            className="btn-primary text-xs px-3 py-1.5"
           >
             {submitting ? 'Сохраняем…' : 'Сохранить'}
-          </button>
+          </Button>
         </footer>
       </div>
     </div>

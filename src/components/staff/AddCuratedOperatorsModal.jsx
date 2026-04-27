@@ -3,6 +3,7 @@ import { X, Search } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useCuratorship } from '../../hooks/useCuratorship.js'
 import { initials } from '../../lib/clients.js'
+import { Button } from '@/components/ui/button'
 
 /**
  * Модалка «Добавить операторов под куратора» (массово).
@@ -216,22 +217,21 @@ export function AddCuratedOperatorsModal({ callerId, moderatorId, onClose, onAdd
             Выбрано: <span className="font-mono tabular">{selected.size}</span>
           </span>
           <div className="flex gap-2">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => !mutating && onClose()}
               disabled={mutating}
-              className="btn-ghost text-xs px-3 py-1.5"
             >
               Отмена
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="sm"
               onClick={handleSubmit}
               disabled={mutating || selected.size === 0}
-              className="btn-primary text-xs px-3 py-1.5"
             >
               {mutating ? 'Назначаем…' : `Назначить (${selected.size})`}
-            </button>
+            </Button>
           </div>
         </footer>
       </div>
