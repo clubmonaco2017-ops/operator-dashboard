@@ -53,7 +53,9 @@
 | `border-red-{200,800}` (danger border) | `border-[var(--danger-strong)]` |
 | `.btn-primary` (utility class) | shadcn `<Button>` default variant |
 | `.btn-ghost` | shadcn `<Button variant="ghost">` |
-| `.btn-danger-ghost` | shadcn `<Button variant="ghost" className="text-[var(--danger-ink)]">` (or use `destructive` variant if it suits the site visually) |
+| `.btn-danger-ghost` (destructive **secondary**) | shadcn `<Button variant="ghost" className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]">` |
+| Raw `<button className="bg-red-600 … text-white">` (destructive **primary** — high-prominence confirm of a destructive flow) | shadcn `<Button variant="destructive">` |
+| **Preserve destructive emphasis** | When the legacy code distinguishes a destructive primary (`bg-red-600 text-white`) from a destructive secondary (`.btn-danger-ghost` or `border-red-…` outline), preserve that distinction. Don't downgrade primaries to ghosts and don't promote secondaries to primaries. The button that triggers the actual destructive RPC is the destructive one — even if it's labelled «Подтвердить» rather than «Удалить». |
 | Raw `<input>` with slate/indigo styling | shadcn `<Input>` |
 | Raw `<select>` | shadcn `<Select>` if it's a small set; keep native `<select>` styled with DS-tokens if it's a large dynamic list |
 | Inline SVG warning/info icon | lucide `<AlertCircle>` / `<Info>` / `<Check>` (project convention) |
