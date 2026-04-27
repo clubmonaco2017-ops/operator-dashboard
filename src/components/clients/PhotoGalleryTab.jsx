@@ -568,7 +568,7 @@ function PhotoTile({ media, index, onOpen, onDelete, selectMode, selected, onTog
               .join(' ')}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
+          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
             no preview
           </div>
         )}

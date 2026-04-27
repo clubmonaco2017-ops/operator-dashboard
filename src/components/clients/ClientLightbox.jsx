@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { X, Download, Pencil, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { supabase } from '../../supabaseClient.js'
 import { formatFileSize, formatDuration } from '../../lib/clients.js'
 
@@ -255,7 +256,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
               <MoreHorizontal size={16} />
             </button>
             {menuOpen && (
-              <div role="menu" className="absolute right-0 top-full mt-1 min-w-[180px] rounded-lg bg-slate-800 p-1 shadow-xl">
+              <div role="menu" className="absolute right-0 top-full mt-1 min-w-[180px] rounded-lg bg-popover p-1 shadow-xl">
                 <button
                   type="button"
                   role="menuitem"
@@ -353,14 +354,14 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
                 <p className="mt-1.5 text-xs text-[var(--danger-ink)]" role="alert">{captionError}</p>
               )}
               <div className="mt-2 flex items-center justify-center gap-2">
-                <button
+                <Button
                   type="button"
+                  size="sm"
                   onClick={saveCaption}
                   disabled={captionSaving}
-                  className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 hover:bg-white/90 disabled:opacity-60"
                 >
                   {captionSaving ? 'Сохраняем…' : 'Сохранить'}
-                </button>
+                </Button>
                 <button
                   type="button"
                   onClick={cancelCaptionEdit}

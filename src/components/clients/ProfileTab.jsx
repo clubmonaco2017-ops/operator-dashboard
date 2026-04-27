@@ -292,7 +292,7 @@ function InlineTextField({ label, required, value, validate, placeholder, mono, 
     <FieldShell label={label} required={required} hint={!error ? hint : null} error={error}>
       <div className="relative">
         {iconLeft && (
-          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
             {iconLeft}
           </span>
         )}
