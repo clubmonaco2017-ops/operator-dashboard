@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useOperatorCurator } from '../../hooks/useOperatorCurator.js'
 import { ChangeCuratorModal } from './ChangeCuratorModal.jsx'
+import { Button } from '@/components/ui/button'
 
 /**
  * Блок «Куратор» в карточке оператора.
@@ -62,13 +63,14 @@ export function CuratorBlock({ callerId, user, staff }) {
           )}
         </div>
         {(data ? canChange : canAssign) && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setOpen(true)}
-            className="btn-ghost shrink-0 text-xs px-3 py-1.5"
+            className="shrink-0 text-xs"
           >
             {data ? 'Сменить' : 'Назначить'}
-          </button>
+          </Button>
         )}
       </div>
 
