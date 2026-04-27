@@ -1,4 +1,5 @@
 import { ClipboardList } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Empty state когда задач нет (под текущий box).
@@ -23,13 +24,9 @@ export function TaskEmptyZero({ box, canCreate, onCreate }) {
         </h2>
         <p className="mt-1.5 text-sm text-muted-foreground">{copy.body}</p>
         {showCta && (
-          <button
-            type="button"
-            onClick={onCreate}
-            className="btn-primary mt-5"
-          >
+          <Button onClick={onCreate} className="mt-5">
             + Новая задача
-          </button>
+          </Button>
         )}
       </div>
     </div>
