@@ -1,4 +1,5 @@
 import { FilterX } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Empty state когда задачи есть, но не подходят под фильтр / поиск.
@@ -33,18 +34,14 @@ export function TaskEmptyFilter({
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
           {hasSearch && (
-            <button type="button" onClick={onClearSearch} className="btn-primary">
+            <Button onClick={onClearSearch}>
               Очистить поиск
-            </button>
+            </Button>
           )}
           {hasFilter && (
-            <button
-              type="button"
-              onClick={onClearFilters}
-              className={hasSearch ? 'btn-ghost' : 'btn-primary'}
-            >
+            <Button variant={hasSearch ? 'ghost' : 'default'} onClick={onClearFilters}>
               Сбросить фильтры
-            </button>
+            </Button>
           )}
         </div>
       </div>

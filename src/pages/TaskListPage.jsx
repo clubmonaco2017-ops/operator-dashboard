@@ -19,6 +19,7 @@ import { TaskDetailEmptyHint } from '../components/tasks/DetailEmptyHint.jsx'
 import { CreateTaskSlideOut } from '../components/tasks/CreateTaskSlideOut.jsx'
 import { TaskDetailPanel } from '../components/tasks/TaskDetailPanel.jsx'
 import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
+import { Button } from '@/components/ui/button'
 
 const DEFAULT_STATUS = 'all'
 const DEFAULT_DEADLINE = 'all'
@@ -116,13 +117,9 @@ export function TaskListPage() {
   )
 
   const createButtonNode = canCreate ? (
-    <button
-      type="button"
-      onClick={() => setCreateOpen(true)}
-      className="btn-primary text-xs px-2.5 py-1.5"
-    >
+    <Button size="sm" onClick={() => setCreateOpen(true)}>
       + Новая
-    </button>
+    </Button>
   ) : null
 
   const searchNode = (
