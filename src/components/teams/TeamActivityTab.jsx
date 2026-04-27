@@ -12,6 +12,7 @@ import {
   UserPlus,
 } from 'lucide-react'
 import { useTeamActivity } from '../../hooks/useTeamActivity.js'
+import { Button } from '@/components/ui/button'
 
 /**
  * Таб «Активность» — пагинированный feed событий команды.
@@ -62,14 +63,14 @@ export function TeamActivityTab({ callerId, teamId }) {
       </ul>
       {canLoadMore && (
         <div className="mt-4 flex justify-center">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={loadMore}
             disabled={loadingMore}
-            className="btn-ghost text-xs px-3 py-1.5"
           >
             {loadingMore ? 'Загружаем…' : 'Показать ещё'}
-          </button>
+          </Button>
         </div>
       )}
     </section>

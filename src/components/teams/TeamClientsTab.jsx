@@ -4,6 +4,7 @@ import { useTeamClients } from '../../hooks/useTeamClients.js'
 import { canEditTeam } from '../../lib/teams.js'
 import { initials } from '../../lib/clients.js'
 import { AddClientsModal } from './AddClientsModal.jsx'
+import { Button } from '@/components/ui/button'
 
 /**
  * Таб «Клиенты» — поиск + grid тайлов клиентов команды.
@@ -60,13 +61,12 @@ export function TeamClientsTab({ callerId, user, row, reload }) {
         </div>
         <div className="flex-1" />
         {editable && (
-          <button
-            type="button"
+          <Button
+            size="sm"
             onClick={() => setAddOpen(true)}
-            className="btn-primary text-xs px-3 py-1.5"
           >
             + Добавить клиентов
-          </button>
+          </Button>
         )}
       </div>
 
@@ -152,17 +152,17 @@ function RemoveClientConfirm({ name, busy, onCancel, onConfirm }) {
           Клиент станет нераспределённым и его можно будет назначить другой команде.
         </p>
         <div className="mt-5 flex justify-end gap-2">
-          <button type="button" onClick={onCancel} disabled={busy} className="btn-ghost">
+          <Button variant="ghost" onClick={onCancel} disabled={busy}>
             Отмена
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="ghost"
             onClick={onConfirm}
             disabled={busy}
-            className="btn-danger-ghost"
+            className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
           >
             {busy ? 'Снимаем…' : 'Снять'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

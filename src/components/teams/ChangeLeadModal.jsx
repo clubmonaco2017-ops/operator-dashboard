@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { supabase } from '../../supabaseClient'
 import { useTeamActions } from '../../hooks/useTeamActions.js'
 import { formatLeadRole } from '../../lib/teams.js'
@@ -167,22 +168,21 @@ export function ChangeLeadModal({ callerId, teamId, currentLeadId, onClose, onCh
         </div>
 
         <footer className="flex items-center justify-end gap-2 border-t border-border bg-muted/40 px-5 py-3">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => !submitting && onClose()}
             disabled={submitting}
-            className="btn-ghost text-xs px-3 py-1.5"
           >
             Отмена
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            size="sm"
             onClick={handleSubmit}
             disabled={submitting || selected == null}
-            className="btn-primary text-xs px-3 py-1.5"
           >
             {submitting ? 'Сохраняем…' : 'Сохранить'}
-          </button>
+          </Button>
         </footer>
       </div>
     </div>

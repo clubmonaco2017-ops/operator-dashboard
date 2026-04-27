@@ -5,6 +5,7 @@ import { canEditTeam, formatLeadRole } from '../../lib/teams.js'
 import { initials } from '../../lib/clients.js'
 import { AddMemberModal } from './AddMemberModal.jsx'
 import { ChangeLeadModal } from './ChangeLeadModal.jsx'
+import { Button } from '@/components/ui/button'
 
 /**
  * Таб «Состав» — лид (кликабельный) + список операторов с add/remove.
@@ -74,13 +75,12 @@ export function TeamMembersTab({ callerId, user, row, reload }) {
         <header className="mb-3 flex items-center justify-between gap-2">
           <h3 className="label-caps">Операторы ({members.length})</h3>
           {editable && (
-            <button
-              type="button"
+            <Button
+              size="sm"
               onClick={() => setAddOpen(true)}
-              className="btn-primary text-xs px-3 py-1.5"
             >
               + Добавить оператора
-            </button>
+            </Button>
           )}
         </header>
 
@@ -184,17 +184,17 @@ function RemoveMemberConfirm({ name, busy, onCancel, onConfirm }) {
           Оператор останется активным, но потеряет доступ к клиентам команды.
         </p>
         <div className="mt-5 flex justify-end gap-2">
-          <button type="button" onClick={onCancel} disabled={busy} className="btn-ghost">
+          <Button variant="ghost" onClick={onCancel} disabled={busy}>
             Отмена
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="ghost"
             onClick={onConfirm}
             disabled={busy}
-            className="btn-danger-ghost"
+            className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
           >
             {busy ? 'Убираем…' : 'Убрать'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

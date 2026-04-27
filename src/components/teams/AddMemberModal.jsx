@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Search, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { useUnassignedOperators } from '../../hooks/useUnassignedOperators.js'
 import { initials } from '../../lib/clients.js'
 
@@ -130,14 +131,13 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
                       <p className="truncate text-xs text-[var(--fg4)]">{op.alias}</p>
                     )}
                   </div>
-                  <button
-                    type="button"
+                  <Button
+                    size="sm"
                     onClick={() => handleAdd(op)}
                     disabled={busyId !== null}
-                    className="btn-primary text-xs px-3 py-1.5"
                   >
                     {busyId === op.id ? 'Добавляем…' : 'Добавить'}
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -145,9 +145,9 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
         </div>
 
         <footer className="border-t border-border bg-muted/40 px-5 py-3 text-right">
-          <button type="button" onClick={onClose} className="btn-ghost text-xs px-3 py-1.5">
+          <Button variant="ghost" size="sm" onClick={onClose}>
             Готово
-          </button>
+          </Button>
         </footer>
       </div>
     </div>
