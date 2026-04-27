@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../useAuth.jsx'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export function ChangePasswordModal({ userId, onClose, onDone }) {
   const { user } = useAuth()
@@ -35,31 +37,29 @@ export function ChangePasswordModal({ userId, onClose, onDone }) {
     <ModalShell title="Сменить пароль" onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Новый пароль</span>
-          <input
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">Новый пароль</span>
+          <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Повторите</span>
-          <input
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">Повторите</span>
+          <Input
             type="password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           />
         </label>
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p role="alert" className="text-sm text-[var(--danger-ink)]">{error}</p>}
         <div className="flex gap-3 pt-1">
-          <button type="button" onClick={onClose} disabled={submitting} className="flex-1 rounded-lg border border-slate-200 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+          <Button type="button" variant="ghost" onClick={onClose} disabled={submitting} className="flex-1">
             Отмена
-          </button>
-          <button type="submit" disabled={submitting} className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">
+          </Button>
+          <Button type="submit" disabled={submitting} className="flex-1">
             {submitting ? 'Сохранение…' : 'Сменить'}
-          </button>
+          </Button>
         </div>
       </form>
     </ModalShell>
@@ -69,10 +69,10 @@ export function ChangePasswordModal({ userId, onClose, onDone }) {
 export function ModalShell({ title, children, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl dark:bg-slate-900">
+      <div className="w-full max-w-md rounded-lg bg-card p-5 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><X size={16} /></button>
+          <h3 className="text-base font-semibold text-foreground">{title}</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={16} /></button>
         </div>
         {children}
       </div>

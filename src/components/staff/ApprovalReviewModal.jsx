@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../useAuth.jsx'
 import { ModalShell } from './ChangePasswordModal.jsx'
+import { Button } from '@/components/ui/button'
 
 export function ApprovalReviewModal({ request, onClose, onDone }) {
   const { user } = useAuth()
@@ -23,34 +24,34 @@ export function ApprovalReviewModal({ request, onClose, onDone }) {
   return (
     <ModalShell title={`Запрос на удаление: ${request.target_full_name}`} onClose={onClose}>
       <div className="space-y-4 text-sm">
-        <dl className="space-y-1 rounded-md bg-slate-50 p-3 text-xs dark:bg-slate-800">
-          <div><dt className="inline text-slate-500">Кто запросил:</dt> <dd className="inline font-medium">{request.requested_by_full_name} ({request.requested_by_ref_code})</dd></div>
-          <div><dt className="inline text-slate-500">Когда:</dt> <dd className="inline">{new Date(request.created_at).toLocaleString('ru-RU')}</dd></div>
-          <div><dt className="inline text-slate-500">Кого:</dt> <dd className="inline font-medium">{request.target_full_name} — {request.target_email} ({request.target_ref_code})</dd></div>
+        <dl className="space-y-1 rounded-md bg-muted p-3 text-xs">
+          <div><dt className="inline text-muted-foreground">Кто запросил:</dt> <dd className="inline font-medium">{request.requested_by_full_name} ({request.requested_by_ref_code})</dd></div>
+          <div><dt className="inline text-muted-foreground">Когда:</dt> <dd className="inline">{new Date(request.created_at).toLocaleString('ru-RU')}</dd></div>
+          <div><dt className="inline text-muted-foreground">Кого:</dt> <dd className="inline font-medium">{request.target_full_name} — {request.target_email} ({request.target_ref_code})</dd></div>
         </dl>
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-500">Причина:</div>
-          <div className="rounded-md border-l-2 border-slate-300 bg-slate-50 p-3 text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <div className="mb-1 text-xs font-medium text-muted-foreground">Причина:</div>
+          <div className="rounded-md border-l-2 border-border bg-muted p-3 text-foreground">
             {request.reason}
           </div>
         </div>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Комментарий (опционально)</span>
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">Комментарий (опционально)</span>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={2}
-            className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground"
           />
         </label>
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p role="alert" className="text-sm text-[var(--danger-ink)]">{error}</p>}
         <div className="flex gap-3">
-          <button onClick={() => call('reject_deletion')} disabled={submitting} className="flex-1 rounded-lg border border-slate-200 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+          <Button variant="ghost" onClick={() => call('reject_deletion')} disabled={submitting} className="flex-1">
             Отклонить
-          </button>
-          <button onClick={() => call('approve_deletion')} disabled={submitting} className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">
+          </Button>
+          <Button variant="destructive" onClick={() => call('approve_deletion')} disabled={submitting} className="flex-1">
             Подтвердить и деактивировать
-          </button>
+          </Button>
         </div>
       </div>
     </ModalShell>

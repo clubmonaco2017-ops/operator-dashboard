@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useStaffTeamMembership } from '../../hooks/useStaffTeamMembership.js'
 import { ChangeTeamModal } from './ChangeTeamModal.jsx'
 import { formatLeadRole } from '../../lib/teams.js'
+import { Button } from '@/components/ui/button'
 
 /**
  * Блок «Команда» в карточке оператора.
@@ -58,13 +59,14 @@ export function TeamMembershipBlock({ callerId, user, staff }) {
           )}
         </div>
         {canChange && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setOpen(true)}
-            className="btn-ghost shrink-0 text-xs px-3 py-1.5"
+            className="shrink-0 text-xs"
           >
             {data ? 'Перевести' : 'Назначить'}
-          </button>
+          </Button>
         )}
       </div>
 

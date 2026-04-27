@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ModalShell } from './ChangePasswordModal.jsx'
+import { Button } from '@/components/ui/button'
 
 export function DeleteRequestModal({ targetUserId, targetName, onClose, onSubmit, submitting }) {
   const [reason, setReason] = useState('')
@@ -11,7 +12,7 @@ export function DeleteRequestModal({ targetUserId, targetName, onClose, onSubmit
           Запрос уйдёт на подтверждение Супер-Админу. До подтверждения сотрудник остаётся активным.
         </p>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">
             Причина (минимум 20 символов)
           </span>
           <textarea
@@ -19,22 +20,23 @@ export function DeleteRequestModal({ targetUserId, targetName, onClose, onSubmit
             onChange={(e) => setReason(e.target.value)}
             rows={4}
             aria-label="Причина"
-            className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground"
           />
-          <span className="mt-1 text-xs text-slate-400">{reason.trim().length} / 20</span>
+          <span className="mt-1 text-xs text-muted-foreground">{reason.trim().length} / 20</span>
         </label>
         <div className="flex gap-3">
-          <button type="button" onClick={onClose} disabled={submitting} className="flex-1 rounded-lg border border-slate-200 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+          <Button type="button" variant="ghost" onClick={onClose} disabled={submitting} className="flex-1">
             Отмена
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="destructive"
             onClick={() => canSubmit && onSubmit(reason.trim())}
             disabled={!canSubmit}
-            className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+            className="flex-1"
           >
             Отправить
-          </button>
+          </Button>
         </div>
       </div>
     </ModalShell>

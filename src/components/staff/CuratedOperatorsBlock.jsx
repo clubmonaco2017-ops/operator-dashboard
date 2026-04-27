@@ -4,6 +4,7 @@ import { useCuratorship } from '../../hooks/useCuratorship.js'
 import { ChangeCuratorModal } from './ChangeCuratorModal.jsx'
 import { AddCuratedOperatorsModal } from './AddCuratedOperatorsModal.jsx'
 import { initials } from '../../lib/clients.js'
+import { Button } from '@/components/ui/button'
 
 /**
  * Блок «Курирует операторов» в карточке модератора.
@@ -35,24 +36,25 @@ export function CuratedOperatorsBlock({ callerId, user, staff }) {
         </div>
         <div className="flex items-center gap-2">
           {isAdmin && (
-            <button
-              type="button"
+            <Button
+              size="sm"
               onClick={() => setAddOpen(true)}
-              className="btn-primary text-xs px-3 py-1.5"
+              className="text-xs"
             >
               + Добавить
-            </button>
+            </Button>
           )}
           {operators.length > 0 && (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setExpanded((v) => !v)}
               aria-expanded={expanded}
               aria-label={expanded ? 'Свернуть список' : 'Развернуть список'}
-              className="btn-ghost text-xs px-2 py-1.5"
+              className="text-xs"
             >
               {expanded ? '−' : '+'}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -95,18 +97,19 @@ export function CuratedOperatorsBlock({ callerId, user, staff }) {
                     )}
                   </div>
                   {isAdmin && (
-                    <button
-                      type="button"
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
                         setReassignFor(op.operator_id)
                       }}
-                      className="btn-ghost shrink-0 text-xs px-2 py-1"
+                      className="shrink-0 text-xs"
                       aria-label={`Передать оператора ${op.name ?? op.operator_id} другому куратору`}
                     >
                       Передать
-                    </button>
+                    </Button>
                   )}
                 </div>
               )
