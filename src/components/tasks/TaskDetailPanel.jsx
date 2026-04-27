@@ -16,6 +16,7 @@ import { TaskReportCard } from './TaskReportCard.jsx'
 import { TaskActivityCard } from './TaskActivityCard.jsx'
 import { CancelTaskConfirmDialog } from './CancelTaskConfirmDialog.jsx'
 import { DeleteTaskConfirmDialog } from './DeleteTaskConfirmDialog.jsx'
+import { Button } from '@/components/ui/button.jsx'
 
 /**
  * Detail-панель открытой задачи (Subplan 5 Stage 7).
@@ -220,43 +221,43 @@ export function TaskDetailPanel({
         {(showTake || showSubmitJump || showCancel || showDelete) && (
           <div className="mt-4 flex flex-wrap gap-2">
             {showTake && (
-              <button
+              <Button
                 type="button"
                 onClick={handleTakeInProgress}
                 disabled={actionBusy || actions.mutating}
-                className="btn-primary"
               >
                 {actionBusy ? 'Берём…' : 'Взял в работу'}
-              </button>
+              </Button>
             )}
             {showSubmitJump && (
-              <button
+              <Button
                 type="button"
                 onClick={scrollToReport}
-                className="btn-primary"
               >
                 К отчёту
-              </button>
+              </Button>
             )}
             {showCancel && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => setCancelOpen(true)}
                 disabled={actionBusy || actions.mutating}
-                className="btn-danger-ghost"
+                className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
               >
                 Отменить задачу
-              </button>
+              </Button>
             )}
             {showDelete && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => setDeleteOpen(true)}
                 disabled={actionBusy || actions.mutating}
-                className="btn-danger-ghost"
+                className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
               >
                 Удалить задачу
-              </button>
+              </Button>
             )}
           </div>
         )}
