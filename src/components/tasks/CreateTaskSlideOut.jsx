@@ -3,7 +3,7 @@ import { Check, Loader2, X } from 'lucide-react'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import { validateTaskTitle } from '../../lib/tasks.js'
 import { AssigneeSelector } from './AssigneeSelector.jsx'
-import { Button } from '../ui/button.jsx'
+import { Button } from '@/components/ui/button'
 
 /**
  * Slide-out форма создания задачи.
