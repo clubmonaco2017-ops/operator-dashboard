@@ -5,6 +5,7 @@ import { canEditTeam, formatLeadRole } from '../../lib/teams.js'
 import { initials } from '../../lib/clients.js'
 import { AddMemberModal } from './AddMemberModal.jsx'
 import { ChangeLeadModal } from './ChangeLeadModal.jsx'
+import { RemoveMemberConfirmDialog } from './RemoveMemberConfirmDialog.jsx'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -153,50 +154,13 @@ export function TeamMembersTab({ callerId, user, row, reload }) {
       )}
 
       {confirmRemove && (
-        <RemoveMemberConfirm
+        <RemoveMemberConfirmDialog
           name={confirmRemove.name}
           busy={mutating}
           onCancel={() => setConfirmRemove(null)}
           onConfirm={handleConfirmRemove}
         />
       )}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Inline confirm dialog for removing one operator
-// ---------------------------------------------------------------------------
-
-function RemoveMemberConfirm({ name, busy, onCancel, onConfirm }) {
-  return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="remove-member-title"
-    >
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
-        <h3 id="remove-member-title" className="text-base font-semibold text-foreground">
-          Убрать {name ?? 'оператора'} из команды?
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Оператор останется активным, но потеряет доступ к клиентам команды.
-        </p>
-        <div className="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" onClick={onCancel} disabled={busy}>
-            Отмена
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={onConfirm}
-            disabled={busy}
-            className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
-          >
-            {busy ? 'Убираем…' : 'Убрать'}
-          </Button>
-        </div>
-      </div>
     </div>
   )
 }
