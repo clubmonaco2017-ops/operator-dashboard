@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { X, Search } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Search } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useCuratorship } from '../../hooks/useCuratorship.js'
 import { initials } from '../../lib/clients.js'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 /**
  * Модалка «Добавить операторов под куратора» (массово).
@@ -26,24 +27,6 @@ export function AddCuratedOperatorsModal({ callerId, moderatorId, onClose, onAdd
   const debounced = useDebounce(search, 200)
   const [selected, setSelected] = useState(() => new Set())
   const [error, setError] = useState(null)
-  const searchRef = useRef(null)
-  const previouslyFocused = useRef(null)
-
-  useEffect(() => {
-    previouslyFocused.current = document.activeElement
-    searchRef.current?.focus()
-    const onKey = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        if (!mutating) onClose()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      previouslyFocused.current?.focus?.()
-    }
-  }, [onClose, mutating])
 
   useEffect(() => {
     let cancelled = false
@@ -106,30 +89,11 @@ export function AddCuratedOperatorsModal({ callerId, moderatorId, onClose, onAdd
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-curated-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !mutating) onClose()
-      }}
-    >
-      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl max-h-[90vh]">
-        <header className="flex items-center justify-between border-b border-border px-5 py-4">
-          <h3 id="add-curated-title" className="text-base font-semibold text-foreground">
-            Добавить операторов
-          </h3>
-          <button
-            type="button"
-            onClick={() => !mutating && onClose()}
-            disabled={mutating}
-            aria-label="Закрыть"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
-          >
-            <X size={16} />
-          </button>
-        </header>
+    <Dialog open onOpenChange={(next) => !next && !mutating && onClose()}>
+      <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <DialogHeader className="border-b border-border px-5 py-4">
+          <DialogTitle>Добавить операторов</DialogTitle>
+        </DialogHeader>
 
         <div className="border-b border-border px-5 py-3">
           <label className="relative block">
@@ -139,7 +103,7 @@ export function AddCuratedOperatorsModal({ callerId, moderatorId, onClose, onAdd
               aria-hidden
             />
             <input
-              ref={searchRef}
+              autoFocus
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -212,7 +176,7 @@ export function AddCuratedOperatorsModal({ callerId, moderatorId, onClose, onAdd
           )}
         </div>
 
-        <footer className="flex items-center justify-between gap-2 border-t border-border bg-muted/40 px-5 py-3">
+        <DialogFooter className="flex items-center justify-between gap-2 border-t border-border bg-muted/40 px-5 py-3">
           <span className="text-xs text-muted-foreground">
             Выбрано: <span className="font-mono tabular">{selected.size}</span>
           </span>
@@ -233,9 +197,9 @@ export function AddCuratedOperatorsModal({ callerId, moderatorId, onClose, onAdd
               {mutating ? 'Назначаем…' : `Назначить (${selected.size})`}
             </Button>
           </div>
-        </footer>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -285,4 +249,3 @@ function ListSkeleton() {
     </ul>
   )
 }
-
