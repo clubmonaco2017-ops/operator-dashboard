@@ -101,7 +101,7 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
       <header className="flex items-center gap-2 border-b border-border bg-card px-4 py-3 sm:px-6">
         <button
           type="button"
-          onClick={onBack}
+          onClick={() => onBack?.()}
           className="flex items-center gap-1 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground sm:hidden"
           aria-label="Назад к списку сотрудников"
         >
@@ -231,7 +231,10 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
         />
       )}
       {delError && (
-        <p className="fixed bottom-4 right-4 rounded-lg bg-[var(--danger)] px-4 py-2 text-sm text-white">
+        <p
+          role="alert"
+          className="fixed bottom-4 right-4 rounded-lg bg-[var(--danger)] px-4 py-2 text-sm text-white"
+        >
           {delError}
         </p>
       )}
@@ -248,9 +251,15 @@ function TabLink({ refCode, tab, label }) {
           : `/staff/${encodeURIComponent(refCode)}`
       }
       end
-      className={({ isActive }) => `${TAB_BASE} ${isActive ? TAB_ACTIVE : TAB_IDLE}`}
     >
-      {label}
+      {({ isActive }) => (
+        <span
+          className={`${TAB_BASE} ${isActive ? TAB_ACTIVE : TAB_IDLE}`}
+          aria-current={isActive ? 'page' : undefined}
+        >
+          {label}
+        </span>
+      )}
     </NavLink>
   )
 }
