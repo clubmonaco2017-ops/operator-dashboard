@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, Link as LinkIcon, Image as ImageIcon, Upload, Loader2, Check } from 'lucide-react'
+import { Link as LinkIcon, Image as ImageIcon, Upload, Loader2, Check } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useClientActions } from '../../hooks/useClientActions.js'
 import { usePlatforms } from '../../hooks/usePlatforms.js'
@@ -15,6 +15,7 @@ import {
 } from '../../lib/clients.js'
 import { CreateClientCloseConfirm } from './CreateClientCloseConfirm.jsx'
 import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 
 const EMPTY_FORM = {
   name: '',
@@ -85,14 +86,11 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
     }
   }, [form.agencyId, agencies])
 
-  // Hotkeys: Esc, Cmd/Ctrl+Enter
+  // Hotkey: Cmd/Ctrl+Enter → submit (Esc handled by Sheet's onOpenChange)
   useEffect(() => {
     const onKey = (e) => {
       if (showCloseConfirm) return
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        attemptClose()
-      } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault()
         handleSubmit()
       }
@@ -100,7 +98,7 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showCloseConfirm, isDirty, submitting, form, avatarFile])
+  }, [showCloseConfirm, submitting, form, avatarFile])
 
   function attemptClose() {
     if (submitting) return
@@ -183,45 +181,28 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-50 bg-black/40"
-        onClick={attemptClose}
-        aria-hidden
-      />
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-client-title"
-        className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col bg-card shadow-2xl border-l border-border"
-      >
-        <header className="flex items-start justify-between border-b border-border px-6 py-5">
-          <div>
-            <h2 id="create-client-title" className="text-lg font-bold text-foreground">
+      <Sheet open onOpenChange={(next) => !next && attemptClose()}>
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col gap-0 sm:max-w-[480px]"
+        >
+          <SheetHeader className="border-b border-border px-6 py-5">
+            <SheetTitle className="text-lg font-bold text-foreground">
               Новый клиент
-            </h2>
+            </SheetTitle>
             <p className="mt-1 text-xs text-muted-foreground">
               Поля со звёздочкой обязательны
             </p>
-          </div>
-          <button
-            type="button"
-            onClick={attemptClose}
-            disabled={submitting}
-            aria-label="Закрыть форму создания клиента"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
-          >
-            <X size={20} />
-          </button>
-        </header>
+          </SheetHeader>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleSubmit()
-          }}
-          className="flex flex-1 flex-col overflow-hidden"
-        >
-          <div className="flex-1 overflow-auto px-6 py-5">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSubmit()
+            }}
+            className="flex flex-1 flex-col overflow-hidden"
+          >
+            <div className="flex-1 overflow-auto px-6 py-5">
             <AvatarDropZone
               file={avatarFile}
               error={avatarError}
@@ -345,52 +326,52 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
             </div>
           </div>
 
-          {/* Footer */}
-          <footer className="border-t border-border bg-muted/40 px-6 py-4">
-            {submitError && (
-              <p
-                className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
-                role="alert"
-              >
-                {submitError}
-              </p>
-            )}
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-[var(--fg4)]">
-                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                  Esc
-                </kbd>{' '}
-                закрыть ·{' '}
-                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                  ⌘↵
-                </kbd>{' '}
-                создать
-              </span>
-              <div className="flex-1" />
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={attemptClose}
-                disabled={submitting}
-              >
-                Отмена
-              </Button>
-              <Button
-                type="submit"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin" /> Создаётся…
-                  </>
-                ) : (
-                  <><Check size={14} className="inline mr-1.5" />Создать клиента</>
-                )}
-              </Button>
-            </div>
-          </footer>
-        </form>
-      </aside>
+            <SheetFooter className="mt-0 flex-col gap-0 border-t border-border bg-muted/40 px-6 py-4">
+              {submitError && (
+                <p
+                  className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
+                  role="alert"
+                >
+                  {submitError}
+                </p>
+              )}
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-[var(--fg4)]">
+                  <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                    Esc
+                  </kbd>{' '}
+                  закрыть ·{' '}
+                  <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                    ⌘↵
+                  </kbd>{' '}
+                  создать
+                </span>
+                <div className="flex-1" />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={attemptClose}
+                  disabled={submitting}
+                >
+                  Отмена
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" /> Создаётся…
+                    </>
+                  ) : (
+                    <><Check size={14} className="inline mr-1.5" />Создать клиента</>
+                  )}
+                </Button>
+              </div>
+            </SheetFooter>
+          </form>
+        </SheetContent>
+      </Sheet>
 
       {showCloseConfirm && (
         <CreateClientCloseConfirm
