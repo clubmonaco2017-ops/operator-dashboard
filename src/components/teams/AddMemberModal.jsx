@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import { Search, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useUnassignedOperators } from '../../hooks/useUnassignedOperators.js'
 import { initials } from '../../lib/clients.js'
 
@@ -20,24 +21,6 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
 
   const [busyId, setBusyId] = useState(null)
   const [error, setError] = useState(null)
-  const searchRef = useRef(null)
-  const previouslyFocused = useRef(null)
-
-  useEffect(() => {
-    previouslyFocused.current = document.activeElement
-    searchRef.current?.focus()
-    const onKey = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      previouslyFocused.current?.focus?.()
-    }
-  }, [onClose])
 
   async function handleAdd(op) {
     if (busyId) return
@@ -53,29 +36,11 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-member-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
-      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl max-h-[80vh]">
-        <header className="flex items-center justify-between border-b border-border px-5 py-4">
-          <h3 id="add-member-title" className="text-base font-semibold text-foreground">
-            Добавить оператора
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Закрыть"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground"
-          >
-            <X size={18} />
-          </button>
-        </header>
+    <Dialog open onOpenChange={(next) => !next && onClose()}>
+      <DialogContent className="flex max-h-[80vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <DialogHeader className="border-b border-border px-5 py-4">
+          <DialogTitle>Добавить оператора</DialogTitle>
+        </DialogHeader>
 
         <div className="border-b border-border px-5 py-3">
           <label className="relative block">
@@ -85,7 +50,7 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
               aria-hidden
             />
             <input
-              ref={searchRef}
+              autoFocus
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -144,13 +109,13 @@ export function AddMemberModal({ callerId, onClose, onAdd }) {
           )}
         </div>
 
-        <footer className="border-t border-border bg-muted/40 px-5 py-3 text-right">
+        <DialogFooter className="border-t border-border bg-muted/40 px-5 py-3">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Готово
           </Button>
-        </footer>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -194,4 +159,3 @@ function ListSkeleton() {
     </ul>
   )
 }
-

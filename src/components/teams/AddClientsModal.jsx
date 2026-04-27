@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import { Search, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useUnassignedClients } from '../../hooks/useUnassignedClients.js'
 import { initials, pluralizeClients } from '../../lib/clients.js'
 
@@ -20,24 +21,6 @@ export function AddClientsModal({ callerId, onClose, onAdd }) {
   const [selected, setSelected] = useState(() => new Set())
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
-  const searchRef = useRef(null)
-  const previouslyFocused = useRef(null)
-
-  useEffect(() => {
-    previouslyFocused.current = document.activeElement
-    searchRef.current?.focus()
-    const onKey = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        if (!submitting) onClose()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      previouslyFocused.current?.focus?.()
-    }
-  }, [onClose, submitting])
 
   function toggle(id) {
     setSelected((prev) => {
@@ -63,30 +46,11 @@ export function AddClientsModal({ callerId, onClose, onAdd }) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-clients-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !submitting) onClose()
-      }}
-    >
-      <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl max-h-[80vh]">
-        <header className="flex items-center justify-between border-b border-border px-5 py-4">
-          <h3 id="add-clients-title" className="text-base font-semibold text-foreground">
-            Назначить клиентов команде
-          </h3>
-          <button
-            type="button"
-            onClick={() => !submitting && onClose()}
-            disabled={submitting}
-            aria-label="Закрыть"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
-          >
-            <X size={18} />
-          </button>
-        </header>
+    <Dialog open onOpenChange={(next) => !next && !submitting && onClose()}>
+      <DialogContent className="flex max-h-[80vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <DialogHeader className="border-b border-border px-5 py-4">
+          <DialogTitle>Назначить клиентов команде</DialogTitle>
+        </DialogHeader>
 
         <div className="border-b border-border px-5 py-3">
           <label className="relative block">
@@ -96,7 +60,7 @@ export function AddClientsModal({ callerId, onClose, onAdd }) {
               aria-hidden
             />
             <input
-              ref={searchRef}
+              autoFocus
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -155,33 +119,34 @@ export function AddClientsModal({ callerId, onClose, onAdd }) {
           )}
         </div>
 
-        <footer className="flex items-center gap-3 border-t border-border bg-muted/40 px-5 py-3">
+        <DialogFooter className="flex items-center justify-between gap-2 border-t border-border bg-muted/40 px-5 py-3">
           <span className="text-xs text-muted-foreground tabular">
             Выбрано: {selected.size}
           </span>
-          <div className="flex-1" />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => !submitting && onClose()}
-            disabled={submitting}
-          >
-            Отмена
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            disabled={submitting || selected.size === 0}
-          >
-            {submitting
-              ? 'Назначаем…'
-              : selected.size > 0
-                ? `Назначить ${pluralizeClients(selected.size)}`
-                : 'Назначить'}
-          </Button>
-        </footer>
-      </div>
-    </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => !submitting && onClose()}
+              disabled={submitting}
+            >
+              Отмена
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={submitting || selected.size === 0}
+            >
+              {submitting
+                ? 'Назначаем…'
+                : selected.size > 0
+                  ? `Назначить ${pluralizeClients(selected.size)}`
+                  : 'Назначить'}
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -226,4 +191,3 @@ function ListSkeleton() {
     </ul>
   )
 }
-

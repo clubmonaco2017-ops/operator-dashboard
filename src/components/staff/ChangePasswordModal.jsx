@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../useAuth.jsx'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -34,48 +34,39 @@ export function ChangePasswordModal({ userId, onClose, onDone }) {
   }
 
   return (
-    <ModalShell title="Сменить пароль" onClose={onClose}>
-      <form onSubmit={submit} className="space-y-4">
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">Новый пароль</span>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">Повторите</span>
-          <Input
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-          />
-        </label>
-        {error && <p role="alert" className="text-sm text-[var(--danger-ink)]">{error}</p>}
-        <div className="flex gap-3 pt-1">
-          <Button type="button" variant="ghost" onClick={onClose} disabled={submitting} className="flex-1">
-            Отмена
-          </Button>
-          <Button type="submit" disabled={submitting} className="flex-1">
-            {submitting ? 'Сохранение…' : 'Сменить'}
-          </Button>
-        </div>
-      </form>
-    </ModalShell>
-  )
-}
-
-export function ModalShell({ title, children, onClose }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-card p-5 shadow-xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-foreground">{title}</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={16} /></button>
-        </div>
-        {children}
-      </div>
-    </div>
+    <Dialog open onOpenChange={(next) => !next && !submitting && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Сменить пароль</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-4">
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">Новый пароль</span>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">Повторите</span>
+            <Input
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+          </label>
+          {error && <p role="alert" className="text-sm text-[var(--danger-ink)]">{error}</p>}
+          <div className="flex gap-3 pt-1">
+            <Button type="button" variant="ghost" onClick={onClose} disabled={submitting} className="flex-1">
+              Отмена
+            </Button>
+            <Button type="submit" disabled={submitting} className="flex-1">
+              {submitting ? 'Сохранение…' : 'Сменить'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
