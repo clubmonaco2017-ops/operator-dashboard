@@ -33,9 +33,9 @@ export function ClientFilterChips({ value, onChange, platforms, agencies, counts
           className={[
             'inline-block h-1.5 w-1.5 rounded-full',
             value.active === 'archived'
-              ? 'bg-slate-400'
+              ? 'bg-muted-foreground'
               : value.active === 'all'
-                ? 'bg-slate-300'
+                ? 'bg-muted-foreground/50'
                 : 'bg-emerald-500',
           ].join(' ')}
         />

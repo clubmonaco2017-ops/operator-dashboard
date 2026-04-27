@@ -1,4 +1,5 @@
 import { UserPlus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Empty state когда клиентов нет вообще.
@@ -18,13 +19,9 @@ export function EmptyZero({ onCreate, canCreate }) {
           Здесь появятся клиенты агентства. Каждый клиент закреплён за платформой и агентством.
         </p>
         {canCreate && (
-          <button
-            type="button"
-            onClick={onCreate}
-            className="btn-primary mt-5"
-          >
+          <Button onClick={onCreate} className="mt-5">
             + Добавить первого клиента
-          </button>
+          </Button>
         )}
       </div>
     </div>

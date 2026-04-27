@@ -13,6 +13,7 @@ import { ClientDetailPanel } from '../components/clients/ClientDetailPanel.jsx'
 import { CreateClientSlideOut } from '../components/clients/CreateClientSlideOut.jsx'
 import { hasPermission } from '../lib/permissions.js'
 import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
+import { Button } from '@/components/ui/button'
 
 const DEFAULT_FILTERS = { active: 'active', platformId: null, agencyId: null }
 
@@ -83,13 +84,9 @@ export function ClientListPage() {
   )
 
   const createButtonNode = canCreate ? (
-    <button
-      type="button"
-      onClick={() => setCreateOpen(true)}
-      className="btn-primary text-xs px-2.5 py-1.5"
-    >
+    <Button size="sm" onClick={() => setCreateOpen(true)}>
       + Новый
-    </button>
+    </Button>
   ) : null
 
   const searchNode = (
