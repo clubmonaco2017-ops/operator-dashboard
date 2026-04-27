@@ -9,39 +9,35 @@ import {
 import { Button } from '@/components/ui/button'
 
 /**
- * Confirm-диалог отмены задачи.
+ * Confirm-диалог: убрать оператора из команды.
  *
  * @param {object} props
- * @param {string} props.taskTitle
+ * @param {string|null} props.name
  * @param {boolean} props.busy
  * @param {function} props.onCancel
  * @param {function} props.onConfirm
  */
-export function CancelTaskConfirmDialog({ taskTitle, busy, onCancel, onConfirm }) {
-  const truncated =
-    taskTitle && taskTitle.length > 60 ? `${taskTitle.slice(0, 60)}…` : taskTitle
-
+export function RemoveMemberConfirmDialog({ name, busy, onCancel, onConfirm }) {
   return (
     <Dialog open onOpenChange={(next) => !next && !busy && onCancel()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Отменить задачу «{truncated}»?</DialogTitle>
+          <DialogTitle>Убрать {name ?? 'оператора'} из команды?</DialogTitle>
           <DialogDescription>
-            Задача перейдёт в статус «Отменена». Это можно увидеть в истории, но восстановить нельзя.
+            Оператор останется активным, но потеряет доступ к клиентам команды.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
+          <Button variant="ghost" onClick={onCancel} disabled={busy}>
             Отмена
           </Button>
           <Button
-            type="button"
             variant="ghost"
             onClick={onConfirm}
             disabled={busy}
             className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
           >
-            {busy ? 'Отменяем…' : 'Отменить задачу'}
+            {busy ? 'Убираем…' : 'Убрать'}
           </Button>
         </DialogFooter>
       </DialogContent>

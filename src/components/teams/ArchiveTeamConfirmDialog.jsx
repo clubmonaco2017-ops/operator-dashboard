@@ -1,7 +1,14 @@
-import { useEffect, useRef } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { pluralizeOperators } from '../../lib/teams.js'
 import { pluralizeClients } from '../../lib/clients.js'
-import { Button } from '@/components/ui/button'
 
 /**
  * Confirm-диалог для архивирования команды. Restore — без confirm.
@@ -14,62 +21,44 @@ import { Button } from '@/components/ui/button'
  * @param {function} props.onCancel
  * @param {function} props.onConfirm
  */
-export function ArchiveTeamConfirmDialog({ teamName, members = 0, clients = 0, busy, onCancel, onConfirm }) {
-  const cancelBtnRef = useRef(null)
-
-  useEffect(() => {
-    cancelBtnRef.current?.focus()
-    const onKey = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        onCancel()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onCancel])
-
+export function ArchiveTeamConfirmDialog({
+  teamName,
+  members = 0,
+  clients = 0,
+  busy,
+  onCancel,
+  onConfirm,
+}) {
   const releaseLine =
     members > 0 || clients > 0
       ? `${pluralizeOperators(members)} и ${pluralizeClients(clients)} будут освобождены.`
       : 'Команда сейчас пустая — освобождать никого не нужно.'
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="archive-team-confirm-title"
-    >
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
-        <h3 id="archive-team-confirm-title" className="text-base font-semibold text-foreground">
-          Архивировать команду?
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{teamName}</span> · {releaseLine}{' '}
-          Команду можно восстановить позже.
-        </p>
-        <div className="mt-5 flex justify-end gap-2">
-          <Button
-            ref={cancelBtnRef}
-            type="button"
-            variant="ghost"
-            onClick={onCancel}
-            disabled={busy}
-          >
+    <Dialog open onOpenChange={(next) => !next && !busy && onCancel()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Архивировать команду?</DialogTitle>
+          <DialogDescription>
+            <span className="font-medium text-foreground">{teamName}</span> · {releaseLine}{' '}
+            Команду можно восстановить позже.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
             Отмена
           </Button>
           <Button
             type="button"
             variant="ghost"
-            className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
             onClick={onConfirm}
             disabled={busy}
+            className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
           >
             {busy ? 'Архивируем…' : 'Архивировать'}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

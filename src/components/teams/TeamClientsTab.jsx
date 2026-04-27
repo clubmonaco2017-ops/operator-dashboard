@@ -4,6 +4,7 @@ import { useTeamClients } from '../../hooks/useTeamClients.js'
 import { canEditTeam } from '../../lib/teams.js'
 import { initials } from '../../lib/clients.js'
 import { AddClientsModal } from './AddClientsModal.jsx'
+import { RemoveClientConfirmDialog } from './RemoveClientConfirmDialog.jsx'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -123,48 +124,13 @@ export function TeamClientsTab({ callerId, user, row, reload }) {
       )}
 
       {confirmRemove && (
-        <RemoveClientConfirm
+        <RemoveClientConfirmDialog
           name={confirmRemove.name}
           busy={mutating}
           onCancel={() => setConfirmRemove(null)}
           onConfirm={handleConfirmRemove}
         />
       )}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-
-function RemoveClientConfirm({ name, busy, onCancel, onConfirm }) {
-  return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="remove-client-title"
-    >
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
-        <h3 id="remove-client-title" className="text-base font-semibold text-foreground">
-          Снять {name ?? 'клиента'} с команды?
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Клиент станет нераспределённым и его можно будет назначить другой команде.
-        </p>
-        <div className="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" onClick={onCancel} disabled={busy}>
-            Отмена
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={onConfirm}
-            disabled={busy}
-            className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
-          >
-            {busy ? 'Снимаем…' : 'Снять'}
-          </Button>
-        </div>
-      </div>
     </div>
   )
 }
