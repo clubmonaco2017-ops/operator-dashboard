@@ -46,10 +46,10 @@ export function ApprovalReviewModal({ request, onClose, onDone }) {
         </label>
         {error && <p role="alert" className="text-sm text-[var(--danger-ink)]">{error}</p>}
         <div className="flex gap-3">
-          <Button variant="ghost" onClick={() => call('reject_deletion')} disabled={submitting} className="flex-1 text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]">
+          <Button variant="ghost" onClick={() => call('reject_deletion')} disabled={submitting} className="flex-1">
             Отклонить
           </Button>
-          <Button onClick={() => call('approve_deletion')} disabled={submitting} className="flex-1">
+          <Button variant="destructive" onClick={() => call('approve_deletion')} disabled={submitting} className="flex-1">
             Подтвердить и деактивировать
           </Button>
         </div>

@@ -30,10 +30,10 @@ export function DeleteRequestModal({ targetUserId, targetName, onClose, onSubmit
           </Button>
           <Button
             type="button"
-            variant="ghost"
+            variant="destructive"
             onClick={() => canSubmit && onSubmit(reason.trim())}
             disabled={!canSubmit}
-            className="flex-1 text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
+            className="flex-1"
           >
             Отправить
           </Button>
