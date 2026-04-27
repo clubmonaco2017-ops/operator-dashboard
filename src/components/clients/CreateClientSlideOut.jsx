@@ -14,6 +14,7 @@ import {
   FILE_LIMITS,
 } from '../../lib/clients.js'
 import { CreateClientCloseConfirm } from './CreateClientCloseConfirm.jsx'
+import { Button } from '@/components/ui/button'
 
 const EMPTY_FORM = {
   name: '',
@@ -366,18 +367,17 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
                 создать
               </span>
               <div className="flex-1" />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={attemptClose}
                 disabled={submitting}
-                className="btn-ghost"
               >
                 Отмена
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={submitting}
-                className="btn-primary"
               >
                 {submitting ? (
                   <>
@@ -386,7 +386,7 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
                 ) : (
                   <><Check size={14} className="inline mr-1.5" />Создать клиента</>
                 )}
-              </button>
+              </Button>
             </div>
           </footer>
         </form>
@@ -558,17 +558,18 @@ function AvatarDropZone({ file, error, onSelect, onRemove, disabled }) {
           <p className="mt-1 text-xs text-[var(--danger-ink)]" role="alert">{error}</p>
         )}
       </div>
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={(e) => {
           e.stopPropagation()
           if (!disabled) inputRef.current?.click()
         }}
         disabled={disabled}
-        className="btn-ghost text-xs px-3 py-1.5"
       >
         <Upload size={14} /> Загрузить
-      </button>
+      </Button>
       <input
         ref={inputRef}
         type="file"

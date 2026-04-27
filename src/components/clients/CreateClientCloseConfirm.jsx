@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Confirm-диалог при попытке закрыть форму с несохранённым вводом.
@@ -40,21 +41,21 @@ export function CreateClientCloseConfirm({ onContinue, onDiscard }) {
           Введённые данные будут потеряны.
         </p>
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onDiscard}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
+            className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
           >
             Закрыть без сохранения
-          </button>
-          <button
+          </Button>
+          <Button
             ref={continueBtnRef}
             type="button"
             onClick={onContinue}
-            className="btn-primary"
           >
             Продолжить ввод
-          </button>
+          </Button>
         </div>
       </div>
     </div>

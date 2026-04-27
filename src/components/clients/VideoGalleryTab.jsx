@@ -29,6 +29,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Button } from '@/components/ui/button'
 import { supabase } from '../../supabaseClient.js'
 import { useClientMedia } from '../../hooks/useClientMedia.js'
 import { validateFile, FILE_LIMITS, formatFileSize, formatDuration } from '../../lib/clients.js'
@@ -326,28 +327,21 @@ export function VideoGalleryTab({ callerId, client, onChanged }) {
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <SortToggle value={sort} onChange={setSort} disabled={selectMode || search.trim() !== '' || durationFilter !== 'all'} />
         <div className="flex-1" />
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={toggleSelectMode}
           aria-pressed={selectMode}
-          className={[
-            'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-            selectMode
-              ? 'bg-foreground text-background hover:opacity-90'
-              : 'btn-ghost',
-          ].join(' ')}
+          className={selectMode ? 'bg-foreground text-background hover:opacity-90' : undefined}
         >
           {selectMode ? <Check size={14} /> : <CheckSquare size={14} />}
           {selectMode ? 'Готово' : 'Выбрать'}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           onClick={onPickClick}
           disabled={!!upload && !upload.done}
-          className="btn-primary"
         >
           <Upload size={14} /> Загрузить
-        </button>
+        </Button>
       </div>
 
       {/* 8.E Search + duration filter */}
@@ -513,14 +507,14 @@ function EmptyVideoFilter({ hasSearch, hasDurationFilter, onClearSearch, onClear
       </p>
       <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
         {hasSearch && (
-          <button type="button" onClick={onClearSearch} className="btn-primary">
+          <Button onClick={onClearSearch}>
             Очистить поиск
-          </button>
+          </Button>
         )}
         {(hasSearch || hasDurationFilter) && (
-          <button type="button" onClick={onClearAll} className="btn-ghost">
+          <Button variant="ghost" onClick={onClearAll}>
             Сбросить фильтры
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -828,9 +822,9 @@ function EmptyVideos({ onUpload }) {
       <p className="mt-1 text-sm text-muted-foreground">
         Перетащите файлы сюда или нажмите кнопку.
       </p>
-      <button type="button" onClick={onUpload} className="btn-primary mt-4">
+      <Button onClick={onUpload} className="mt-4">
         <Upload size={14} /> Загрузить первое видео
-      </button>
+      </Button>
     </div>
   )
 }
