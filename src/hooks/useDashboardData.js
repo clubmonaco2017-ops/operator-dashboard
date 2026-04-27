@@ -111,15 +111,18 @@ export function useDashboardData({ from, to }) {
 /**
  * Builds a map: operator refcode → team name.
  *
- * IMPLEMENTATION NOTE: The exact source of truth for this mapping varies.
- * Inspect the schema by reading useTeamMembers.js / useTeamList.js. Two
- * common patterns:
- *   1. A single table `team_members` with (team_id, operator_ref_code) +
- *      a foreign-key into `teams(name)` — use one query with select join.
- *   2. RPC `list_teams` + per-team `list_team_members` — fan-out + flatten.
+ * Fan-out implementation: list_teams(callerId) → for each team
+ * get_team_detail(callerId, team.id) → flatten members[].ref_code → team.name.
  *
- * Until the implementer wires this up, this stub returns {} so team cards
- * gracefully render «—» / empty list. Full impl is acceptance criterion.
+ * Cost: 1 + N RPC calls (N = teams visible to caller). For dashboards with
+ * 5-20 teams, that's 6-21 round-trips on dashboard load. Acceptable for MVP;
+ * could be optimized later by adding a single dedicated RPC like
+ * `list_team_memberships()` that returns the flat mapping in one call.
+ *
+ * Returns {} if the caller has no teams visible (operator with no team), if
+ * the RPC errors out, or if callerId is null. Team cards (`TopTeamCard`,
+ * `TeamDistributionCard`, `TeamEngagementCard`) gracefully degrade to «—»
+ * / «Нет данных» when teamMap is empty.
  */
 export function useTeamMembershipsMap(callerId) {
   const [teamMap, setTeamMap] = useState({})
@@ -135,29 +138,41 @@ export function useTeamMembershipsMap(callerId) {
     setLoading(true)
     setError(null)
 
-    // TODO[6A3]: Replace with real query. Verify schema via useTeamMembers.js.
-    // Example single-query shape:
-    //   supabase
-    //     .from('team_members')
-    //     .select('operator_ref_code, teams(name)')
-    //     .then(({ data, error }) => { ... })
-    // Build: data.forEach(r => map[r.operator_ref_code] = r.teams.name)
-    //
-    // Fallback (works without schema knowledge): leave map empty — team cards
-    // render «—» which is acceptable for 6A3 MVP shipping.
-
-    Promise.resolve()
-      .then(() => {
+    const run = async () => {
+      try {
+        const { data: teams, error: teamsErr } = await supabase.rpc('list_teams', {
+          p_caller_id: callerId,
+          p_active: 'active',
+        })
         if (cancelled) return
-        setTeamMap({})
-        setLoading(false)
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setError(e.message)
-          setLoading(false)
+        if (teamsErr) throw teamsErr
+
+        const detailPromises = (teams || []).map((t) =>
+          supabase
+            .rpc('get_team_detail', { p_caller_id: callerId, p_team_id: t.id })
+            .then(({ data, error: detailErr }) => {
+              if (detailErr) return { team: t, members: [] }
+              return { team: t, members: data?.[0]?.members || [] }
+            }),
+        )
+        const details = await Promise.all(detailPromises)
+        if (cancelled) return
+
+        const map = {}
+        for (const { team, members } of details) {
+          for (const m of members) {
+            if (m.ref_code) map[m.ref_code] = team.name
+          }
         }
-      })
+        setTeamMap(map)
+      } catch (e) {
+        if (!cancelled) setError(e.message ?? String(e))
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    run()
 
     return () => {
       cancelled = true
