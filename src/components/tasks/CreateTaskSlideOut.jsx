@@ -3,6 +3,7 @@ import { Check, Loader2, X } from 'lucide-react'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import { validateTaskTitle } from '../../lib/tasks.js'
 import { AssigneeSelector } from './AssigneeSelector.jsx'
+import { Button } from '@/components/ui/button'
 
 /**
  * Slide-out форма создания задачи.
@@ -242,18 +243,17 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
                 создать
               </span>
               <div className="flex-1" />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={attemptClose}
                 disabled={submitting}
-                className="btn-ghost"
               >
                 Отмена
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={submitting}
-                className="btn-primary"
               >
                 {submitting ? (
                   <>
@@ -262,7 +262,7 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
                 ) : (
                   <><Check size={14} className="inline mr-1.5" />Создать задачу</>
                 )}
-              </button>
+              </Button>
             </div>
           </footer>
         </form>
@@ -309,17 +309,16 @@ function ConfirmCloseDialog({ onCancel, onConfirm }) {
           Введённые данные будут потеряны.
         </p>
         <div className="mt-5 flex items-center justify-end gap-2">
-          <button type="button" onClick={onCancel} className="btn-ghost">
+          <Button type="button" variant="ghost" onClick={onCancel}>
             Продолжить редактирование
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onConfirm}
-            className="btn-primary"
             autoFocus
           >
             Отменить
-          </button>
+          </Button>
         </div>
       </div>
     </>

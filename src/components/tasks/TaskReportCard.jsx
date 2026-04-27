@@ -15,6 +15,7 @@ import {
   validateFile,
 } from '../../lib/clients.js'
 import { ClientLightbox } from '../clients/ClientLightbox.jsx'
+import { Button } from '@/components/ui/button'
 
 const ACCEPTED_MIME = [
   ...FILE_LIMITS.photo.mimeTypes,
@@ -476,14 +477,15 @@ function ReportForm({
             e.target.value = ''
           }}
         />
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading || submitting}
-          className="btn-ghost text-xs"
+          className="text-xs"
         >
           <Upload size={14} /> Прикрепить файл
-        </button>
+        </Button>
         <span className="ml-2 text-xs text-muted-foreground">
           или перетащите · фото до 25 МБ · видео до 500 МБ
         </span>
@@ -520,27 +522,26 @@ function ReportForm({
       )}
 
       <div className="flex items-center gap-2 pt-1">
-        <button
+        <Button
           type="button"
           onClick={handleSubmit}
           disabled={submitDisabled}
-          className="btn-primary"
         >
           {submitting
             ? 'Отправляем…'
             : mode === 'submit'
               ? 'Завершить с отчётом'
               : 'Сохранить изменения'}
-        </button>
+        </Button>
         {mode === 'update' && onCancel && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onCancel}
             disabled={submitting}
-            className="btn-ghost"
           >
             Отмена
-          </button>
+          </Button>
         )}
       </div>
 

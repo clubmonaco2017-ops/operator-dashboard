@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Confirm-диалог отмены задачи.
@@ -55,23 +56,24 @@ export function CancelTaskConfirmDialog({ taskTitle, busy, onCancel, onConfirm }
           восстановить нельзя.
         </p>
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button
             ref={cancelBtnRef}
             type="button"
+            variant="ghost"
             onClick={onCancel}
             disabled={busy}
-            className="btn-ghost"
           >
             Отмена
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
+            className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
             onClick={onConfirm}
             disabled={busy}
-            className="btn-danger-ghost"
           >
             {busy ? 'Отменяем…' : 'Отменить задачу'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

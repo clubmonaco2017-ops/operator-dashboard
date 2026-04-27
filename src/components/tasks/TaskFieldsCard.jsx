@@ -3,6 +3,7 @@ import { Pencil } from 'lucide-react'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import { canEditTask, formatDeadlineRelative } from '../../lib/tasks.js'
 import { AssigneeSelector } from './AssigneeSelector.jsx'
+import { Button } from '@/components/ui/button'
 
 const ROLE_LABEL = {
   admin: 'Админ',
@@ -127,22 +128,23 @@ function DeadlineField({ callerId, task, editable, onChanged }) {
             </p>
           )}
           <div className="mt-2 flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={save}
               disabled={saving}
-              className="btn-primary text-xs px-3 py-1.5"
+              className="text-xs px-3 py-1.5"
             >
               {saving ? 'Сохраняем…' : 'Сохранить'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
               onClick={cancel}
               disabled={saving}
-              className="btn-ghost text-xs px-3 py-1.5"
+              className="text-xs px-3 py-1.5"
             >
               Отмена
-            </button>
+            </Button>
             {draft && (
               <button
                 type="button"
@@ -233,22 +235,23 @@ function AssigneeField({ callerId, task, editable, canReassign, onChanged }) {
             disabled={saving}
           />
           <div className="mt-2 flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={save}
               disabled={saving || !draft || draft === task.assigned_to}
-              className="btn-primary text-xs px-3 py-1.5"
+              className="text-xs px-3 py-1.5"
             >
               {saving ? 'Сохраняем…' : 'Сохранить'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
               onClick={cancel}
               disabled={saving}
-              className="btn-ghost text-xs px-3 py-1.5"
+              className="text-xs px-3 py-1.5"
             >
               Отмена
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
