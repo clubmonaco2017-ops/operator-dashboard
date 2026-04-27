@@ -3,7 +3,6 @@ import { useOutletContext } from 'react-router-dom'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../useAuth.jsx'
 import { hasPermission } from '../../lib/permissions.js'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 const SHIFTS = ['ДЕНЬ', 'ВЕЧЕР', 'НОЧЬ']
