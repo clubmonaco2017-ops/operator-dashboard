@@ -10,6 +10,7 @@ import { TeamDetailEmptyHint } from '../components/teams/DetailEmptyHint.jsx'
 import { CreateTeamSlideOut } from '../components/teams/CreateTeamSlideOut.jsx'
 import { TeamDetailPanel } from '../components/teams/TeamDetailPanel.jsx'
 import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
+import { Button } from '@/components/ui/button'
 
 export function TeamListPage() {
   const { user } = useAuth()
@@ -42,13 +43,9 @@ export function TeamListPage() {
   )
 
   const createButtonNode = isAdmin ? (
-    <button
-      type="button"
-      onClick={() => setCreateOpen(true)}
-      className="btn-primary text-xs px-2.5 py-1.5"
-    >
+    <Button size="sm" onClick={() => setCreateOpen(true)}>
       + Новая
-    </button>
+    </Button>
   ) : null
 
   const searchNode = (

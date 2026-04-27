@@ -1,4 +1,5 @@
 import { FilterX } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Empty state когда команды есть, но под поиск/фильтр не подходят.
@@ -34,18 +35,14 @@ export function TeamEmptyFilter({
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
           {hasSearch && (
-            <button type="button" onClick={onClearSearch} className="btn-primary">
+            <Button onClick={onClearSearch}>
               Очистить поиск
-            </button>
+            </Button>
           )}
           {hasActiveFilter && (
-            <button
-              type="button"
-              onClick={onClearActive}
-              className={hasSearch ? 'btn-ghost' : 'btn-primary'}
-            >
+            <Button variant={hasSearch ? 'ghost' : 'default'} onClick={onClearActive}>
               Сбросить активность
-            </button>
+            </Button>
           )}
         </div>
       </div>

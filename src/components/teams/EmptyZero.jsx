@@ -1,4 +1,5 @@
 import { UserPlus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Empty state когда команд нет вообще.
@@ -18,13 +19,9 @@ export function TeamEmptyZero({ onCreate, canCreate }) {
           Создайте первую команду, чтобы начать распределять операторов и клиентов.
         </p>
         {canCreate && (
-          <button
-            type="button"
-            onClick={onCreate}
-            className="btn-primary mt-5"
-          >
+          <Button onClick={onCreate} className="mt-5">
             + Создать первую команду
-          </button>
+          </Button>
         )}
       </div>
     </div>
