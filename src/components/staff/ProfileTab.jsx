@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useOutletContext } from 'react-router-dom'
 import { Lock } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../useAuth.jsx'
@@ -7,7 +8,9 @@ import { TeamMembershipBlock } from './TeamMembershipBlock.jsx'
 import { CuratorBlock } from './CuratorBlock.jsx'
 import { CuratedOperatorsBlock } from './CuratedOperatorsBlock.jsx'
 
-export function ProfileTab({ row, onSaved }) {
+export function ProfileTab() {
+  const { row, onChanged } = useOutletContext()
+  const onSaved = onChanged
   const { user } = useAuth()
   const canEdit = user.id === row.id || hasPermission(user, 'create_users')
 

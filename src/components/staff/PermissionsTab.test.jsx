@@ -1,52 +1,76 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { PermissionsTab } from './PermissionsTab.jsx'
 
-function withRow(overrides = {}) {
+// Mock useOutletContext so PermissionsTab can be rendered outside a router
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal()
   return {
-    id: 42,
-    role: 'admin',
-    permissions: ['create_tasks'],
-    ...overrides,
+    ...actual,
+    useOutletContext: vi.fn(),
+  }
+})
+
+import { useOutletContext } from 'react-router-dom'
+
+// Mock supabase so onToggle RPC calls don't hit the network
+vi.mock('../../supabaseClient', () => ({
+  supabase: {
+    rpc: vi.fn().mockResolvedValue({ error: null }),
+  },
+}))
+
+import { supabase } from '../../supabaseClient'
+
+function makeContext({ permissions = [], canManageRoles = false, onChanged = vi.fn() } = {}) {
+  return {
+    row: { id: 42, role: 'admin', permissions },
+    user: {
+      id: 1,
+      role: 'admin',
+      permissions: canManageRoles ? ['manage_roles'] : [],
+    },
+    onChanged,
   }
 }
 
 describe('<PermissionsTab>', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('shows checkboxes for every known permission', () => {
-    render(
-      <PermissionsTab
-        row={withRow()}
-        canEdit={false}
-        onToggle={() => {}}
-      />,
+    useOutletContext.mockReturnValue(
+      makeContext({ permissions: ['create_tasks'] }),
     )
+    render(<PermissionsTab />)
     // Sample known permissions (must match permissionGroups.js labels)
     expect(screen.getByLabelText('Создавать задачи')).toBeChecked()
     expect(screen.getByLabelText('Создавать сотрудников')).not.toBeChecked()
   })
 
-  it('calls onToggle with key and next value', () => {
-    const onToggle = vi.fn()
-    render(
-      <PermissionsTab
-        row={withRow()}
-        canEdit={true}
-        onToggle={onToggle}
-      />,
+  it('calls supabase RPC with key and next value', async () => {
+    const onChanged = vi.fn()
+    useOutletContext.mockReturnValue(
+      makeContext({ permissions: ['create_tasks'], canManageRoles: true, onChanged }),
     )
+    render(<PermissionsTab />)
     const cb = screen.getByLabelText('Создавать сотрудников')
     fireEvent.click(cb)
-    expect(onToggle).toHaveBeenCalledWith('create_users', true)
+    // Let the async onToggle settle
+    await vi.waitFor(() => {
+      expect(supabase.rpc).toHaveBeenCalledWith('grant_permission', expect.objectContaining({
+        p_permission: 'create_users',
+      }))
+    })
+    expect(onChanged).toHaveBeenCalled()
   })
 
   it('disables checkboxes when canEdit is false', () => {
-    render(
-      <PermissionsTab
-        row={withRow()}
-        canEdit={false}
-        onToggle={() => {}}
-      />,
+    useOutletContext.mockReturnValue(
+      makeContext({ permissions: ['create_tasks'], canManageRoles: false }),
     )
+    render(<PermissionsTab />)
     expect(screen.getByLabelText('Создавать задачи')).toBeDisabled()
   })
 })
