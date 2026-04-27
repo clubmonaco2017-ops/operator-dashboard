@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Pencil } from 'lucide-react'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import { canEditTask } from '../../lib/tasks.js'
+import { Button } from '@/components/ui/button'
 
 /**
  * Карточка «Описание» в TaskDetailPanel.
@@ -83,22 +84,23 @@ export function TaskDescriptionCard({ callerId, user, task, onChanged }) {
             </p>
           )}
           <div className="mt-2 flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={save}
               disabled={saving}
-              className="btn-primary text-xs px-3 py-1.5"
+              className="text-xs px-3 py-1.5"
             >
               {saving ? 'Сохраняем…' : 'Сохранить'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
               onClick={cancel}
               disabled={saving}
-              className="btn-ghost text-xs px-3 py-1.5"
+              className="text-xs px-3 py-1.5"
             >
               Отмена
-            </button>
+            </Button>
           </div>
         </div>
       ) : task.description ? (
