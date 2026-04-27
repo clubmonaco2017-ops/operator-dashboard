@@ -260,7 +260,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
                   type="button"
                   role="menuitem"
                   onClick={handleDelete}
-                  className="block w-full rounded-md px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/15"
+                  className="block w-full rounded-md px-3 py-2 text-left text-sm text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
                 >
                   Удалить
                 </button>
@@ -350,7 +350,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
                 className="block w-full resize-y rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/40"
               />
               {captionError && (
-                <p className="mt-1.5 text-xs text-red-300" role="alert">{captionError}</p>
+                <p className="mt-1.5 text-xs text-[var(--danger-ink)]" role="alert">{captionError}</p>
               )}
               <div className="mt-2 flex items-center justify-center gap-2">
                 <button

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Pencil, Lock, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { useClientActions } from '../../hooks/useClientActions.js'
 import { usePlatforms } from '../../hooks/usePlatforms.js'
 import { useAgencies } from '../../hooks/useAgencies.js'
@@ -91,26 +92,25 @@ function DescriptionCard({ callerId, client, onChanged }) {
           />
           {error && <FieldError message={error} />}
           <div className="mt-2 flex items-center gap-2">
-            <button
-              type="button"
+            <Button
+              size="sm"
               onClick={save}
               disabled={saving}
-              className="btn-primary text-xs px-3 py-1.5"
             >
               {saving ? 'Сохраняем…' : 'Сохранить'}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setDraft(client.description ?? '')
                 setEditing(false)
                 setError(null)
               }}
               disabled={saving}
-              className="btn-ghost text-xs px-3 py-1.5"
             >
               Отмена
-            </button>
+            </Button>
           </div>
         </div>
       ) : client.description ? (
