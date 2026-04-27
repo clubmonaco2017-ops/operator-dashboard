@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Loader2, X } from 'lucide-react'
+import { Check, Loader2 } from 'lucide-react'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import { validateTaskTitle } from '../../lib/tasks.js'
 import { AssigneeSelector } from './AssigneeSelector.jsx'
 import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 /**
  * Slide-out форма создания задачи.
@@ -59,17 +68,11 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
     }
   }
 
-  // Hotkeys
+  // Hotkey: Cmd/Ctrl+Enter → submit (Esc handled by Sheet/Dialog onOpenChange)
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        if (confirmCloseOpen) {
-          setConfirmCloseOpen(false)
-        } else {
-          attemptClose()
-        }
-      } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      if (confirmCloseOpen) return
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault()
         handleSubmit()
       }
@@ -121,45 +124,28 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-50 bg-black/40"
-        onClick={attemptClose}
-        aria-hidden
-      />
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-task-title"
-        className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col bg-card shadow-2xl border-l border-border"
-      >
-        <header className="flex items-start justify-between border-b border-border px-6 py-5">
-          <div>
-            <h2 id="create-task-title" className="text-lg font-bold text-foreground">
+      <Sheet open onOpenChange={(next) => !next && attemptClose()}>
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col gap-0 sm:max-w-[480px]"
+        >
+          <SheetHeader className="border-b border-border px-6 py-5">
+            <SheetTitle className="text-lg font-bold text-foreground">
               Новая задача
-            </h2>
+            </SheetTitle>
             <p className="mt-1 text-xs text-muted-foreground">
               Поля со звёздочкой обязательны
             </p>
-          </div>
-          <button
-            type="button"
-            onClick={attemptClose}
-            disabled={submitting}
-            aria-label="Закрыть форму создания задачи"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
-          >
-            <X size={20} />
-          </button>
-        </header>
+          </SheetHeader>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleSubmit()
-          }}
-          className="flex flex-1 flex-col overflow-hidden"
-        >
-          <div className="flex-1 overflow-auto px-6 py-5 space-y-5">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSubmit()
+            }}
+            className="flex flex-1 flex-col overflow-hidden"
+          >
+            <div className="flex-1 overflow-auto px-6 py-5 space-y-5">
             <Field
               label="Название задачи"
               required
@@ -222,54 +208,55 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
             </Field>
           </div>
 
-          <footer className="border-t border-border bg-muted/40 px-6 py-4">
-            {submitError && (
-              <p
-                className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
-                role="alert"
-              >
-                {submitError}
-              </p>
-            )}
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-[var(--fg4)]">
-                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                  Esc
-                </kbd>{' '}
-                закрыть ·{' '}
-                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                  ⌘↵
-                </kbd>{' '}
-                создать
-              </span>
-              <div className="flex-1" />
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={attemptClose}
-                disabled={submitting}
-              >
-                Отмена
-              </Button>
-              <Button
-                type="submit"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin" /> Создаётся…
-                  </>
-                ) : (
-                  <><Check size={14} className="inline mr-1.5" />Создать задачу</>
-                )}
-              </Button>
-            </div>
-          </footer>
-        </form>
-      </aside>
+            <SheetFooter className="mt-0 flex-col gap-0 border-t border-border bg-muted/40 px-6 py-4">
+              {submitError && (
+                <p
+                  className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
+                  role="alert"
+                >
+                  {submitError}
+                </p>
+              )}
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-[var(--fg4)]">
+                  <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                    Esc
+                  </kbd>{' '}
+                  закрыть ·{' '}
+                  <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                    ⌘↵
+                  </kbd>{' '}
+                  создать
+                </span>
+                <div className="flex-1" />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={attemptClose}
+                  disabled={submitting}
+                >
+                  Отмена
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" /> Создаётся…
+                    </>
+                  ) : (
+                    <><Check size={14} className="inline mr-1.5" />Создать задачу</>
+                  )}
+                </Button>
+              </div>
+            </SheetFooter>
+          </form>
+        </SheetContent>
+      </Sheet>
 
       {confirmCloseOpen && (
-        <ConfirmCloseDialog
+        <CreateTaskCloseConfirm
           onCancel={() => setConfirmCloseOpen(false)}
           onConfirm={() => {
             setConfirmCloseOpen(false)
@@ -285,43 +272,24 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
 // Inline confirm dialog for dirty close
 // ---------------------------------------------------------------------------
 
-function ConfirmCloseDialog({ onCancel, onConfirm }) {
+function CreateTaskCloseConfirm({ onCancel, onConfirm }) {
   return (
-    <>
-      <div
-        className="fixed inset-0 z-[60] bg-black/40"
-        onClick={onCancel}
-        aria-hidden
-      />
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="confirm-close-task-title"
-        className="fixed left-1/2 top-1/2 z-[60] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl bg-card p-6 shadow-2xl border border-border"
-      >
-        <h3
-          id="confirm-close-task-title"
-          className="text-base font-semibold text-foreground"
-        >
-          Отменить создание задачи?
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Введённые данные будут потеряны.
-        </p>
-        <div className="mt-5 flex items-center justify-end gap-2">
+    <Dialog open onOpenChange={(next) => !next && onCancel()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Отменить создание задачи?</DialogTitle>
+          <DialogDescription>Введённые данные будут потеряны.</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
           <Button type="button" variant="ghost" onClick={onCancel}>
             Продолжить редактирование
           </Button>
-          <Button
-            type="button"
-            onClick={onConfirm}
-            autoFocus
-          >
+          <Button type="button" onClick={onConfirm} autoFocus>
             Отменить
           </Button>
-        </div>
-      </div>
-    </>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

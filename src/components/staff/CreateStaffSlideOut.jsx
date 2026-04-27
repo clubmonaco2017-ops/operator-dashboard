@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Loader2, X } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { defaultPermissions } from '../../lib/defaultPermissions.js'
 import { permissionGroups } from '../../lib/permissionGroups.js'
 import { RefCodePreview } from './RefCodePreview.jsx'
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 
 const ROLES = [
   { value: 'admin',     label: 'Администратор' },
@@ -27,17 +28,6 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
   useEffect(() => {
     firstNameRef.current?.focus()
   }, [])
-
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'Escape' && !submitting) {
-        e.preventDefault()
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [submitting, onClose])
 
   function setRoleAndPerms(r) {
     setRole(r)
@@ -99,38 +89,19 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
   }
 
   return (
-    <>
-      <div
-        data-testid="create-staff-backdrop"
-        className="fixed inset-0 z-50 bg-black/40"
-        onClick={() => !submitting && onClose()}
-        aria-hidden
-      />
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-staff-title"
-        className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col bg-card shadow-2xl border-l border-border"
+    <Sheet open onOpenChange={(next) => !next && !submitting && onClose()}>
+      <SheetContent
+        side="right"
+        className="flex w-full flex-col gap-0 sm:max-w-[480px]"
       >
-        <header className="flex items-start justify-between border-b border-border px-6 py-5">
-          <div>
-            <h2 id="create-staff-title" className="text-lg font-bold text-foreground">
-              Новый сотрудник
-            </h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Поля со звёздочкой обязательны
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => !submitting && onClose()}
-            disabled={submitting}
-            aria-label="Закрыть форму создания сотрудника"
-            className="rounded-md p-1 text-[var(--fg4)] hover:bg-muted hover:text-foreground disabled:opacity-50"
-          >
-            <X size={20} />
-          </button>
-        </header>
+        <SheetHeader className="border-b border-border px-6 py-5">
+          <SheetTitle className="text-lg font-bold text-foreground">
+            Новый сотрудник
+          </SheetTitle>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Поля со звёздочкой обязательны
+          </p>
+        </SheetHeader>
 
         <form
           onSubmit={handleSubmit}
@@ -241,7 +212,7 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
             </div>
           </div>
 
-          <footer className="border-t border-border bg-muted/40 px-6 py-4">
+          <SheetFooter className="mt-0 flex-col gap-0 border-t border-border bg-muted/40 px-6 py-4">
             {error && (
               <p
                 className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
@@ -274,10 +245,10 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
                 )}
               </button>
             </div>
-          </footer>
+          </SheetFooter>
         </form>
-      </aside>
-    </>
+      </SheetContent>
+    </Sheet>
   )
 }
 
