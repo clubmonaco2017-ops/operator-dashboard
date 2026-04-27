@@ -3,6 +3,7 @@ import { Check, Loader2, X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useTeamActions } from '../../hooks/useTeamActions.js'
 import { validateTeamName, formatLeadRole } from '../../lib/teams.js'
+import { Button } from '@/components/ui/button'
 
 /**
  * Slide-out форма создания команды. Минимальная — два поля:
@@ -221,18 +222,17 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
                 создать
               </span>
               <div className="flex-1" />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => !submitting && onClose()}
                 disabled={submitting}
-                className="btn-ghost"
               >
                 Отмена
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={submitting}
-                className="btn-primary"
               >
                 {submitting ? (
                   <>
@@ -241,7 +241,7 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
                 ) : (
                   <><Check size={14} className="inline mr-1.5" />Создать команду</>
                 )}
-              </button>
+              </Button>
             </div>
           </footer>
         </form>
