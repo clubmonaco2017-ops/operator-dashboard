@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Confirm-диалог для архивирования клиента.
@@ -40,23 +41,24 @@ export function ArchiveConfirmDialog({ clientName, onCancel, onConfirm, busy }) 
           {clientName} перестанет показываться в списке активных. Это можно отменить — снова сделать клиента активным в любой момент.
         </p>
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button
             ref={cancelBtnRef}
             type="button"
+            variant="ghost"
             onClick={onCancel}
             disabled={busy}
-            className="btn-ghost"
           >
             Отмена
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
             onClick={onConfirm}
             disabled={busy}
-            className="btn-danger-ghost"
+            className="text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
           >
             {busy ? 'Архивируем…' : 'Архивировать'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
