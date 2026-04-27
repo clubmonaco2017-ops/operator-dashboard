@@ -1,4 +1,5 @@
 import { FilterX } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Empty state когда клиенты есть, но под фильтр не подходят.
@@ -38,18 +39,14 @@ export function EmptyFilter({ activeFilters = [], onResetAll, searchQuery, onCle
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
           {hasSearch && (
-            <button type="button" onClick={onClearSearch} className="btn-primary">
+            <Button onClick={onClearSearch}>
               Очистить поиск
-            </button>
+            </Button>
           )}
           {hasFilters && (
-            <button
-              type="button"
-              onClick={onResetAll}
-              className={hasSearch ? 'btn-ghost' : 'btn-primary'}
-            >
+            <Button variant={hasSearch ? 'ghost' : 'default'} onClick={onResetAll}>
               <FilterX size={14} /> Сбросить фильтры
-            </button>
+            </Button>
           )}
         </div>
       </div>
