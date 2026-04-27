@@ -50,9 +50,29 @@ describe('<StaffList>', () => {
   })
 
   it('renders link with encoded refCode', () => {
-    renderList({ selectedRefCode: null })
-    const link = screen.getByText('Иван Петров').closest('a')
-    expect(link).toHaveAttribute('href', '/staff/OP-IPE-001')
+    const rowsWithSpecialChars = [
+      ...ROWS,
+      {
+        id: 99,
+        first_name: 'Тест',
+        last_name: 'Кейс',
+        email: 'test@example.com',
+        ref_code: 'OP/A B#1',
+        role: 'operator',
+        is_active: true,
+      },
+    ]
+    render(
+      <MemoryRouter>
+        <StaffList rows={rowsWithSpecialChars} selectedRefCode={null} />
+      </MemoryRouter>,
+    )
+    // ASCII-only ref_code: encodeURIComponent passes through unchanged
+    const ivan = screen.getByText('Иван Петров').closest('a')
+    expect(ivan).toHaveAttribute('href', '/staff/OP-IPE-001')
+    // ref_code with special chars: encodeURIComponent transforms / → %2F, space → %20, # → %23
+    const test = screen.getByText('Тест Кейс').closest('a')
+    expect(test).toHaveAttribute('href', '/staff/OP%2FA%20B%231')
   })
 
   it('marks selected row with aria-current', () => {
