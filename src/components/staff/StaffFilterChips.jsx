@@ -20,8 +20,8 @@ export function StaffFilterChips({ counts, value, onChange }) {
             className={[
               'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
               active
-                ? 'border-indigo-600 bg-indigo-600 text-white'
-                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800',
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-card text-muted-foreground hover:bg-muted',
             ].join(' ')}
           >
             {label} · {counts[key] ?? 0}
