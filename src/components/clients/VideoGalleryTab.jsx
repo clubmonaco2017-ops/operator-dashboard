@@ -324,89 +324,97 @@ export function VideoGalleryTab({ callerId, client, onChanged }) {
         onChange={onFileInputChange}
       />
 
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <SortToggle value={sort} onChange={setSort} disabled={selectMode || search.trim() !== '' || durationFilter !== 'all'} />
-        <div className="flex-1" />
-        <Button
-          variant="ghost"
-          onClick={toggleSelectMode}
-          aria-pressed={selectMode}
-          className={selectMode ? 'bg-foreground text-background hover:opacity-90' : undefined}
-        >
-          {selectMode ? <Check size={14} /> : <CheckSquare size={14} />}
-          {selectMode ? 'Готово' : 'Выбрать'}
-        </Button>
-        <Button
-          onClick={onPickClick}
-          disabled={!!upload && !upload.done}
-        >
-          <Upload size={14} /> Загрузить
-        </Button>
-      </div>
+      <section className="surface-card">
+        <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <SortToggle value={sort} onChange={setSort} disabled={selectMode || search.trim() !== '' || durationFilter !== 'all'} />
+            {orderedRows.length > 0 && (
+              <DurationFilter value={durationFilter} onChange={setDurationFilter} />
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              onClick={toggleSelectMode}
+              aria-pressed={selectMode}
+              className={selectMode ? 'bg-foreground text-background hover:opacity-90' : undefined}
+            >
+              {selectMode ? <Check size={14} /> : <CheckSquare size={14} />}
+              {selectMode ? 'Готово' : 'Выбрать'}
+            </Button>
+            <Button
+              onClick={onPickClick}
+              disabled={!!upload && !upload.done}
+            >
+              <Upload size={14} /> Загрузить
+            </Button>
+          </div>
+        </header>
 
-      {/* 8.E Search + duration filter */}
-      {orderedRows.length > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <VideoSearch value={search} onChange={setSearch} />
-          <DurationFilter value={durationFilter} onChange={setDurationFilter} />
+        <div className="p-5">
+          {orderedRows.length > 0 && (
+            <div className="mb-3">
+              <VideoSearch value={search} onChange={setSearch} />
+            </div>
+          )}
+
+          {selectMode && (
+            <BulkActionBar
+              selectedCount={selectedIds.size}
+              totalCount={allIds.length}
+              allSelected={allSelected}
+              busy={bulkBusy}
+              onSelectAll={selectAll}
+              onClearAll={clearAll}
+              onDownload={bulkDownload}
+              onDelete={bulkDelete}
+            />
+          )}
+
+          <p className="mb-3 text-xs text-muted-foreground">
+            До 500 МБ · форматы: MP4, WEBM, MOV (H.264) · превью генерируются автоматически
+          </p>
+
+          {upload && <UploadBanner upload={upload} onClose={() => setUpload(null)} />}
+
+          {loading && rows.length === 0 ? (
+            <GridSkeletonWithSlowHint />
+          ) : error ? (
+            <p className="text-sm text-[var(--danger-ink)]" role="alert">Ошибка: {error}</p>
+          ) : orderedRows.length === 0 ? (
+            <EmptyVideos onUpload={onPickClick} />
+          ) : isFilteredEmpty ? (
+            <EmptyVideoFilter
+              onClearSearch={() => setSearch('')}
+              onClearAll={() => {
+                setSearch('')
+                setDurationFilter('all')
+              }}
+              hasSearch={search.trim() !== ''}
+              hasDurationFilter={durationFilter !== 'all'}
+            />
+          ) : (
+            <VideoGrid
+              rows={displayRows}
+              sortable={sort === 'manual' && !selectMode && search.trim() === '' && durationFilter === 'all'}
+              sensors={sensors}
+              onDragEnd={handleDragEnd}
+              selectMode={selectMode}
+              selectedIds={selectedIds}
+              onToggle={toggleId}
+              onOpen={(idx) => setLightboxIndex(idx)}
+              onDelete={async (media) => {
+                try {
+                  await deleteMedia(media.id)
+                  onChanged?.()
+                } catch (e) {
+                  alert(`Не удалось удалить: ${e.message}`)
+                }
+              }}
+            />
+          )}
         </div>
-      )}
-
-      {selectMode && (
-        <BulkActionBar
-          selectedCount={selectedIds.size}
-          totalCount={allIds.length}
-          allSelected={allSelected}
-          busy={bulkBusy}
-          onSelectAll={selectAll}
-          onClearAll={clearAll}
-          onDownload={bulkDownload}
-          onDelete={bulkDelete}
-        />
-      )}
-
-      <p className="mb-3 text-xs text-muted-foreground">
-        До 500 МБ · форматы: MP4, WEBM, MOV (H.264) · превью генерируются автоматически
-      </p>
-
-      {upload && <UploadBanner upload={upload} onClose={() => setUpload(null)} />}
-
-      {loading && rows.length === 0 ? (
-        <GridSkeletonWithSlowHint />
-      ) : error ? (
-        <p className="text-sm text-[var(--danger-ink)]" role="alert">Ошибка: {error}</p>
-      ) : orderedRows.length === 0 ? (
-        <EmptyVideos onUpload={onPickClick} />
-      ) : isFilteredEmpty ? (
-        <EmptyVideoFilter
-          onClearSearch={() => setSearch('')}
-          onClearAll={() => {
-            setSearch('')
-            setDurationFilter('all')
-          }}
-          hasSearch={search.trim() !== ''}
-          hasDurationFilter={durationFilter !== 'all'}
-        />
-      ) : (
-        <VideoGrid
-          rows={displayRows}
-          sortable={sort === 'manual' && !selectMode && search.trim() === '' && durationFilter === 'all'}
-          sensors={sensors}
-          onDragEnd={handleDragEnd}
-          selectMode={selectMode}
-          selectedIds={selectedIds}
-          onToggle={toggleId}
-          onOpen={(idx) => setLightboxIndex(idx)}
-          onDelete={async (media) => {
-            try {
-              await deleteMedia(media.id)
-              onChanged?.()
-            } catch (e) {
-              alert(`Не удалось удалить: ${e.message}`)
-            }
-          }}
-        />
-      )}
+      </section>
 
       {dragActive && (
         <DropOverlay
@@ -485,9 +493,9 @@ function DurationFilter({ value, onChange }) {
           onClick={() => onChange(o.key)}
           aria-pressed={value === o.key}
           className={[
-            'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+            'inline-flex items-center rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors',
             value === o.key
-              ? 'bg-[var(--primary-soft)] text-[var(--primary-ink)]'
+              ? 'bg-muted text-foreground'
               : 'text-muted-foreground hover:text-foreground',
           ].join(' ')}
         >
