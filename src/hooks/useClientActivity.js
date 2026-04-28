@@ -25,7 +25,6 @@ export function useClientActivity(callerId, clientId, limit = 12) {
 
     supabase
       .rpc('list_client_activity', {
-        p_caller_id: callerId,
         p_client_id: id,
         p_limit: limit,
       })

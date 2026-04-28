@@ -32,7 +32,6 @@ export function useClientList(callerId, filters = {}) {
 
     supabase
       .rpc('list_clients', {
-        p_caller_id: callerId,
         p_filter_active: active,
         p_filter_platform: platformId,
         p_filter_agency: agencyId,

@@ -22,7 +22,7 @@ export function useClient(callerId, clientId) {
     setError(null)
 
     supabase
-      .rpc('get_client_detail', { p_caller_id: callerId, p_client_id: id })
+      .rpc('get_client_detail', { p_client_id: id })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {

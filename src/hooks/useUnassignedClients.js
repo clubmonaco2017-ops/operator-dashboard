@@ -22,7 +22,6 @@ export function useUnassignedClients(callerId, search = '') {
 
     supabase
       .rpc('list_unassigned_clients', {
-        p_caller_id: callerId,
         p_search: search || null,
       })
       .then(({ data, error: err }) => {

@@ -18,7 +18,6 @@ export function useClientActions(callerId) {
       tableauId = null,
     }) => {
       const { data, error } = await supabase.rpc('create_client', {
-        p_caller_id: callerId,
         p_name: name,
         p_alias: alias,
         p_description: description,
@@ -51,7 +50,6 @@ export function useClientActions(callerId) {
       } = {},
     ) => {
       const { error } = await supabase.rpc('update_client', {
-        p_caller_id: callerId,
         p_client_id: clientId,
         p_name: name ?? null,
         p_alias: alias ?? null,
@@ -73,7 +71,6 @@ export function useClientActions(callerId) {
   const archiveClient = useCallback(
     async (clientId) => {
       const { error } = await supabase.rpc('archive_client', {
-        p_caller_id: callerId,
         p_client_id: clientId,
       })
       if (error) throw new Error(error.message)
@@ -84,7 +81,6 @@ export function useClientActions(callerId) {
   const restoreClient = useCallback(
     async (clientId) => {
       const { error } = await supabase.rpc('restore_client', {
-        p_caller_id: callerId,
         p_client_id: clientId,
       })
       if (error) throw new Error(error.message)
