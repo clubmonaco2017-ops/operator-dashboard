@@ -165,7 +165,7 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
-      <div className="px-4 py-3 flex items-center justify-between gap-3 border-b border-border">
+      <div className="px-4 py-3 flex flex-col gap-2 border-b border-border md:flex-row md:items-center md:justify-between md:gap-3">
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
@@ -228,6 +228,7 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
                   <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
                   <XAxis dataKey="hour" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
                   <YAxis
+                    width={36}
                     tick={{ fontSize: 11, fill: tickColor }}
                     axisLine={false}
                     tickLine={false}
@@ -266,6 +267,7 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
                   <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
                   <XAxis dataKey="hour" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
                   <YAxis
+                    width={36}
                     tick={{ fontSize: 11, fill: tickColor }}
                     axisLine={false}
                     tickLine={false}
