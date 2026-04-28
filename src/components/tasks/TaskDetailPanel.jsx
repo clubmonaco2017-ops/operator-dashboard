@@ -11,7 +11,7 @@ import {
   formatDeadlineRelative,
 } from '../../lib/tasks.js'
 import { TaskDescriptionCard } from './TaskDescriptionCard.jsx'
-import { TaskFieldsCard } from './TaskFieldsCard.jsx'
+import { TaskMetaSidebar } from './TaskMetaSidebar.jsx'
 import { TaskReportCard } from './TaskReportCard.jsx'
 import { TaskActivityCard } from './TaskActivityCard.jsx'
 import { CancelTaskConfirmDialog } from './CancelTaskConfirmDialog.jsx'
@@ -273,11 +273,13 @@ export function TaskDetailPanel({
             task={row}
             onChanged={bothChanged}
           />
-          <TaskFieldsCard
+          <TaskMetaSidebar
             callerId={callerId}
             user={user}
             task={row}
+            status={status}
             onChanged={bothChanged}
+            variant="card"
           />
           <TaskReportCard
             callerId={callerId}
