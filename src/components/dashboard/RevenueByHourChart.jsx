@@ -30,7 +30,6 @@ function lastHourWithData(totals) {
   return -1
 }
 
-// eslint-disable-next-line no-unused-vars
 function comparisonLabel(preset) {
   switch (preset) {
     case 'today': return 'vs вчера'
@@ -48,6 +47,16 @@ function previousLabelFor(preset) {
     case 'week': return 'прошлая неделя'
     case 'month': return 'прошлый месяц'
     default: return 'предыдущий период'
+  }
+}
+
+function currentLabelFor(preset) {
+  switch (preset) {
+    case 'today': return 'сегодня'
+    case 'yesterday': return 'вчера'
+    case 'week': return 'эта неделя'
+    case 'month': return 'этот месяц'
+    default: return 'период'
   }
 }
 
@@ -98,7 +107,7 @@ function HourComparisonTooltip({ active, payload, label, preset, showComparison 
     <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-md">
       <div className="font-semibold text-foreground mb-1">{label}</div>
       <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
-        <span className="text-muted-foreground">сегодня</span>
+        <span className="text-muted-foreground">{currentLabelFor(preset)}</span>
         <span className="text-right font-medium text-foreground">{fmt(cur)} $</span>
         {showComparison && (
           <>
@@ -124,7 +133,6 @@ function HourComparisonTooltip({ active, payload, label, preset, showComparison 
 export function RevenueByHourChart({ rows, prevRows = [], period }) {
   const [chartType, setChartType] = useState('bar')
   const [expanded, setExpanded] = useState(true)
-  // eslint-disable-next-line no-unused-vars
   const [showComparison, setShowComparison] = useState(true)
 
   const [hMin, hMax] = period.hours
@@ -157,7 +165,7 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
-      <div className="px-4 py-3 flex items-center justify-between border-b border-border">
+      <div className="px-4 py-3 flex items-center justify-between gap-3 border-b border-border">
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
@@ -172,29 +180,52 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
           />
         </button>
         {expanded && (
-          <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setChartType('bar')}
-              aria-label="Столбчатый график"
-              className={`p-1 rounded ${chartType === 'bar' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              onClick={() => setShowComparison((v) => !v)}
+              disabled={chartType === 'area'}
+              aria-pressed={showComparison}
+              title={chartType === 'area' ? 'Сравнение доступно в столбчатом режиме' : undefined}
+              className={[
+                'inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-medium transition-colors',
+                showComparison && chartType === 'bar'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
+                chartType === 'area' && 'opacity-50 cursor-not-allowed',
+              ]
+                .filter(Boolean)
+                .join(' ')}
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                <rect x="3" y="12" width="4" height="9" rx="1" />
-                <rect x="10" y="7" width="4" height="14" rx="1" />
-                <rect x="17" y="4" width="4" height="17" rx="1" />
-              </svg>
+              {showComparison && chartType === 'bar' && (
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
+              )}
+              {comparisonLabel(period.preset)}
             </button>
-            <button
-              type="button"
-              onClick={() => setChartType('area')}
-              aria-label="Площадной график"
-              className={`p-1 rounded ${chartType === 'area' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                <path d="M2 20 L2 14 L7 8 L12 11 L17 5 L22 9 L22 20 Z" opacity="0.4" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+              <button
+                type="button"
+                onClick={() => setChartType('bar')}
+                aria-label="Столбчатый график"
+                className={`p-1 rounded ${chartType === 'bar' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                  <rect x="3" y="12" width="4" height="9" rx="1" />
+                  <rect x="10" y="7" width="4" height="14" rx="1" />
+                  <rect x="17" y="4" width="4" height="17" rx="1" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartType('area')}
+                aria-label="Площадной график"
+                className={`p-1 rounded ${chartType === 'area' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                  <path d="M2 20 L2 14 L7 8 L12 11 L17 5 L22 9 L22 20 Z" opacity="0.4" />
+                </svg>
+              </button>
+            </div>
           </div>
         )}
       </div>
