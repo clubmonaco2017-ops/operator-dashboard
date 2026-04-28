@@ -18,6 +18,7 @@ export function MobileShell() {
   const location = useLocation()
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: close drawer on route change
     setDrawerOpen(false)
   }, [location.pathname])
 

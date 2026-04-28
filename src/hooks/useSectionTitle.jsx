@@ -1,5 +1,9 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
+/* eslint-disable react-refresh/only-export-components -- this file intentionally exports both
+   the SectionTitleProvider component and useSectionTitle/useSectionTitleValue hooks; splitting
+   them would force consumers to import from two places for a tiny module. */
+
 const SectionTitleContext = createContext({
   title: '',
   backTo: null,

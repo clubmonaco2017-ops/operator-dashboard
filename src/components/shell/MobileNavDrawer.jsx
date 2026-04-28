@@ -75,14 +75,15 @@ export function MobileNavDrawer({ open, onOpenChange }) {
             Тема
           </div>
           <div className="flex flex-col gap-1">
-            {THEME_OPTIONS.map(({ id, label, Icon }) => {
-              const isActive = theme === id
+            {THEME_OPTIONS.map((opt) => {
+              const Icon = opt.Icon
+              const isActive = theme === opt.id
               return (
                 <button
-                  key={id}
+                  key={opt.id}
                   type="button"
                   aria-pressed={isActive}
-                  onClick={() => setTheme(id)}
+                  onClick={() => setTheme(opt.id)}
                   className={`min-h-11 flex items-center gap-3 px-3 rounded-md text-sm transition-colors ${
                     isActive
                       ? 'bg-primary/10 text-primary'
@@ -90,7 +91,7 @@ export function MobileNavDrawer({ open, onOpenChange }) {
                   }`}
                 >
                   <Icon size={16} />
-                  <span>{label}</span>
+                  <span>{opt.label}</span>
                 </button>
               )
             })}
