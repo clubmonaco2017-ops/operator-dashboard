@@ -25,11 +25,11 @@ export function AttributesTab() {
     let err
     if (value === '' || value == null) {
       ;({ error: err } = await supabase.rpc('delete_user_attribute', {
-        p_caller_id: user.id, p_user_id: row.id, p_key: key,
+        p_user_id: row.id, p_key: key,
       }))
     } else {
       ;({ error: err } = await supabase.rpc('set_user_attribute', {
-        p_caller_id: user.id, p_user_id: row.id, p_key: key, p_value: String(value),
+        p_user_id: row.id, p_key: key, p_value: String(value),
       }))
     }
     setSaving(false)

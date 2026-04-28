@@ -11,7 +11,6 @@ export function PermissionsTab() {
   async function onToggle(key, next) {
     const rpcName = next ? 'grant_permission' : 'revoke_permission'
     const { error } = await supabase.rpc(rpcName, {
-      p_caller_id: user.id,
       p_target_user: row.id,
       p_permission: key,
     })
