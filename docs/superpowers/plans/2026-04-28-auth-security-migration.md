@@ -75,13 +75,16 @@ BEGIN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
   -- existing body, but every `p_caller_id` reference rewritten to `v_caller_id`.
-  -- existing has_permission(p_caller_id, '...') becomes has_permission(v_caller_id, '...').
+  -- existing has_permission(p_caller_id, '<the actual permission name from the source RPC body — DO NOT invent>') becomes
+  --   has_permission(v_caller_id, '<the actual permission name from the source RPC body — DO NOT invent>').
 END;
 $$;
 
 -- DROP cleared all grants. Re-grant only to authenticated.
 GRANT EXECUTE ON FUNCTION public.<name>(<rest>) TO authenticated;
 ```
+
+> **Permission names:** Always read the actual permission name from the source RPC body. The `<perm>` placeholder above is illustrative — never substitute a permission name from your training data or this template literally without verifying against the source migration. Each bucket uses different permission names (`manage_roles`, `create_users`, `list_clients`, etc.); copy them verbatim from the original `CREATE FUNCTION` body.
 
 For RPCs that **already** lack `p_caller_id` (e.g. `get_user_attributes(p_user_id integer)` — `p_user_id` is the subject, not the caller):
 
@@ -1377,7 +1380,7 @@ BEGIN
   IF v_caller_id IS NULL THEN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
-  IF NOT has_permission(v_caller_id, 'manage_permissions') THEN
+  IF NOT has_permission(v_caller_id, 'manage_roles') THEN
     RAISE EXCEPTION 'forbidden' USING errcode = '42501';
   END IF;
   INSERT INTO public.user_permissions(user_id, permission)
@@ -1402,7 +1405,7 @@ BEGIN
   IF v_caller_id IS NULL THEN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
-  IF NOT has_permission(v_caller_id, 'manage_permissions') THEN
+  IF NOT has_permission(v_caller_id, 'manage_roles') THEN
     RAISE EXCEPTION 'forbidden' USING errcode = '42501';
   END IF;
   DELETE FROM public.user_permissions
@@ -1427,7 +1430,7 @@ BEGIN
   IF v_caller_id IS NULL THEN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
-  IF NOT has_permission(v_caller_id, 'edit_users') AND v_caller_id <> p_user_id THEN
+  IF NOT has_permission(v_caller_id, 'create_users') AND v_caller_id <> p_user_id THEN
     RAISE EXCEPTION 'forbidden' USING errcode = '42501';
   END IF;
   INSERT INTO public.user_attributes(user_id, key, value)
@@ -1452,7 +1455,7 @@ BEGIN
   IF v_caller_id IS NULL THEN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
-  IF NOT has_permission(v_caller_id, 'edit_users') AND v_caller_id <> p_user_id THEN
+  IF NOT has_permission(v_caller_id, 'create_users') THEN
     RAISE EXCEPTION 'forbidden' USING errcode = '42501';
   END IF;
   DELETE FROM public.user_attributes WHERE user_id = p_user_id AND key = p_key;

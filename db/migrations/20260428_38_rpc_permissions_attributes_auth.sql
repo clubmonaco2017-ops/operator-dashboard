@@ -32,7 +32,7 @@ BEGIN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
   IF NOT has_permission(v_caller_id, 'manage_roles') THEN
-    RAISE EXCEPTION 'caller % lacks manage_roles', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_roles', v_caller_id USING errcode = '42501';
   END IF;
   INSERT INTO user_permissions (user_id, permission, granted_by, granted_at)
     VALUES (p_target_user, p_permission, v_caller_id, now())
@@ -68,7 +68,7 @@ BEGIN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
   IF NOT has_permission(v_caller_id, 'manage_roles') THEN
-    RAISE EXCEPTION 'caller % lacks manage_roles', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_roles', v_caller_id USING errcode = '42501';
   END IF;
   DELETE FROM user_permissions
     WHERE user_id = p_target_user AND permission = p_permission;
@@ -105,7 +105,7 @@ BEGIN
     has_permission(v_caller_id, 'create_users')
     OR v_caller_id = p_user_id
   ) THEN
-    RAISE EXCEPTION 'caller % cannot set attributes on user %', v_caller_id, p_user_id;
+    RAISE EXCEPTION 'caller % cannot set attributes on user %', v_caller_id, p_user_id USING errcode = '42501';
   END IF;
   INSERT INTO user_attributes (user_id, key, value)
     VALUES (p_user_id, p_key, p_value)
@@ -139,7 +139,7 @@ BEGIN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
   IF NOT has_permission(v_caller_id, 'create_users') THEN
-    RAISE EXCEPTION 'caller % lacks create_users', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks create_users', v_caller_id USING errcode = '42501';
   END IF;
   DELETE FROM user_attributes WHERE user_id = p_user_id AND key = p_key;
 END;
