@@ -12,7 +12,9 @@ RETURNS TABLE (
   is_active boolean,
   permissions text[],
   attributes jsonb,
-  timezone text
+  timezone text,
+  ref_code text,
+  alias text
 )
 LANGUAGE plpgsql
 STABLE
@@ -46,7 +48,9 @@ BEGIN
        WHERE a.user_id = u.id),
       '{}'::jsonb
     ),
-    u.timezone
+    COALESCE(u.timezone, 'Europe/Kiev'),
+    u.ref_code,
+    u.alias
   FROM public.dashboard_users u
   WHERE u.id = v_caller_id;
 END;
@@ -54,3 +58,6 @@ $$;
 
 REVOKE ALL ON FUNCTION public.get_current_user_profile() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_current_user_profile() TO authenticated;
+
+COMMENT ON FUNCTION public.get_current_user_profile() IS
+  'Hydrates the current user profile (id, email, names, role, is_active, permissions array, attributes jsonb, timezone, ref_code, alias). Called by useAuth after every onAuthStateChange. Replaces the user-profile half of legacy auth_login.';
