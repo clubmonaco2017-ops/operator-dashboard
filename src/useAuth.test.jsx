@@ -6,6 +6,10 @@ describe('normalizeProfile', () => {
     expect(normalizeProfile(null)).toBeNull()
   })
 
+  it('returns null for undefined input', () => {
+    expect(normalizeProfile(undefined)).toBeNull()
+  })
+
   it('maps get_current_user_profile RPC row to camelCase shape', () => {
     const row = {
       id: 1,

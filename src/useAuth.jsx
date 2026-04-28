@@ -14,9 +14,9 @@ export function normalizeProfile(row) {
     row.attributes && typeof row.attributes === 'object' ? row.attributes : {}
 
   return {
-    id: row.id,
-    email: row.email,
-    role: row.role,
+    id: row.id ?? null,
+    email: row.email ?? null,
+    role: row.role ?? null,
     refCode: row.ref_code ?? null,
     firstName: row.first_name ?? null,
     lastName: row.last_name ?? null,
@@ -28,27 +28,37 @@ export function normalizeProfile(row) {
   }
 }
 
+// Fix 5: context default shape matches provider value (including authError)
 const AuthContext = createContext({
   session: null,
   user: null,
   loading: true,
-  signIn: async () => {},
+  authError: null,
+  signIn: async () => ({ error: null }),
   signOut: async () => {},
   // Legacy aliases
-  login: async () => {},
-  logout: () => {},
+  login: async () => ({ success: false, error: 'no provider' }),
+  logout: async () => {},
 })
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  // Fix 1: surface RPC failures instead of silently looping the user through login
+  const [authError, setAuthError] = useState(null)
+  // Fix 2: track whether getSession() has resolved at least once
+  const [initialized, setInitialized] = useState(false)
 
   // Initial session + subscribe to auth state changes.
   useEffect(() => {
     let mounted = true
     supabase.auth.getSession().then(({ data }) => {
-      if (mounted) setSession(data.session)
+      if (mounted) {
+        setSession(data.session)
+        // Fix 2: only after getSession resolves do we know the true initial state
+        setInitialized(true)
+      }
     })
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next)
@@ -60,8 +70,10 @@ export function AuthProvider({ children }) {
   }, [])
 
   // Hydrate dashboard_users profile on every session change.
+  // Fix 2: gate on `initialized` so loading stays true until getSession() settles
   useEffect(() => {
     let cancelled = false
+    if (!initialized) return          // wait for getSession to settle
     if (!session) {
       setUser(null)
       setLoading(false)
@@ -76,15 +88,20 @@ export function AuthProvider({ children }) {
         if (error) {
           console.error('get_current_user_profile failed', error)
           setUser(null)
+          // Fix 1: surface the failure so App.jsx can show an error state
+          // instead of sending the user back to login (causing an infinite loop)
+          setAuthError('profile_load_failed')
         } else {
           setUser(normalizeProfile(data))
+          // Fix 1: clear any previous error on successful hydration
+          setAuthError(null)
         }
         setLoading(false)
       })
     return () => {
       cancelled = true
     }
-  }, [session])
+  }, [session, initialized])
 
   const signIn = useCallback(async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -92,6 +109,8 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signOut = useCallback(async () => {
+    // Fix 1: clear authError on deliberate logout so a re-login starts clean
+    setAuthError(null)
     await supabase.auth.signOut()
   }, [])
 
@@ -110,7 +129,7 @@ export function AuthProvider({ children }) {
   }, [signOut])
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signIn, signOut, login, logout }}>
+    <AuthContext.Provider value={{ session, user, loading, authError, signIn, signOut, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
