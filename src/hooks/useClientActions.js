@@ -17,6 +17,7 @@ export function useClientActions(callerId) {
       agencyId,
       tableauId = null,
     }) => {
+      if (!callerId) throw new Error('not authenticated')
       const { data, error } = await supabase.rpc('create_client', {
         p_name: name,
         p_alias: alias,
@@ -49,6 +50,7 @@ export function useClientActions(callerId) {
         clearTableauId = false,
       } = {},
     ) => {
+      if (!callerId) throw new Error('not authenticated')
       const { error } = await supabase.rpc('update_client', {
         p_client_id: clientId,
         p_name: name ?? null,
@@ -70,6 +72,7 @@ export function useClientActions(callerId) {
 
   const archiveClient = useCallback(
     async (clientId) => {
+      if (!callerId) throw new Error('not authenticated')
       const { error } = await supabase.rpc('archive_client', {
         p_client_id: clientId,
       })
@@ -80,6 +83,7 @@ export function useClientActions(callerId) {
 
   const restoreClient = useCallback(
     async (clientId) => {
+      if (!callerId) throw new Error('not authenticated')
       const { error } = await supabase.rpc('restore_client', {
         p_client_id: clientId,
       })

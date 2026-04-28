@@ -1694,11 +1694,19 @@ Note: `src/components/dashboard/cards/OverdueAllCard.jsx:20` calls `count_overdu
 - `assign_team_clients`, `unassign_team_client`, `move_team_client`
 - `list_active_teams_for_assignment`, `list_assignable_users`
 
+> **Warning — `list_unassigned_clients` is NOT in scope here.**
+> Its source body lives in `20260425_22_rpc_teams_clients.sql`, but it was already
+> migrated to the clients CRUD bucket in **Stage 6**. Stage 9's bucket migration
+> must drop and recreate only the 3 team-clients RPCs listed above
+> (`assign_team_clients`, `unassign_team_client`, `move_team_client`).
+> Do NOT emit a `DROP FUNCTION IF EXISTS list_unassigned_clients(...)` here —
+> that would silently undo the Stage-6 migration.
+
 **Source migrations:**
 - `db/migrations/20260425_19_teams_schema.sql`
 - `db/migrations/20260425_20_rpc_teams_crud.sql`
 - `db/migrations/20260425_21_rpc_teams_members.sql`
-- `db/migrations/20260425_22_rpc_teams_clients.sql`
+- `db/migrations/20260425_22_rpc_teams_clients.sql` ← 3 RPCs only (see warning above)
 
 ### Task 9.1: Bucket migration
 
