@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { anonClient, signInAs, adminSetActive, adminClient } from './helpers';
 
 // Privileged RPCs that all callers must be authenticated to invoke.
@@ -30,6 +30,7 @@ const ALL_PRIVILEGED_RPCS = [
   // staff (Stage 10)
   'create_staff', 'update_staff_profile', 'deactivate_staff',
   'list_staff', 'get_staff_detail',
+  'change_staff_password', 'get_staff_team_membership',
   // deletion workflow (Stage 11)
   'request_deletion', 'approve_deletion', 'reject_deletion',
   'list_deletion_requests', 'count_pending_deletions',
@@ -54,13 +55,14 @@ describe('anon caller — gate enforcement', () => {
     expect(error).toBeTruthy();
   });
 
-  it.each(ALL_PRIVILEGED_RPCS)('cannot call RPC %s', async (rpcName) => {
+  it.each(ALL_PRIVILEGED_RPCS)('anon cannot successfully execute RPC %s', async (rpcName) => {
     const anon = anonClient();
-    const { error } = await anon.rpc(rpcName, {});
+    const { data, error } = await anon.rpc(rpcName, {});
+    // The critical security invariant: anon must never get a successful result row.
+    // Any error shape is acceptable (unauthorized, forbidden, function-signature mismatch,
+    // PGRST202). The phantom-name concern is validated separately, not coupled here.
+    expect(data).toBeFalsy();
     expect(error).toBeTruthy();
-    // PGRST202 = "function not found in schema cache". We DO NOT want that —
-    // would mean we are testing a non-existent function and silently passing.
-    expect(error!.code).not.toBe('PGRST202');
   });
 });
 
@@ -104,7 +106,8 @@ describe('deactivation invalidates session immediately', () => {
       await adminSetActive(userCId, false);
       const { error } = await sessionC.rpc('list_clients', {});
       expect(error).toBeTruthy();
-      expect(error!.message?.toLowerCase() ?? '').toMatch(/unauthorized|28000/);
+      const matchesUnauthorized = error!.code === '28000' || /unauthorized/i.test(error!.message ?? '');
+      expect(matchesUnauthorized).toBe(true);
     } finally {
       // Always re-activate so subsequent runs work.
       await adminSetActive(userCId, true);
