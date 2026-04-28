@@ -247,29 +247,48 @@ export function TaskDetailPanel({
       </header>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto bg-background px-4 py-5 sm:px-6">
-        <div className="mx-auto flex max-w-3xl flex-col gap-4">
-          <TaskDescriptionCard
-            callerId={callerId}
-            user={user}
-            task={row}
-            onChanged={bothChanged}
-          />
-          <TaskMetaSidebar
-            callerId={callerId}
-            user={user}
-            task={row}
-            status={status}
-            onChanged={bothChanged}
-            variant="card"
-          />
-          <TaskReportCard
-            callerId={callerId}
-            user={user}
-            task={row}
-            onChanged={bothChanged}
-          />
-          <TaskActivityCard activity={row.activity || []} />
+      <div className="flex-1 overflow-auto bg-background">
+        <div className="px-4 py-5 sm:px-6 xl:px-8">
+          <div className="mx-auto flex max-w-3xl flex-col gap-4 xl:max-w-none xl:grid xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-6">
+            {/* Main column */}
+            <div className="flex min-w-0 flex-col gap-4">
+              <TaskDescriptionCard
+                callerId={callerId}
+                user={user}
+                task={row}
+                onChanged={bothChanged}
+              />
+              {/* Meta as card — single-column режим, скрыт на xl+ */}
+              <div className="xl:hidden">
+                <TaskMetaSidebar
+                  callerId={callerId}
+                  user={user}
+                  task={row}
+                  status={status}
+                  onChanged={bothChanged}
+                  variant="card"
+                />
+              </div>
+              <TaskReportCard
+                callerId={callerId}
+                user={user}
+                task={row}
+                onChanged={bothChanged}
+              />
+              <TaskActivityCard activity={row.activity || []} />
+            </div>
+            {/* Sidebar — только xl+ */}
+            <aside className="hidden xl:block xl:sticky xl:top-5 xl:self-start xl:max-h-[calc(100vh-3rem)] xl:overflow-auto">
+              <TaskMetaSidebar
+                callerId={callerId}
+                user={user}
+                task={row}
+                status={status}
+                onChanged={bothChanged}
+                variant="sidebar"
+              />
+            </aside>
+          </div>
         </div>
       </div>
 
@@ -358,13 +377,25 @@ function TaskDetailSkeleton() {
           <div className="h-9 w-32 animate-pulse rounded-md bg-muted" />
         </div>
       </header>
-      {/* Body cards */}
-      <div className="flex-1 overflow-hidden bg-background px-4 py-5 sm:px-6">
-        <div className="mx-auto flex max-w-3xl flex-col gap-4">
-          <div className="surface-card h-32 animate-pulse" />
-          <div className="surface-card h-40 animate-pulse" />
-          <div className="surface-card h-48 animate-pulse" />
-          <div className="surface-card h-32 animate-pulse" />
+      {/* Body */}
+      <div className="flex-1 overflow-hidden bg-background">
+        <div className="px-4 py-5 sm:px-6 xl:px-8">
+          <div className="mx-auto flex max-w-3xl flex-col gap-4 xl:max-w-none xl:grid xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-6">
+            <div className="flex min-w-0 flex-col gap-4">
+              <div className="surface-card h-32 animate-pulse" />
+              <div className="surface-card h-40 animate-pulse xl:hidden" />
+              <div className="surface-card h-48 animate-pulse" />
+              <div className="surface-card h-32 animate-pulse" />
+            </div>
+            <aside className="hidden xl:block xl:sticky xl:top-5 xl:self-start">
+              <div className="flex flex-col gap-5">
+                <div className="h-10 w-full animate-pulse rounded bg-muted/70" />
+                <div className="h-10 w-full animate-pulse rounded bg-muted/70" />
+                <div className="h-12 w-full animate-pulse rounded bg-muted/70" />
+                <div className="h-12 w-full animate-pulse rounded bg-muted/70" />
+              </div>
+            </aside>
+          </div>
         </div>
       </div>
     </div>
