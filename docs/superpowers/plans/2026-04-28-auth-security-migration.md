@@ -1346,7 +1346,7 @@ PR boundary: own PR. Apply **Bucket Migration Template (§B)** above to:
 ### Task 5.1: Write bucket migration
 
 **Files:**
-- Create: `db/migrations/20260428_38_rpc_permissions_attributes_auth.sql`
+- Create: `db/migrations/20260428_39_rpc_permissions_attributes_auth.sql`
 
 - [ ] **Step 1: Read each source RPC** to capture the existing body verbatim (you'll re-emit it with only the caller-id swap).
 
@@ -1481,7 +1481,7 @@ COMMIT;
 - [ ] **Step 3: Apply to dev**
 
 ```bash
-psql "$DEV_DB_URL" -f db/migrations/20260428_38_rpc_permissions_attributes_auth.sql
+psql "$DEV_DB_URL" -f db/migrations/20260428_39_rpc_permissions_attributes_auth.sql
 ```
 
 Expected: `BEGIN`, multiple `DROP/CREATE/GRANT/REVOKE`, `COMMIT`.
@@ -1534,7 +1534,7 @@ Expected: assertions for `grant_permission`, `revoke_permission`, `set_user_attr
 - [ ] **Step 1: Commit**
 
 ```bash
-git add db/migrations/20260428_38_rpc_permissions_attributes_auth.sql src/
+git add db/migrations/20260428_39_rpc_permissions_attributes_auth.sql src/
 git commit -m "feat(rpc): migrate permissions/attributes bucket to current_dashboard_user_id()
 
 Bucket 1 of 8 in the auth security migration. Migrates 4 mutating RPCs
@@ -2107,7 +2107,7 @@ This stage is **operational, not code**. Each step is a human action or script i
 psql "$PROD_DB_URL" -f db/migrations/20260428_35_auth_user_id_link.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_36_current_dashboard_user_id.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_37_get_current_user_profile.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_38_rpc_permissions_attributes_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_39_rpc_permissions_attributes_auth.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_39_rpc_clients_crud_auth.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_40_rpc_client_media_auth.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_41_rpc_tasks_crud_auth.sql
