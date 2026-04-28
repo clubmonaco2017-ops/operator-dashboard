@@ -115,17 +115,58 @@ export function DeadlineField({ callerId, task, editable, onChanged }) {
           </div>
         </div>
       ) : task.deadline ? (
-        <p className="text-sm text-foreground">
-          {formatAbsoluteDeadline(task.deadline)}{' '}
-          <span className="text-xs text-muted-foreground">
-            · {formatDeadlineRelative(task.deadline)}
-          </span>
+        <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-foreground">
+          <span>{formatAbsoluteDeadline(task.deadline)}</span>
+          <DeadlineRelativeBadge deadline={task.deadline} />
         </p>
       ) : (
         <p className="text-sm italic text-[var(--fg4)]">Без дедлайна</p>
       )}
     </div>
   )
+}
+
+// ============================================================================
+// Sub-components (private)
+// ============================================================================
+
+const URGENCY_BADGE_CLASS = {
+  overdue: 'bg-[var(--danger-soft)] text-[var(--danger-ink)]',
+  today: 'bg-[var(--warning-soft)] text-[var(--warning-ink)]',
+  soon: 'bg-[var(--warning-soft)] text-[var(--warning-ink)]',
+  later: 'bg-muted text-muted-foreground',
+}
+
+function DeadlineRelativeBadge({ deadline }) {
+  const label = formatDeadlineRelative(deadline)
+  if (!label) return null
+  const urgency = deadlineUrgency(deadline)
+  return (
+    <span
+      className={[
+        'inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+        URGENCY_BADGE_CLASS[urgency],
+      ].join(' ')}
+    >
+      {label}
+    </span>
+  )
+}
+
+/**
+ * Классификация дедлайна по «срочности» — отражает ветки formatDeadlineRelative:
+ * overdue (просрочено) → today (сегодня) → soon (завтра) → later (через N дней).
+ */
+function deadlineUrgency(deadline, now = new Date()) {
+  if (!deadline) return 'later'
+  const d = new Date(deadline)
+  if (Number.isNaN(d.getTime())) return 'later'
+  const diffMs = d.getTime() - now.getTime()
+  const diffDays = Math.floor(diffMs / 86400000)
+  if (diffDays < 0) return 'overdue'
+  if (diffDays === 0) return 'today'
+  if (diffDays === 1) return 'soon'
+  return 'later'
 }
 
 // ============================================================================

@@ -2,15 +2,8 @@ import { useEffect, useState } from 'react'
 import { Pencil } from 'lucide-react'
 import { useTaskActions } from '../../../hooks/useTaskActions.js'
 import { AssigneeSelector } from '../AssigneeSelector.jsx'
+import { RoleBadge } from '../../staff/RoleBadge.jsx'
 import { Button } from '@/components/ui/button'
-
-const ROLE_LABEL = {
-  admin: 'Админ',
-  superadmin: 'Суперадмин',
-  teamlead: 'Тимлид',
-  moderator: 'Модератор',
-  operator: 'Оператор',
-}
 
 /**
  * Inline-editable исполнитель для TaskDetailPanel / TaskMetaSidebar.
@@ -99,13 +92,9 @@ export function AssigneeField({ callerId, task, editable, canReassign, onChanged
         </div>
       ) : (
         <div>
-          <p className="text-sm text-foreground">
+          <p className="flex items-baseline gap-2 text-sm text-foreground">
             <span className="font-medium">{task.assigned_to_name ?? '—'}</span>
-            {task.assigned_to_role && (
-              <span className="ml-2 inline-flex items-center rounded bg-muted px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                {ROLE_LABEL[task.assigned_to_role] || task.assigned_to_role}
-              </span>
-            )}
+            <RoleBadge role={task.assigned_to_role} />
           </p>
           {editable && !canReassign && (
             <p className="mt-1 text-xs italic text-[var(--fg4)]">
