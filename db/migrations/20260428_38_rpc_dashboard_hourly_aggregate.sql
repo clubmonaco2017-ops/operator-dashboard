@@ -68,10 +68,10 @@ COMMIT;
 --     (SELECT SUM(delta) FROM hourly_revenue
 --       WHERE date = CURRENT_DATE AND lower(refcode) <> 'all') AS raw_total;
 -- 3. Confirm the week period now returns ≥ a single day's total (the bug
---    being fixed: week was less than a day because of the 1000-row cap):
---   SELECT SUM(delta_sum) FROM dashboard_hourly_revenue(
---     CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE
---   );
+--    being fixed: week was less than a day because of the 1000-row cap).
+--    Use integer subtraction (date - int → date), not INTERVAL — the latter
+--    returns timestamp and won't match the (date, date) signature.
+--   SELECT SUM(delta_sum) FROM dashboard_hourly_revenue(CURRENT_DATE - 6, CURRENT_DATE);
 
 -- ROLLBACK --------------------------------------------------------------
 -- DROP FUNCTION IF EXISTS dashboard_hourly_revenue(date, date, text);
