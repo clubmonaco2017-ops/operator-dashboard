@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from './useAuth.jsx'
 import LoginPage from './LoginPage.jsx'
+import SetPasswordPage from './SetPasswordPage.jsx'
 import AdminLayout from './AdminLayout.jsx'
 import { AppShell } from './components/shell/AppShell.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
@@ -32,7 +33,12 @@ export default function App() {
   const navigate = useNavigate()
 
   if (!user) {
-    return <LoginPage />
+    return (
+      <Routes>
+        <Route path="/set-password" element={<SetPasswordPage />} />
+        <Route path="*" element={<LoginPage />} />
+      </Routes>
+    );
   }
 
   return (
@@ -80,6 +86,7 @@ export default function App() {
           }
         />
       )}
+      <Route path="/set-password" element={<SetPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
