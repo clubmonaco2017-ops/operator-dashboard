@@ -14,12 +14,14 @@ import { CreateClientSlideOut } from '../components/clients/CreateClientSlideOut
 import { hasPermission } from '../lib/permissions.js'
 import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
 import { Button } from '@/components/ui/button'
+import { useSectionTitle } from '../hooks/useSectionTitle.jsx'
 
 const DEFAULT_FILTERS = { active: 'active', platformId: null, agencyId: null }
 
 export function ClientListPage() {
   const { user } = useAuth()
   const { clientId } = useParams()
+  useSectionTitle('Клиенты')
   const canCreate = hasPermission(user, 'manage_clients')
 
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
@@ -138,6 +140,7 @@ export function ClientListPage() {
           </ListPane>
         }
         listLabel="Список клиентов"
+        detailEmpty={!clientId}
         detailLabel="Профиль клиента"
       >
         <Outlet context={{ rows, reload }} />

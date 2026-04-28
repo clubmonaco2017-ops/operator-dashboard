@@ -12,11 +12,13 @@ import { CreateStaffSlideOut } from '../components/staff/CreateStaffSlideOut.jsx
 import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
 import { Button } from '@/components/ui/button'
 import { hasPermission } from '../lib/permissions.js'
+import { useSectionTitle } from '../hooks/useSectionTitle.jsx'
 
 export function StaffListPage() {
   const { user } = useAuth()
   const { refCode } = useParams()
   const navigate = useNavigate()
+  useSectionTitle('Сотрудники')
 
   const [role, setRole] = useState('all')
   const [search, setSearch] = useState('')
@@ -108,6 +110,7 @@ export function StaffListPage() {
           </ListPane>
         }
         listLabel="Список сотрудников"
+        detailEmpty={!refCode}
         detailLabel="Сотрудник"
       >
         <Outlet context={{ rows, reload }} />

@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../useAuth.jsx'
 import { useTaskList } from '../hooks/useTaskList.js'
 import { hasPermission } from '../lib/permissions.js'
+import { useSectionTitle } from '../hooks/useSectionTitle.jsx'
 
 import { TaskBoxTabs } from '../components/tasks/TaskBoxTabs.jsx'
 import { TaskFilterChips } from '../components/tasks/TaskFilterChips.jsx'
@@ -67,6 +68,7 @@ export function TaskListPage() {
   const { user } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  useSectionTitle('Задачи')
 
   const box = deriveBoxFromPath(location.pathname)
   const basePath = basePathForBox(box)
@@ -182,6 +184,7 @@ export function TaskListPage() {
           </ListPane>
         }
         listLabel="Список задач"
+        detailEmpty={!taskIdParam}
         detailLabel="Задача"
       >
         <Outlet

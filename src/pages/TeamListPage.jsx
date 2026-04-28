@@ -11,11 +11,13 @@ import { CreateTeamSlideOut } from '../components/teams/CreateTeamSlideOut.jsx'
 import { TeamDetailPanel } from '../components/teams/TeamDetailPanel.jsx'
 import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
 import { Button } from '@/components/ui/button'
+import { useSectionTitle } from '../hooks/useSectionTitle.jsx'
 
 export function TeamListPage() {
   const { user } = useAuth()
   const { teamId } = useParams()
   const navigate = useNavigate()
+  useSectionTitle('Команды')
 
   const [active, setActive] = useState('active')
   const [search, setSearch] = useState('')
@@ -94,6 +96,7 @@ export function TeamListPage() {
           </ListPane>
         }
         listLabel="Список команд"
+        detailEmpty={!teamId}
         detailLabel="Команда"
       >
         <Outlet context={{ rows, reload }} />
