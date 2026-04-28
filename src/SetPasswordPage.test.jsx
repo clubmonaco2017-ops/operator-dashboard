@@ -28,4 +28,18 @@ describe('SetPasswordPage', () => {
       expect(supabase.auth.updateUser).toHaveBeenCalledWith({ password: 'longenoughpw' })
     );
   });
+
+  it('shows error message when updateUser fails', async () => {
+    supabase.auth.updateUser.mockResolvedValue({
+      data: null,
+      error: { message: 'token expired' },
+    });
+    render(<MemoryRouter><SetPasswordPage /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText(/пароль/i), { target: { value: 'longenoughpw' } });
+    fireEvent.click(screen.getByRole('button', { name: /сохранить/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+    );
+    expect(screen.getByText(/ссылка могла истечь/i)).toBeInTheDocument();
+  });
 });

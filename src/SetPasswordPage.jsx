@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { Button } from './components/ui/button';
@@ -10,6 +10,12 @@ export default function SetPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!done) return;
+    const id = setTimeout(() => navigate('/'), 1500);
+    return () => clearTimeout(id);
+  }, [done, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -26,7 +32,6 @@ export default function SetPasswordPage() {
       return;
     }
     setDone(true);
-    setTimeout(() => navigate('/'), 1500);
   }
 
   return (
