@@ -1573,7 +1573,7 @@ PR boundary: own PR. Apply **Bucket Migration Template (§B)** to:
 ### Task 6.1: Bucket migration file
 
 **Files:**
-- Create: `db/migrations/20260428_39_rpc_clients_crud_auth.sql`
+- Create: `db/migrations/20260428_40_rpc_clients_crud_auth.sql`
 
 - [ ] **Step 1: Read each source RPC body** verbatim:
 
@@ -1589,7 +1589,7 @@ Same structure as Task 5.1 — `BEGIN; ... COMMIT;` block, one DROP+CREATE+GRANT
 - [ ] **Step 3: Apply to dev**
 
 ```bash
-psql "$DEV_DB_URL" -f db/migrations/20260428_39_rpc_clients_crud_auth.sql
+psql "$DEV_DB_URL" -f db/migrations/20260428_40_rpc_clients_crud_auth.sql
 ```
 
 ### Task 6.2: Sweep frontend callsites
@@ -2116,7 +2116,7 @@ psql "$PROD_DB_URL" -f db/migrations/20260428_35_auth_user_id_link.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_36_current_dashboard_user_id.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_37_get_current_user_profile.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_39_rpc_permissions_attributes_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_39_rpc_clients_crud_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_40_rpc_clients_crud_auth.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_40_rpc_client_media_auth.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_41_rpc_tasks_crud_auth.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_42_rpc_teams_crud_auth.sql
