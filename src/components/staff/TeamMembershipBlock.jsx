@@ -32,7 +32,7 @@ export function TeamMembershipBlock({ callerId, user, staff }) {
 
   return (
     <section className="surface-card mt-4 px-5 py-4">
-      <div className="label-caps mb-2 text-muted-foreground">Команда</div>
+      <div className="label-caps -mx-5 -mt-4 mb-4 border-b border-border px-5 py-3 text-muted-foreground">Команда</div>
       {error && (
         <p className="mb-2 text-xs text-[var(--danger-ink)]" role="alert">
           Ошибка: {error}

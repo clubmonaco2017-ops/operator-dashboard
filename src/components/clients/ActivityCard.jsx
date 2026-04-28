@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { Plus, Archive, Image as ImageIcon, Pencil, FileText, RotateCcw } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useClientActivity } from '../../hooks/useClientActivity.js'
 import { pluralizeEvents } from '../../lib/clients.js'
 
@@ -7,16 +9,17 @@ import { pluralizeEvents } from '../../lib/clients.js'
  */
 export function ActivityCard({ callerId, clientId, totalLimit = 12 }) {
   const { rows, loading } = useClientActivity(callerId, clientId, totalLimit)
+  const [fullOpen, setFullOpen] = useState(false)
 
   return (
     <section className="surface-card p-4">
-      <header className="mb-3 flex items-center justify-between">
+      <header className="-mx-4 -mt-4 mb-4 flex items-center justify-between gap-2 border-b border-border px-4 py-3">
         <h3 className="label-caps">Активность</h3>
         {rows.length > 0 && (
           <button
             type="button"
             className="text-xs font-medium text-primary hover:underline rounded"
-            onClick={() => alert('Полная история событий — Stage 8')}
+            onClick={() => setFullOpen(true)}
           >
             Все {pluralizeEvents(rows.length)}
           </button>
@@ -28,28 +31,66 @@ export function ActivityCard({ callerId, clientId, totalLimit = 12 }) {
       ) : rows.length === 0 ? (
         <p className="text-xs text-[var(--fg4)]">Событий пока нет.</p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {rows.slice(0, 4).map((evt) => (
-            <li key={evt.id} className="flex items-start gap-2.5">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[var(--fg4)]">
-                {eventIcon(evt.event_type)}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm leading-snug text-[var(--fg2)]">
-                  <span className="font-medium text-foreground">
-                    {evt.actor_name || 'Система'}
-                  </span>{' '}
-                  {humanizeEvent(evt.event_type, evt.payload)}
-                </p>
-                <p className="mt-0.5 text-xs text-[var(--fg4)]">
-                  <time dateTime={evt.created_at}>{formatRelative(evt.created_at)}</time>
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <EventList rows={rows.slice(0, 4)} />
       )}
+
+      <FullActivityDialog
+        open={fullOpen}
+        onOpenChange={setFullOpen}
+        callerId={callerId}
+        clientId={clientId}
+      />
     </section>
+  )
+}
+
+function EventList({ rows }) {
+  return (
+    <ul className="flex flex-col gap-3">
+      {rows.map((evt) => (
+        <li key={evt.id} className="flex items-start gap-2.5">
+          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[var(--fg4)]">
+            {eventIcon(evt.event_type)}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm leading-snug text-[var(--fg2)]">
+              <span className="font-medium text-foreground">
+                {evt.actor_name || 'Система'}
+              </span>{' '}
+              {humanizeEvent(evt.event_type, evt.payload)}
+            </p>
+            <p className="mt-0.5 text-xs text-[var(--fg4)]">
+              <time dateTime={evt.created_at}>{formatRelative(evt.created_at)}</time>
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function FullActivityDialog({ open, onOpenChange, callerId, clientId }) {
+  const { rows, loading, error } = useClientActivity(callerId, open ? clientId : null, 100)
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[80vh] overflow-hidden p-0 sm:max-w-xl">
+        <DialogHeader className="border-b border-border px-5 py-3">
+          <DialogTitle className="text-sm font-semibold">История событий</DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[calc(80vh-3.5rem)] overflow-y-auto px-5 py-4">
+          {loading && rows.length === 0 ? (
+            <ListSkeleton />
+          ) : error ? (
+            <p className="text-sm text-[var(--danger-ink)]" role="alert">Ошибка: {error}</p>
+          ) : rows.length === 0 ? (
+            <p className="text-sm text-[var(--fg4)]">Событий пока нет.</p>
+          ) : (
+            <EventList rows={rows} />
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 

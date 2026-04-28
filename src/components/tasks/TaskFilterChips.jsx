@@ -44,18 +44,20 @@ export function TaskFilterChips({
           </Chip>
         ))}
       </ChipRow>
-      <ChipRow ariaLabel="Фильтр по сроку">
-        <span className="mr-1 label-caps text-[var(--fg4)]">Срок:</span>
-        {deadlineOptions.map((opt) => (
-          <Chip
-            key={opt.key}
-            active={deadlineFilter === opt.key}
-            onClick={() => onDeadlineChange(opt.key)}
-          >
-            {opt.label}
-          </Chip>
-        ))}
-      </ChipRow>
+      <div className="border-t border-border pt-2">
+        <ChipRow ariaLabel="Фильтр по сроку">
+          <span className="label-caps text-[var(--fg4)]">Срок:</span>
+          {deadlineOptions.map((opt) => (
+            <Chip
+              key={opt.key}
+              active={deadlineFilter === opt.key}
+              onClick={() => onDeadlineChange(opt.key)}
+            >
+              {opt.label}
+            </Chip>
+          ))}
+        </ChipRow>
+      </div>
     </div>
   )
 }
@@ -65,7 +67,7 @@ function ChipRow({ children, ariaLabel }) {
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className="flex flex-wrap items-center gap-1.5"
+      className="flex flex-wrap items-center gap-1"
     >
       {children}
     </div>
@@ -80,7 +82,7 @@ function Chip({ children, active, onClick }) {
       aria-selected={active}
       onClick={onClick}
       className={[
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors outline-none',
+        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors outline-none',
         active
           ? 'border-primary bg-[var(--primary-soft)] text-[var(--primary-ink)]'
           : 'border-border text-[var(--fg2)] hover:border-border-strong',

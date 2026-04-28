@@ -53,7 +53,7 @@ export function TaskDescriptionCard({ callerId, user, task, onChanged }) {
 
   return (
     <section className="surface-card p-5">
-      <header className="mb-3 flex items-center justify-between">
+      <header className="-mx-5 -mt-5 mb-5 flex items-center justify-between gap-2 border-b border-border px-5 py-3">
         <h3 className="label-caps">Описание</h3>
         {editable && !editing && (
           <button

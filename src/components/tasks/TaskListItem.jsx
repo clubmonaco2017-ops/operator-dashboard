@@ -26,7 +26,7 @@ export function TaskListItem({ task, isActive, basePath }) {
     <Link
       to={`${basePath}/${task.id}`}
       className={[
-        'group relative flex items-start gap-3 px-4 py-2.5 outline-none transition-colors',
+        'group relative flex flex-col gap-1 px-4 py-2.5 outline-none transition-colors',
         'border-l-2',
         isActive
           ? 'border-l-primary bg-muted'
@@ -35,11 +35,11 @@ export function TaskListItem({ task, isActive, basePath }) {
       aria-current={isActive ? 'true' : undefined}
     >
       <StatusPill status={status} />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0">
         <div
           title={task.title}
           className={[
-            'truncate text-sm',
+            'truncate text-xs',
             isActive
               ? 'font-semibold text-foreground'
               : 'font-medium text-[var(--fg2)]',
@@ -51,7 +51,7 @@ export function TaskListItem({ task, isActive, basePath }) {
           {task.title}
         </div>
         <div
-          className="mt-0.5 truncate text-xs text-muted-foreground"
+          className="mt-0.5 truncate text-[11px] text-muted-foreground"
           title={metaLine}
         >
           {metaLine}
@@ -76,16 +76,16 @@ const STATUS_LABELS = {
 function statusPillClasses(status) {
   switch (status) {
     case 'in_progress':
-      return 'bg-[var(--primary-soft)] text-[var(--primary-ink)]'
+      return 'border-[var(--primary)]/30 bg-[var(--primary-soft)] text-[var(--primary-ink)]'
     case 'done':
-      return 'bg-[var(--success-soft)] text-[var(--success-ink)]'
+      return 'border-[var(--success)]/30 bg-[var(--success-soft)] text-[var(--success-ink)]'
     case 'overdue':
-      return 'bg-[var(--danger-soft)] text-[var(--danger-ink)]'
+      return 'border-[var(--danger)]/30 bg-[var(--danger-soft)] text-[var(--danger-ink)]'
     case 'cancelled':
-      return 'bg-muted text-muted-foreground'
+      return 'border-border bg-card text-muted-foreground'
     case 'pending':
     default:
-      return 'bg-muted text-[var(--fg2)]'
+      return 'border-border bg-card text-[var(--fg2)]'
   }
 }
 
@@ -94,7 +94,7 @@ function StatusPill({ status }) {
   return (
     <span
       className={[
-        'mt-0.5 inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+        'inline-flex w-fit shrink-0 items-center rounded-full border px-1.5 py-0 text-[10px] font-medium uppercase tracking-wide',
         statusPillClasses(status),
       ].join(' ')}
       title={label}
