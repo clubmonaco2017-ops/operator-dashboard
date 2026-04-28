@@ -10,7 +10,14 @@
 --   DECLARE v_caller_id integer := current_dashboard_user_id();
 --   IF v_caller_id IS NULL THEN RAISE EXCEPTION 'unauthorized' USING errcode = '28000'; END IF;
 -- Permission-fail RAISEs use USING errcode = '42501'.
--- REVOKE anon EXECUTE, GRANT to authenticated only.
+-- After DROP+CREATE, PostgreSQL re-grants EXECUTE to PUBLIC by default. Each RPC therefore
+-- uses the layered pattern: REVOKE ALL ... FROM PUBLIC; GRANT EXECUTE ... TO authenticated.
+-- can_assign_task is an internal helper — REVOKE only, no GRANT (called from SECURITY DEFINER
+-- RPCs only, never directly from PostgREST).
+--
+-- Note: previous bucket migrations (#47/#49/#50) have the same gap (no explicit REVOKE FROM
+-- PUBLIC). Stage 14's anon-grant audit migration will sweep them — they don't need retro-fixes
+-- here.
 --
 -- ⚠ DELIBERATE SEMANTICS CHANGE — count_overdue_tasks (§8.2):
 --   The frontend previously passed p_caller_id = null as an "admin-scope" sentinel,
@@ -28,19 +35,16 @@
 BEGIN;
 
 -- ============================================================
--- 1. can_assign_task  (internal helper — no GRANT, called from SECURITY DEFINER RPCs)
+-- 1. can_assign_task  (internal helper — REVOKE only, no GRANT)
 --    Original signature: (p_caller_id integer, p_target_user_id integer)
 --    New signature:      (p_target_user_id integer)
 --
---    NOTE: this is an INTERNAL helper called from other SECURITY DEFINER RPCs.
---    Its call-sites within this migration (create_task, update_task) already have
---    v_caller_id resolved; we pass v_caller_id as the first arg which now becomes
---    p_caller_id inside can_assign_task's body. To keep the internal API consistent
---    with other RPCs in this migration, we keep one external integer parameter
---    (p_target_user_id) and derive the caller from current_dashboard_user_id().
---    The callers in create_task/update_task that use can_assign_task(v_caller_id, x)
---    are OTHER SECURITY DEFINER functions where current_dashboard_user_id() returns
---    the same v_caller_id — so this is safe.
+--    NOTE: this is an INTERNAL helper called from create_task and update_task with a
+--    single argument (the target user). It derives the caller from
+--    current_dashboard_user_id() itself — same value as the calling function's
+--    v_caller_id because the helper is STABLE and runs in the same session.
+--    No GRANT is issued: this function is only ever invoked from inside other
+--    SECURITY DEFINER functions and must not be reachable via PostgREST.
 -- ============================================================
 
 DROP FUNCTION IF EXISTS public.can_assign_task(integer, integer);
@@ -110,6 +114,7 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.can_assign_task(integer) FROM PUBLIC;
 -- INTENTIONAL: no GRANT EXECUTE. Called only from SECURITY DEFINER RPCs.
 
 -- ============================================================
@@ -185,6 +190,7 @@ BEGIN
   RETURN v_new_id;
 END $$;
 
+REVOKE ALL ON FUNCTION public.create_task(text, text, timestamptz, integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_task(text, text, timestamptz, integer)
   TO authenticated;
 
@@ -331,6 +337,7 @@ BEGIN
   END IF;
 END $$;
 
+REVOKE ALL ON FUNCTION public.update_task(integer, text, text, timestamptz, integer, boolean) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.update_task(integer, text, text, timestamptz, integer, boolean)
   TO authenticated;
 
@@ -385,6 +392,7 @@ BEGIN
   VALUES (p_task_id, v_caller_id, 'task_cancelled', jsonb_build_object('reason', NULL));
 END $$;
 
+REVOKE ALL ON FUNCTION public.cancel_task(integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.cancel_task(integer)
   TO authenticated;
 
@@ -435,6 +443,7 @@ BEGIN
   VALUES (p_task_id, v_caller_id, 'taken_in_progress', '{}'::jsonb);
 END $$;
 
+REVOKE ALL ON FUNCTION public.take_task_in_progress(integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.take_task_in_progress(integer)
   TO authenticated;
 
@@ -514,6 +523,7 @@ BEGIN
   );
 END $$;
 
+REVOKE ALL ON FUNCTION public.submit_task_report(integer, text, jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.submit_task_report(integer, text, jsonb)
   TO authenticated;
 
@@ -597,6 +607,7 @@ BEGIN
   );
 END $$;
 
+REVOKE ALL ON FUNCTION public.update_task_report(integer, text, jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.update_task_report(integer, text, jsonb)
   TO authenticated;
 
@@ -664,6 +675,7 @@ BEGIN
   RETURN jsonb_build_object('media_paths', v_media_paths);
 END $$;
 
+REVOKE ALL ON FUNCTION public.delete_task(integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.delete_task(integer)
   TO authenticated;
 
@@ -800,6 +812,7 @@ BEGIN
   LIMIT 200;
 END $$;
 
+REVOKE ALL ON FUNCTION public.list_tasks(text, text, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.list_tasks(text, text, text)
   TO authenticated;
 
@@ -950,6 +963,7 @@ BEGIN
   WHERE t.id = p_task_id;
 END $$;
 
+REVOKE ALL ON FUNCTION public.get_task_detail(integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_task_detail(integer)
   TO authenticated;
 
@@ -999,6 +1013,7 @@ BEGIN
   RETURN COALESCE(v_count, 0);
 END $$;
 
+REVOKE ALL ON FUNCTION public.count_overdue_tasks() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.count_overdue_tasks()
   TO authenticated;
 

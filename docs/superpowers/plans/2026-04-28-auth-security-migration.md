@@ -80,7 +80,10 @@ BEGIN
 END;
 $$;
 
--- DROP cleared all grants. Re-grant only to authenticated.
+-- CREATE FUNCTION re-grants EXECUTE to PUBLIC by default. Revoke that
+-- and grant explicitly to authenticated only — layered security so
+-- anon can't reach the function body even if the helper has a bug.
+REVOKE ALL ON FUNCTION public.<name>(<rest>) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.<name>(<rest>) TO authenticated;
 ```
 
