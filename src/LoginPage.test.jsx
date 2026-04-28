@@ -79,7 +79,7 @@ describe('<LoginPage>', () => {
   })
 
   it('shows Russian error for invalid credentials', async () => {
-    mockSignIn.mockResolvedValue({ error: { message: 'Invalid login credentials' } })
+    mockSignIn.mockResolvedValue({ error: { code: 'invalid_credentials', message: 'Invalid login credentials' } })
     renderPage()
     fillForm()
     submitForm()
@@ -89,7 +89,7 @@ describe('<LoginPage>', () => {
   })
 
   it('shows Russian error for unconfirmed email', async () => {
-    mockSignIn.mockResolvedValue({ error: { message: 'Email not confirmed' } })
+    mockSignIn.mockResolvedValue({ error: { code: 'email_not_confirmed', message: 'Email not confirmed' } })
     renderPage()
     fillForm()
     submitForm()
@@ -99,7 +99,7 @@ describe('<LoginPage>', () => {
   })
 
   it('shows generic Russian error for unknown errors', async () => {
-    mockSignIn.mockResolvedValue({ error: { message: 'Network error' } })
+    mockSignIn.mockResolvedValue({ error: { code: 'unexpected_failure', message: 'Network error' } })
     renderPage()
     fillForm()
     submitForm()
@@ -142,5 +142,18 @@ describe('<LoginPage>', () => {
         expect(screen.getByRole('alert')).toHaveTextContent('Не удалось отправить письмо')
       )
     })
+  })
+
+  it('disables forgot-password button while sign-in is submitting', async () => {
+    // Make signIn hang so we can observe the submitting state.
+    let resolve
+    mockSignIn.mockImplementation(() => new Promise((r) => (resolve = r)))
+    renderPage()
+    fillForm('a@b.c', 'pw')
+    fireEvent.click(screen.getByRole('button', { name: /войти/i }))
+    // Now submitting=true. Forgot-password button should be disabled.
+    const forgot = screen.getByRole('button', { name: /забыли пароль/i })
+    expect(forgot).toBeDisabled()
+    resolve({ error: null })
   })
 })

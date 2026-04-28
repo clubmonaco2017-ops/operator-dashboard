@@ -41,9 +41,9 @@ export default function LoginPage() {
     const { error: signInError } = await signIn(email, password)
     setSubmitting(false)
     if (signInError) {
-      if (signInError.message?.includes('Invalid login credentials')) {
+      if (signInError.code === 'invalid_credentials') {
         setError('Неверный email или пароль')
-      } else if (signInError.message?.includes('Email not confirmed')) {
+      } else if (signInError.code === 'email_not_confirmed') {
         setError('Email не подтверждён. Проверьте почту.')
       } else {
         setError('Ошибка входа. Попробуйте позже.')
@@ -108,7 +108,7 @@ export default function LoginPage() {
             {error && (
               <div
                 role="alert"
-                className="flex items-start gap-2.5 bg-[var(--danger-soft)] border border-[var(--danger-strong)] rounded-xl px-4 py-3"
+                className="flex items-start gap-2.5 bg-[var(--danger-soft)] border border-[var(--danger)] rounded-xl px-4 py-3"
               >
                 <AlertCircle
                   size={16}
@@ -121,9 +121,9 @@ export default function LoginPage() {
             {notice && (
               <div
                 role="status"
-                className="flex items-start gap-2.5 bg-[var(--success-soft,hsl(var(--muted)))] border border-[var(--success-strong,hsl(var(--border)))] rounded-xl px-4 py-3"
+                className="flex items-start gap-2.5 bg-[var(--success-soft)] border border-[var(--success)] rounded-xl px-4 py-3"
               >
-                <p className="text-sm text-foreground">{notice}</p>
+                <p className="text-sm text-[var(--success-ink)]">{notice}</p>
               </div>
             )}
 
@@ -145,17 +145,20 @@ export default function LoginPage() {
             <div className="flex justify-center">
               <button
                 type="button"
-                className="text-sm text-muted-foreground hover:text-foreground transition"
+                disabled={submitting}
+                className="text-sm text-muted-foreground hover:text-foreground transition disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={async () => {
                   if (!email) {
                     setError('Введите email, чтобы получить ссылку для сброса.')
                     return
                   }
+                  setSubmitting(true)
                   setError('')
                   setNotice('')
                   const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
                     redirectTo: `${window.location.origin}/set-password`,
                   })
+                  setSubmitting(false)
                   if (resetErr) {
                     setError('Не удалось отправить письмо. Попробуйте позже.')
                   } else {
