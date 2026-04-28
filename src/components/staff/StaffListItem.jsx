@@ -62,9 +62,8 @@ export function StaffListItem({ row, isActive }) {
           </span>
           <RoleBadge role={row.role} />
         </div>
-        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="truncate">{row.email}</span>
-          <span className="font-mono text-[var(--fg4)]">{row.ref_code}</span>
+        <div className="mt-0.5 truncate text-xs text-muted-foreground">
+          {row.email}
         </div>
       </div>
 
