@@ -48,22 +48,28 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
   }, [items.length])
 
   // Arrow-key navigation. Esc handled by Base UI Dialog via onOpenChange.
+  // Listener uses capture phase so we see ArrowLeft/Right before Base UI's
+  // dialog focus-trap handlers swallow them (without capture, the keys never
+  // reach the bubble phase).
   useEffect(() => {
     if (captionEditing) return // arrows do not paginate while editing caption (textarea uses arrows for caret)
     const onKey = (e) => {
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
+        e.stopPropagation()
         goPrev()
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
+        e.stopPropagation()
         goNext()
       }
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
   }, [goPrev, goNext, captionEditing])
 
-  // Touch swipe-down to close (mobile gesture). Skipped while editing caption so swipes inside textarea don't close.
+  // Touch swipes: swipe-down closes; swipe-left/right paginates.
+  // Skipped while editing caption so swipes inside textarea don't fire.
   const touchStartY = useRef(null)
   const touchStartX = useRef(null)
   const onTouchStart = (e) => {
@@ -75,10 +81,23 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
     if (touchStartY.current == null) return
     const dy = e.changedTouches[0].clientY - touchStartY.current
     const dx = e.changedTouches[0].clientX - (touchStartX.current ?? 0)
-    // swipe down dominates: vertical > 80px и больше горизонтального
-    if (dy > 80 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+    const absX = Math.abs(dx)
+    const absY = Math.abs(dy)
+    // Vertical swipe-down (close): vertical > 80px AND clearly more vertical than horizontal.
+    if (dy > 80 && absY > absX * 1.5) {
       e.preventDefault() // suppress synthesized click on touch devices
       onClose()
+    }
+    // Horizontal swipe (paginate): horizontal > 50px AND clearly more horizontal than vertical.
+    else if (absX > 50 && absX > absY * 1.5) {
+      e.preventDefault()
+      if (dx < 0) {
+        // swipe left → next
+        if (!nextDisabled) goNext()
+      } else {
+        // swipe right → previous
+        if (!prevDisabled) goPrev()
+      }
     }
     touchStartY.current = null
     touchStartX.current = null
