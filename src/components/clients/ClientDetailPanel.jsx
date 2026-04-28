@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Globe, Briefcase, Calendar, BarChart3 } from 'lucide-react'
+import { Globe, Briefcase, Calendar, BarChart3, Loader2, Plus } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Switch } from '@/components/ui/switch'
+import { supabase } from '../../supabaseClient'
 import { useClient } from '../../hooks/useClient.js'
 import { useClientActions } from '../../hooks/useClientActions.js'
-import { initials } from '../../lib/clients.js'
+import { initials, validateFile, FILE_LIMITS } from '../../lib/clients.js'
 import { ProfileTab } from './ProfileTab.jsx'
 import { PhotoGalleryTab } from './PhotoGalleryTab.jsx'
 import { VideoGalleryTab } from './VideoGalleryTab.jsx'
@@ -30,10 +32,13 @@ const TAB_LABELS = {
  */
 export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', siblings = [], onChanged }) {
   const navigate = useNavigate()
-  const { archiveClient, restoreClient } = useClientActions(callerId)
+  const { archiveClient, restoreClient, updateClient } = useClientActions(callerId)
   const { row, loading, error, reload } = useClient(callerId, clientId)
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [statusBusy, setStatusBusy] = useState(false)
+  const avatarInputRef = useRef(null)
+  const [avatarBusy, setAvatarBusy] = useState(false)
+  const [avatarError, setAvatarError] = useState(null)
 
   const { prev, next, position } = useMemo(() => {
     if (!siblings.length || !clientId) return { prev: null, next: null, position: 0 }
@@ -66,6 +71,32 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
   function bothChanged() {
     reload()
     onChanged?.()
+  }
+
+  async function uploadAvatar(file) {
+    if (!file) return
+    setAvatarError(null)
+    const v = validateFile(file, 'avatar')
+    if (!v.valid) {
+      setAvatarError(v.error)
+      return
+    }
+    setAvatarBusy(true)
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+      const path = `client-${row.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('client-avatars')
+        .upload(path, file, { upsert: false, contentType: file.type })
+      if (uploadErr) throw new Error(uploadErr.message)
+      const { data } = supabase.storage.from('client-avatars').getPublicUrl(path)
+      await updateClient(row.id, { avatarUrl: data.publicUrl })
+      bothChanged()
+    } catch (e) {
+      setAvatarError(e.message || String(e))
+    } finally {
+      setAvatarBusy(false)
+    }
   }
 
   async function toggleStatus() {
@@ -141,20 +172,42 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
 
       {/* Header */}
       <header className="flex items-start gap-4 px-6 pt-5">
-        {row.avatar_url ? (
-          <img src={row.avatar_url} alt="" className="h-16 w-16 rounded-2xl object-cover" />
-        ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--primary-soft)] text-lg font-semibold text-[var(--primary-ink)]">
-            {initials(row.name)}
-          </div>
-        )}
+        <div className="relative h-16 w-16 shrink-0">
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept={FILE_LIMITS.avatar.mimeTypes.join(',')}
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              uploadAvatar(f)
+              e.target.value = ''
+            }}
+          />
+          {row.avatar_url ? (
+            <img src={row.avatar_url} alt="" className="h-16 w-16 rounded-2xl object-cover" />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--primary-soft)] text-lg font-semibold text-[var(--primary-ink)]">
+              {initials(row.name)}
+            </div>
+          )}
+          <button
+            type="button"
+            title={row.avatar_url ? 'Заменить аватар' : 'Загрузить аватар'}
+            aria-label={row.avatar_url ? 'Заменить аватар' : 'Загрузить аватар'}
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={avatarBusy}
+            className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60"
+          >
+            {avatarBusy ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+          </button>
+        </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-2">
             <h1 className="truncate text-xl font-bold text-foreground" title={row.name}>{row.name}</h1>
             {row.alias && (
               <span className="font-mono text-sm text-[var(--fg4)]">{row.alias}</span>
             )}
-            <StatusPill active={row.is_active} />
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
             {row.platform_name && <Chip><Globe size={12} className="inline mr-1" />{row.platform_name}</Chip>}
@@ -195,7 +248,7 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
 
       {/* Body: tab content + right column (Activity + Summary) */}
       <div className="flex-1 overflow-auto bg-background">
-        <div className="grid grid-cols-1 gap-5 px-4 pt-3 pb-5 sm:px-6 xl:grid-cols-[minmax(0,1fr),320px]">
+        <div className="grid grid-cols-1 gap-5 px-4 pt-3 pb-5 sm:px-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <main className="min-w-0">
             {activeTab === 'profile' && (
               <ProfileTab callerId={callerId} client={row} onChanged={bothChanged} />
@@ -222,6 +275,14 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
           onConfirm={confirmArchive}
         />
       )}
+      {avatarError && (
+        <p
+          role="alert"
+          className="fixed bottom-4 right-4 rounded-lg bg-[var(--danger)] px-4 py-2 text-sm text-white"
+        >
+          {avatarError}
+        </p>
+      )}
     </div>
   )
 }
@@ -232,22 +293,24 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
 
 function StatusToggle({ active, busy, onToggle }) {
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      disabled={busy}
+    <label
       className={[
-        'inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50',
-        active
-          ? 'border-[var(--success-soft)] bg-[var(--success-soft)] text-[var(--success-ink)] hover:opacity-80'
-          : 'border-border bg-muted text-muted-foreground hover:bg-[var(--surface-3)]',
+        'inline-flex items-center gap-2 text-xs font-medium transition-opacity',
+        busy ? 'cursor-wait opacity-50' : 'cursor-pointer',
       ].join(' ')}
       title={active ? 'Кликнуть, чтобы архивировать' : 'Кликнуть, чтобы восстановить'}
-      aria-label={active ? 'Архивировать клиента' : 'Восстановить клиента'}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-[var(--success)]' : 'bg-[var(--fg4)]'}`} aria-hidden />
-      {active ? 'Активна' : 'Архив'}
-    </button>
+      <Switch
+        size="sm"
+        checked={active}
+        disabled={busy}
+        onCheckedChange={onToggle}
+        aria-label={active ? 'Архивировать клиента' : 'Восстановить клиента'}
+      />
+      <span className={active ? 'text-[var(--success-ink)]' : 'text-muted-foreground'}>
+        {active ? 'Активна' : 'Архив'}
+      </span>
+    </label>
   )
 }
 
@@ -298,23 +361,6 @@ function Chip({ children, variant = 'default' }) {
   )
 }
 
-function StatusPill({ active }) {
-  return (
-    <span
-      className={[
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-        active
-          ? 'bg-[var(--success-soft)] text-[var(--success-ink)]'
-          : 'bg-muted text-muted-foreground',
-      ].join(' ')}
-      role="status"
-    >
-      <span className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-[var(--success)]' : 'bg-[var(--fg4)]'}`} aria-hidden />
-      {active ? 'Активна' : 'Архив'}
-    </span>
-  )
-}
-
 function DetailSkeleton() {
   // 8.B: skeleton имитирует реальную структуру (top-bar + header с круглым avatar
   // + tab-row + content-grid 2 колонки), чтобы layout не прыгал.
@@ -350,7 +396,7 @@ function DetailSkeleton() {
 
       {/* Content grid */}
       <div className="flex-1 overflow-hidden bg-background">
-        <div className="grid grid-cols-1 gap-5 px-6 py-5 xl:grid-cols-[minmax(0,1fr),320px]">
+        <div className="grid grid-cols-1 gap-5 px-6 py-5 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="surface-card h-48 animate-pulse" />
           <div className="space-y-4">
             <div className="surface-card h-32 animate-pulse" />
