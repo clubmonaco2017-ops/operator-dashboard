@@ -41,7 +41,6 @@ function comparisonLabel(preset) {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
 function previousLabelFor(preset) {
   switch (preset) {
     case 'today': return 'вчера'
@@ -52,9 +51,81 @@ function previousLabelFor(preset) {
   }
 }
 
+function deltaInfo(current, prev) {
+  if (prev == null) return { kind: 'no-prev' }
+  if (prev === 0 && current === 0) return { kind: 'zero' }
+  if (prev === 0) return { kind: 'inf', sign: current > 0 ? '+' : '-' }
+  const pct = ((current - prev) / prev) * 100
+  return { kind: 'pct', pct }
+}
+
+function DeltaBadge({ current, prev }) {
+  const info = deltaInfo(current, prev)
+  if (info.kind === 'no-prev') return null
+  if (info.kind === 'zero') {
+    return <span className="text-right text-muted-foreground">—</span>
+  }
+  if (info.kind === 'inf') {
+    return (
+      <span
+        className={`text-right font-semibold ${
+          info.sign === '+' ? 'text-[var(--success-ink)]' : 'text-[var(--danger-ink)]'
+        }`}
+      >
+        {info.sign}∞%
+      </span>
+    )
+  }
+  const positive = info.pct >= 0
+  return (
+    <span
+      className={`text-right font-semibold ${
+        positive ? 'text-[var(--success-ink)]' : 'text-[var(--danger-ink)]'
+      }`}
+    >
+      {positive ? '▲' : '▼'} {positive ? '+' : ''}{info.pct.toFixed(1)}%
+    </span>
+  )
+}
+
+function HourComparisonTooltip({ active, payload, label, preset, showComparison }) {
+  if (!active || !payload?.length) return null
+  const cur = payload.find((p) => p.dataKey === 'revenue')?.value ?? 0
+  const prev = payload.find((p) => p.dataKey === 'prevRevenue')?.value
+  const hasPrev = prev != null
+
+  return (
+    <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-md">
+      <div className="font-semibold text-foreground mb-1">{label}</div>
+      <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
+        <span className="text-muted-foreground">сегодня</span>
+        <span className="text-right font-medium text-foreground">{fmt(cur)} $</span>
+        {showComparison && (
+          <>
+            <span className="text-muted-foreground">{previousLabelFor(preset)}</span>
+            {hasPrev ? (
+              <span className="text-right font-medium text-foreground">{fmt(prev)} $</span>
+            ) : (
+              <span className="text-right italic text-muted-foreground">нет данных</span>
+            )}
+            {hasPrev && (
+              <>
+                <span />
+                <DeltaBadge current={cur} prev={prev} />
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function RevenueByHourChart({ rows, prevRows = [], period }) {
   const [chartType, setChartType] = useState('bar')
   const [expanded, setExpanded] = useState(true)
+  // eslint-disable-next-line no-unused-vars
+  const [showComparison, setShowComparison] = useState(true)
 
   const [hMin, hMax] = period.hours
   const allHours = Array.from({ length: 24 }, (_, i) => i).filter((h) => h >= hMin && h <= hMax)
@@ -144,10 +215,21 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
                     tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v.toFixed(0))}
                   />
                   <Tooltip
-                    formatter={(v) => [`${fmt(v)} $`, 'Выручка']}
-                    contentStyle={tooltipStyle}
+                    content={
+                      <HourComparisonTooltip preset={period.preset} showComparison={showComparison} />
+                    }
                     cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }}
                   />
+                  {showComparison && (
+                    <Bar
+                      dataKey="prevRevenue"
+                      fill="#6366f1"
+                      fillOpacity={0.25}
+                      radius={[5, 5, 0, 0]}
+                      maxBarSize={40}
+                      isAnimationActive={false}
+                    />
+                  )}
                   <Bar dataKey="revenue" radius={[5, 5, 0, 0]} maxBarSize={40}>
                     {hourlyTotals.map((_, i) => (
                       <Cell key={i} fill="#6366f1" />
