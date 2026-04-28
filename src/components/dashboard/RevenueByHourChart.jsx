@@ -142,6 +142,7 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
   const prevRaw = buildHourlyTotals(prevRows, allHours)
 
   const hasCurrentData = currentRaw.some((x) => x.revenue > 0)
+  const hasPrevData = prevRows.length > 0
   const isToday = period.preset === 'today'
   const lastIdx = isToday ? lastHourWithData(currentRaw) : currentRaw.length - 1
 
@@ -151,7 +152,7 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
         .map((c, i) => ({
           hour: c.hour,
           revenue: c.revenue,
-          prevRevenue: prevRaw[i]?.revenue ?? null,
+          prevRevenue: hasPrevData ? prevRaw[i]?.revenue ?? 0 : null,
         }))
         .filter((x) => x.revenue > 0)
     : []
