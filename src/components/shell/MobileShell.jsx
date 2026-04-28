@@ -27,7 +27,7 @@ export function MobileShell() {
       <SectionTitleProvider>
         <div
           data-slot="mobile-shell"
-          className="grid grid-rows-[auto_1fr_auto] h-screen"
+          className="grid grid-rows-[auto_1fr_auto] h-dvh"
         >
           <MobileTopBar onMenuClick={() => setDrawerOpen(true)} />
           <main className="overflow-auto">
