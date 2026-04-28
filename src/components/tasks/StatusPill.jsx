@@ -15,10 +15,10 @@ function statusPillClasses(status) {
     case 'overdue':
       return 'bg-[var(--danger-soft)] text-[var(--danger-ink)]'
     case 'cancelled':
-      return 'bg-muted text-muted-foreground'
+      return 'border border-border bg-muted text-muted-foreground'
     case 'pending':
     default:
-      return 'bg-muted text-[var(--fg2)]'
+      return 'border border-border bg-muted text-[var(--fg2)]'
   }
 }
 
