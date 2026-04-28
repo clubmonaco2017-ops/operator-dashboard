@@ -37,8 +37,8 @@ export function KpiCard({
         <span className="text-xs text-muted-foreground font-medium">{label}</span>
         {Icon && <Icon size={16} className="text-muted-foreground" />}
       </header>
-      <div className="text-2xl font-bold mt-1 flex items-baseline gap-2 text-foreground">
-        <span>{value}</span>
+      <div className="text-lg md:text-xl font-bold mt-1 flex items-baseline gap-2 text-foreground min-w-0">
+        <span className="truncate min-w-0" title={typeof value === 'string' ? value : undefined}>{value}</span>
         {delta && (
           <span className={`text-xs font-medium ${DELTA_CLASS[delta.direction]}`}>
             {DELTA_ARROW[delta.direction]} {Math.abs(delta.value)}%

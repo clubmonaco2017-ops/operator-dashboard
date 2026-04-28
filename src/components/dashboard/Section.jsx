@@ -26,7 +26,7 @@ export function Section({ id, title, icon: Icon, actions, children }) {
   const [expanded, setExpanded] = useLocalStorageBool(`dashboard.section.${id}.expanded`, true)
   return (
     <section className="border border-border rounded-lg bg-card mb-4 overflow-hidden">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
+      <header className="flex flex-col gap-2 px-4 py-3 border-b border-border bg-card md:flex-row md:items-center md:justify-between">
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}

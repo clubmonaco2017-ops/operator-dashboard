@@ -60,12 +60,12 @@ function SectionAnalyticsInner({ user }) {
         <>
           {productionRendered.length > 0 && (
             <SubSection title="Производительность">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{productionRendered}</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">{productionRendered}</div>
             </SubSection>
           )}
           {shiftRendered.length > 0 && (
             <SubSection title="По сменам">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{shiftRendered}</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">{shiftRendered}</div>
             </SubSection>
           )}
           {teamRendered.length > 0 && (
