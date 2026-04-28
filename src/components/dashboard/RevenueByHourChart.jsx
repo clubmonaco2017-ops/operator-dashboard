@@ -12,6 +12,7 @@ import {
   Cell,
 } from 'recharts'
 import { BarChart3, ChevronDown } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 
 const fmt = (n) =>
   Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -72,27 +73,28 @@ function DeltaBadge({ current, prev }) {
   const info = deltaInfo(current, prev)
   if (info.kind === 'no-prev') return null
   if (info.kind === 'zero') {
-    return <span className="text-right text-muted-foreground">—</span>
+    return <span className="text-right text-xs font-medium text-muted-foreground">→ 0%</span>
   }
   if (info.kind === 'inf') {
+    const positive = info.sign === '+'
     return (
       <span
-        className={`text-right font-semibold ${
-          info.sign === '+' ? 'text-[var(--success-ink)]' : 'text-[var(--danger-ink)]'
+        className={`text-right text-xs font-medium ${
+          positive ? 'text-green-600' : 'text-red-600'
         }`}
       >
-        {info.sign}∞%
+        {positive ? '↗' : '↘'} ∞%
       </span>
     )
   }
   const positive = info.pct >= 0
   return (
     <span
-      className={`text-right font-semibold ${
-        positive ? 'text-[var(--success-ink)]' : 'text-[var(--danger-ink)]'
+      className={`text-right text-xs font-medium ${
+        positive ? 'text-green-600' : 'text-red-600'
       }`}
     >
-      {positive ? '▲' : '▼'} {positive ? '+' : ''}{info.pct.toFixed(1)}%
+      {positive ? '↗' : '↘'} {Math.abs(info.pct).toFixed(1)}%
     </span>
   )
 }
@@ -160,9 +162,6 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
   const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
   const gridColor = isDark ? '#334155' : '#e2e8f0'
   const tickColor = isDark ? '#64748b' : '#94a3b8'
-  const tooltipStyle = isDark
-    ? { fontSize: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0' }
-    : { fontSize: 12, borderRadius: 10, border: '1px solid #e2e8f0' }
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -181,28 +180,16 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
           />
         </button>
         {expanded && (
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowComparison((v) => !v)}
-              disabled={chartType === 'area'}
-              aria-pressed={showComparison}
-              title={chartType === 'area' ? 'Сравнение доступно в столбчатом режиме' : undefined}
-              className={[
-                'inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-medium transition-colors',
-                showComparison && chartType === 'bar'
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
-                chartType === 'area' && 'opacity-50 cursor-not-allowed',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              {showComparison && chartType === 'bar' && (
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
-              )}
+          <div className="flex items-center gap-3">
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-foreground select-none">
+              <Switch
+                size="sm"
+                checked={showComparison}
+                onCheckedChange={setShowComparison}
+                aria-label={`Сравнение ${comparisonLabel(period.preset)}`}
+              />
               {comparisonLabel(period.preset)}
-            </button>
+            </label>
             <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
               <button
                 type="button"
@@ -284,7 +271,25 @@ export function RevenueByHourChart({ rows, prevRows = [], period }) {
                     tickLine={false}
                     tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v.toFixed(0))}
                   />
-                  <Tooltip formatter={(v) => [`${fmt(v)} $`, 'Выручка']} contentStyle={tooltipStyle} />
+                  <Tooltip
+                    content={
+                      <HourComparisonTooltip preset={period.preset} showComparison={showComparison} />
+                    }
+                  />
+                  {showComparison && (
+                    <Area
+                      type="monotone"
+                      dataKey="prevRevenue"
+                      stroke="#6366f1"
+                      strokeOpacity={0.5}
+                      strokeWidth={1.5}
+                      strokeDasharray="4 3"
+                      fill="none"
+                      dot={false}
+                      activeDot={false}
+                      isAnimationActive={false}
+                    />
+                  )}
                   <Area
                     type="monotone"
                     dataKey="revenue"
