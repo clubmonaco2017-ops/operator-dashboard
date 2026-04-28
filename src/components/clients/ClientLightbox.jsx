@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { X, Download, Pencil, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '../../supabaseClient.js'
@@ -33,10 +34,6 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
   const prevDisabled = index <= 0
   const nextDisabled = index >= items.length - 1
 
-  const closeBtnRef = useRef(null)
-  const previouslyFocused = useRef(null)
-  const dialogRef = useRef(null)
-
   const goPrev = useCallback(() => {
     setIndex((i) => Math.max(0, i - 1))
     setMenuOpen(false)
@@ -50,21 +47,11 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
     setCaptionExpanded(false)
   }, [items.length])
 
-  // Hotkeys (Esc, ←, →) — но только когда не редактируем caption
+  // Arrow-key navigation. Esc handled by Base UI Dialog via onOpenChange.
   useEffect(() => {
+    if (captionEditing) return // arrows do not paginate while editing caption (textarea uses arrows for caret)
     const onKey = (e) => {
-      // 8.D: в caption-edit Esc отменяет edit, не закрывает lightbox
-      if (captionEditing) {
-        if (e.key === 'Escape') {
-          e.preventDefault()
-          cancelCaptionEdit()
-        }
-        return
-      }
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        onClose()
-      } else if (e.key === 'ArrowLeft') {
+      if (e.key === 'ArrowLeft') {
         e.preventDefault()
         goPrev()
       } else if (e.key === 'ArrowRight') {
@@ -74,32 +61,9 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goPrev, goNext, onClose, captionEditing])
+  }, [goPrev, goNext, captionEditing])
 
-  // 8.G: focus management — fokus на закрытие при открытии, восстановить при закрытии
-  useEffect(() => {
-    previouslyFocused.current = document.activeElement
-    closeBtnRef.current?.focus()
-    return () => {
-      try {
-        previouslyFocused.current?.focus?.()
-      } catch {
-        /* element may be unmounted */
-      }
-    }
-  }, [])
-
-  // Lock body scroll
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [])
-
-  // 8.H: touch swipe-down to close
+  // Touch swipe-down to close (mobile gesture). Skipped while editing caption so swipes inside textarea don't close.
   const touchStartY = useRef(null)
   const touchStartX = useRef(null)
   const onTouchStart = (e) => {
@@ -113,6 +77,7 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
     const dx = e.changedTouches[0].clientX - (touchStartX.current ?? 0)
     // swipe down dominates: vertical > 80px и больше горизонтального
     if (dy > 80 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+      e.preventDefault() // suppress synthesized click on touch devices
       onClose()
     }
     touchStartY.current = null
@@ -207,218 +172,227 @@ export function ClientLightbox({ items, initialIndex = 0, onClose, onDelete, onU
   }
 
   return (
-    <div
-      ref={dialogRef}
-      className="fixed inset-0 z-[70] bg-black/90 text-white"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Просмотр: ${titleText}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
+    <DialogPrimitive.Root
+      open
+      onOpenChange={(next) => {
+        if (next) return
+        if (captionEditing) {
+          cancelCaptionEdit()
+        } else {
+          onClose()
+        }
       }}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
     >
-      {/* Top toolbar */}
-      <div className="absolute right-3 top-3 z-10 flex items-center gap-1">
-        {onUpdateCaption && !captionEditing && (
-          <button
-            type="button"
-            onClick={startCaptionEdit}
-            className="rounded-md bg-white/10 p-2 text-white/90 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
-            title="Редактировать подпись"
-            aria-label="Редактировать подпись"
-          >
-            <Pencil size={16} />
-          </button>
-        )}
-        <a
-          href={url}
-          download={current.filename}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-md bg-white/10 p-2 text-white/90 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
-          title="Скачать"
-          aria-label="Скачать файл"
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Backdrop className="fixed inset-0 z-[70] bg-black/90" />
+        <DialogPrimitive.Popup
+          className="fixed inset-0 z-[70] flex flex-col text-white outline-none"
+          aria-label={`Просмотр: ${titleText}`}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
         >
-          <Download size={16} />
-        </a>
-        {onDelete && (
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
+          {/* Top toolbar */}
+          <div className="absolute right-3 top-3 z-10 flex items-center gap-1">
+            {onUpdateCaption && !captionEditing && (
+              <button
+                type="button"
+                onClick={startCaptionEdit}
+                className="rounded-md bg-white/10 p-2 text-white/90 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
+                title="Редактировать подпись"
+                aria-label="Редактировать подпись"
+              >
+                <Pencil size={16} />
+              </button>
+            )}
+            <a
+              href={url}
+              download={current.filename}
+              target="_blank"
+              rel="noreferrer"
               className="rounded-md bg-white/10 p-2 text-white/90 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
-              aria-label="Дополнительные действия"
-              aria-expanded={menuOpen}
-              aria-haspopup="menu"
+              title="Скачать"
+              aria-label="Скачать файл"
             >
-              <MoreHorizontal size={16} />
-            </button>
-            {menuOpen && (
-              <div role="menu" className="absolute right-0 top-full mt-1 min-w-[180px] rounded-lg bg-popover p-1 shadow-xl">
+              <Download size={16} />
+            </a>
+            {onDelete && (
+              <div className="relative">
                 <button
                   type="button"
-                  role="menuitem"
-                  onClick={handleDelete}
-                  className="block w-full rounded-md px-3 py-2 text-left text-sm text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="rounded-md bg-white/10 p-2 text-white/90 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
+                  aria-label="Дополнительные действия"
+                  aria-expanded={menuOpen}
+                  aria-haspopup="menu"
                 >
-                  Удалить
+                  <MoreHorizontal size={16} />
                 </button>
+                {menuOpen && (
+                  <div role="menu" className="absolute right-0 top-full mt-1 min-w-[180px] rounded-lg bg-popover p-1 shadow-xl">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleDelete}
+                      className="block w-full rounded-md px-3 py-2 text-left text-sm text-[var(--danger-ink)] hover:bg-[var(--danger-soft)]"
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                )}
               </div>
             )}
+            <span className="mx-1 h-5 w-px bg-white/20" aria-hidden />
+            <button
+              type="button"
+              onClick={onClose}
+              autoFocus
+              className="rounded-md bg-white/10 p-2 text-white/90 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
+              aria-label="Закрыть просмотр"
+            >
+              <X size={18} />
+            </button>
           </div>
-        )}
-        <span className="mx-1 h-5 w-px bg-white/20" aria-hidden />
-        <button
-          ref={closeBtnRef}
-          type="button"
-          onClick={onClose}
-          className="rounded-md bg-white/10 p-2 text-white/90 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
-          aria-label="Закрыть просмотр"
-        >
-          <X size={18} />
-        </button>
-      </div>
 
-      {/* Counter top-left */}
-      <div
-        className="absolute left-4 top-4 z-10 rounded-md bg-white/10 px-2.5 py-1 font-mono text-xs text-white/80 tabular"
-        aria-label={`${index + 1} из ${items.length}`}
-      >
-        {index + 1} / {items.length}
-      </div>
+          {/* Counter top-left */}
+          <div
+            className="absolute left-4 top-4 z-10 rounded-md bg-white/10 px-2.5 py-1 font-mono text-xs text-white/80 tabular"
+            aria-label={`${index + 1} из ${items.length}`}
+          >
+            {index + 1} / {items.length}
+          </div>
 
-      {/* Prev / Next */}
-      <button
-        type="button"
-        onClick={goPrev}
-        disabled={prevDisabled}
-        className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-md bg-white/10 p-3 text-white/90 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
-        aria-label="Предыдущее"
-      >
-        <ChevronLeft size={22} />
-      </button>
-      <button
-        type="button"
-        onClick={goNext}
-        disabled={nextDisabled}
-        className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-md bg-white/10 p-3 text-white/90 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
-        aria-label="Следующее"
-      >
-        <ChevronRight size={22} />
-      </button>
+          {/* Prev / Next */}
+          <button
+            type="button"
+            onClick={goPrev}
+            disabled={prevDisabled}
+            className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-md bg-white/10 p-3 text-white/90 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
+            aria-label="Предыдущее"
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={nextDisabled}
+            className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-md bg-white/10 p-3 text-white/90 hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
+            aria-label="Следующее"
+          >
+            <ChevronRight size={22} />
+          </button>
 
-      {/* Media */}
-      <div className="flex h-full flex-col items-center justify-center px-4 py-12 sm:px-16">
-        {current.type === 'video' ? (
-          <video
-            key={current.id}
-            src={url}
-            controls
-            playsInline
-            muted
-            className="max-h-[calc(100vh-220px)] max-w-full"
-            aria-label={titleText}
-          />
-        ) : (
-          <img
-            src={url}
-            alt={titleText}
-            className="max-h-[calc(100vh-220px)] max-w-full object-contain"
-          />
-        )}
-
-        {/* Caption + meta */}
-        <div className="mt-5 max-w-3xl text-center">
-          {captionEditing ? (
-            <div className="mx-auto max-w-xl">
-              <textarea
-                ref={captionRef}
-                value={captionDraft}
-                onChange={(e) => setCaptionDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                    e.preventDefault()
-                    saveCaption()
-                  }
-                }}
-                disabled={captionSaving}
-                rows={3}
-                placeholder="Подпись (опционально)"
-                aria-label="Подпись к файлу"
-                maxLength={500}
-                className="block w-full resize-y rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/40"
+          {/* Media */}
+          <div className="flex h-full flex-col items-center justify-center px-4 py-12 sm:px-16">
+            {current.type === 'video' ? (
+              <video
+                key={current.id}
+                src={url}
+                controls
+                playsInline
+                muted
+                className="max-h-[calc(100vh-220px)] max-w-full"
+                aria-label={titleText}
               />
-              {captionError && (
-                <p className="mt-1.5 text-xs text-[var(--danger-ink)]" role="alert">{captionError}</p>
-              )}
-              <div className="mt-2 flex items-center justify-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={saveCaption}
-                  disabled={captionSaving}
-                >
-                  {captionSaving ? 'Сохраняем…' : 'Сохранить'}
-                </Button>
-                <button
-                  type="button"
-                  onClick={cancelCaptionEdit}
-                  disabled={captionSaving}
-                  className="rounded-md border border-white/30 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/10 disabled:opacity-60"
-                >
-                  Отмена
-                </button>
-                <span className="ml-2 hidden text-[10px] text-white/40 sm:inline">
-                  ⌘↵ сохранить · Esc отмена
-                </span>
-              </div>
-            </div>
-          ) : (
-            <>
-              <p
-                className={[
-                  'text-base font-semibold text-white',
-                  showFilenameAsTitle ? 'opacity-70' : '',
-                  isLongCaption && !captionExpanded ? 'line-clamp-2' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                {titleText}
-              </p>
-              {isLongCaption && (
-                <button
-                  type="button"
-                  onClick={() => setCaptionExpanded((v) => !v)}
-                  className="mt-1 text-xs text-white/70 underline-offset-2 hover:text-white hover:underline"
-                  aria-expanded={captionExpanded}
-                >
-                  {captionExpanded ? 'Свернуть' : 'Подробнее'}
-                </button>
-              )}
-              <p className="mt-1 font-mono text-xs text-white/60 tabular">{meta}</p>
-            </>
-          )}
-        </div>
-      </div>
+            ) : (
+              <img
+                src={url}
+                alt={titleText}
+                className="max-h-[calc(100vh-220px)] max-w-full object-contain"
+              />
+            )}
 
-      {/* Hint */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/50">
-        <kbd className="mx-0.5 rounded border border-white/20 bg-white/5 px-1.5 py-0.5 font-mono">
-          ←
-        </kbd>
-        <kbd className="mx-0.5 rounded border border-white/20 bg-white/5 px-1.5 py-0.5 font-mono">
-          →
-        </kbd>{' '}
-        навигация ·{' '}
-        <kbd className="mx-0.5 rounded border border-white/20 bg-white/5 px-1.5 py-0.5 font-mono">
-          Esc
-        </kbd>{' '}
-        закрыть
-      </div>
-    </div>
+            {/* Caption + meta */}
+            <div className="mt-5 max-w-3xl text-center">
+              {captionEditing ? (
+                <div className="mx-auto max-w-xl">
+                  <textarea
+                    ref={captionRef}
+                    value={captionDraft}
+                    onChange={(e) => setCaptionDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                        e.preventDefault()
+                        saveCaption()
+                      }
+                    }}
+                    disabled={captionSaving}
+                    rows={3}
+                    placeholder="Подпись (опционально)"
+                    aria-label="Подпись к файлу"
+                    maxLength={500}
+                    className="block w-full resize-y rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/40"
+                  />
+                  {captionError && (
+                    <p className="mt-1.5 text-xs text-[var(--danger-ink)]" role="alert">{captionError}</p>
+                  )}
+                  <div className="mt-2 flex items-center justify-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={saveCaption}
+                      disabled={captionSaving}
+                    >
+                      {captionSaving ? 'Сохраняем…' : 'Сохранить'}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={cancelCaptionEdit}
+                      disabled={captionSaving}
+                      className="rounded-md border border-white/30 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/10 disabled:opacity-60"
+                    >
+                      Отмена
+                    </button>
+                    <span className="ml-2 hidden text-[10px] text-white/40 sm:inline">
+                      ⌘↵ сохранить · Esc отмена
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p
+                    className={[
+                      'text-base font-semibold text-white',
+                      showFilenameAsTitle ? 'opacity-70' : '',
+                      isLongCaption && !captionExpanded ? 'line-clamp-2' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
+                    {titleText}
+                  </p>
+                  {isLongCaption && (
+                    <button
+                      type="button"
+                      onClick={() => setCaptionExpanded((v) => !v)}
+                      className="mt-1 text-xs text-white/70 underline-offset-2 hover:text-white hover:underline"
+                      aria-expanded={captionExpanded}
+                    >
+                      {captionExpanded ? 'Свернуть' : 'Подробнее'}
+                    </button>
+                  )}
+                  <p className="mt-1 font-mono text-xs text-white/60 tabular">{meta}</p>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Hint */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/50">
+            <kbd className="mx-0.5 rounded border border-white/20 bg-white/5 px-1.5 py-0.5 font-mono">
+              ←
+            </kbd>
+            <kbd className="mx-0.5 rounded border border-white/20 bg-white/5 px-1.5 py-0.5 font-mono">
+              →
+            </kbd>{' '}
+            навигация ·{' '}
+            <kbd className="mx-0.5 rounded border border-white/20 bg-white/5 px-1.5 py-0.5 font-mono">
+              Esc
+            </kbd>{' '}
+            закрыть
+          </div>
+        </DialogPrimitive.Popup>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   )
 }
 
