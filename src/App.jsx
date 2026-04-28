@@ -28,11 +28,11 @@ import {
 import { isSuperadmin } from './lib/permissions.js'
 
 export default function App() {
-  const { user, login, logout, loading } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   if (!user) {
-    return <LoginPage onLogin={login} loading={loading} />
+    return <LoginPage />
   }
 
   return (
