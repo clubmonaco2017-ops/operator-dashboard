@@ -8,7 +8,6 @@ import {
   canDeleteTask,
   canSubmitReport,
   canTakeInProgress,
-  formatDeadlineRelative,
 } from '../../lib/tasks.js'
 import { TaskDescriptionCard } from './TaskDescriptionCard.jsx'
 import { TaskMetaSidebar } from './TaskMetaSidebar.jsx'
@@ -144,7 +143,6 @@ export function TaskDetailPanel({
 
   const status = row.effective_status || row.status
   const cancelled = status === 'cancelled'
-  const deadlineLabel = formatDeadlineRelative(row.deadline)
   const showTake = canTakeInProgress(user, row)
   const showSubmitJump = canSubmitReport(user, row)
   const showCancel = canCancelTask(user, row)
@@ -187,8 +185,8 @@ export function TaskDetailPanel({
       </div>
 
       {/* Header */}
-      <header className="px-6 pt-5 pb-4">
-        <div className="flex flex-wrap items-baseline gap-2">
+      <header className="flex flex-wrap items-start justify-between gap-3 px-6 pt-5 pb-4">
+        <div className="min-w-0 flex flex-wrap items-baseline gap-2">
           <h1
             className={[
               'truncate text-xl font-bold text-foreground',
@@ -202,25 +200,9 @@ export function TaskDetailPanel({
           </h1>
           <StatusPill status={status} />
         </div>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          От{' '}
-          <span className="font-medium text-foreground">
-            {row.created_by_name ?? '—'}
-          </span>{' '}
-          · Исполнитель{' '}
-          <span className="font-medium text-foreground">
-            {row.assigned_to_name ?? '—'}
-          </span>
-          {deadlineLabel && (
-            <>
-              {' '}· Дедлайн{' '}
-              <span className="font-medium text-foreground">{deadlineLabel}</span>
-            </>
-          )}
-        </p>
 
         {(showTake || showSubmitJump || showCancel || showDelete) && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             {showTake && (
               <Button
                 type="button"
@@ -367,14 +349,12 @@ function TaskDetailSkeleton() {
         <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
       </div>
       {/* Header */}
-      <header className="px-6 pt-5 pb-4">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <div className="h-7 w-3/5 animate-pulse rounded bg-muted" />
+      <header className="flex flex-wrap items-start justify-between gap-3 px-6 pt-5 pb-4">
+        <div className="min-w-0 flex flex-wrap items-baseline gap-2">
+          <div className="h-7 w-72 animate-pulse rounded bg-muted" />
           <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
         </div>
-        <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-muted/70" />
-        {/* Action row */}
-        <div className="mt-4 flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <div className="h-9 w-32 animate-pulse rounded-md bg-muted" />
         </div>
       </header>
