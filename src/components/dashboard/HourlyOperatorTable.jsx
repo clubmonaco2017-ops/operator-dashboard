@@ -113,8 +113,8 @@ export function HourlyOperatorTable({ rows, operatorMap, period, loading, error 
           {sorted.length} операторов
         </span>
       </div>
-      <div className="px-4 py-3 border-b border-border flex flex-wrap items-center gap-3">
-        <div className="w-56">
+      <div className="px-4 py-3 border-b border-border flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
+        <div className="w-full md:w-56">
           <SearchInput
             placeholder="Поиск оператора…"
             value={search}
@@ -123,25 +123,27 @@ export function HourlyOperatorTable({ rows, operatorMap, period, loading, error 
           />
         </div>
         {shifts.length > 1 && (
-          <Tabs value={shiftFilter} onValueChange={setShiftFilter}>
-            <TabsList>
-              {shifts.map((s) => (
-                <TabsTrigger key={s} value={s}>
-                  {s === 'ALL' ? (
-                    'Все смены'
-                  ) : (
-                    <>
-                      <span
-                        aria-hidden
-                        className={`inline-block h-2 w-2 rounded-full ${SHIFT_DOT[s] ?? 'bg-muted-foreground'}`}
-                      />
-                      {capitalizeShift(s)}
-                    </>
-                  )}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <div className="-mx-4 w-[calc(100%+2rem)] overflow-x-auto px-4 md:mx-0 md:w-auto md:overflow-visible md:px-0">
+            <Tabs value={shiftFilter} onValueChange={setShiftFilter}>
+              <TabsList>
+                {shifts.map((s) => (
+                  <TabsTrigger key={s} value={s}>
+                    {s === 'ALL' ? (
+                      'Все смены'
+                    ) : (
+                      <>
+                        <span
+                          aria-hidden
+                          className={`inline-block h-2 w-2 rounded-full ${SHIFT_DOT[s] ?? 'bg-muted-foreground'}`}
+                        />
+                        {capitalizeShift(s)}
+                      </>
+                    )}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
         )}
         <label className="ml-auto flex cursor-pointer items-center gap-2 text-xs text-foreground select-none">
           <Switch
