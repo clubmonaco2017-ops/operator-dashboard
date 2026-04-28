@@ -75,7 +75,7 @@ function SectionAnalyticsInner({ user }) {
           )}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <div className="lg:col-span-2">
-              <RevenueByHourChart rows={rows} period={period} />
+              <RevenueByHourChart rows={rows} prevRows={prevRows} period={period} />
             </div>
             <div>
               <TopOperatorsList rows={rows} operatorMap={operatorMap} period={period} />

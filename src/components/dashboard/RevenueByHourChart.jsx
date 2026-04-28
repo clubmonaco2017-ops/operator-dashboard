@@ -16,19 +16,66 @@ import { BarChart3, ChevronDown } from 'lucide-react'
 const fmt = (n) =>
   Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-export function RevenueByHourChart({ rows, period }) {
+function buildHourlyTotals(rows, hours) {
+  return hours.map((h) => ({
+    hour: `${String(h).padStart(2, '0')}:00`,
+    revenue: rows.reduce((s, op) => s + (op[`h${h}`] || 0), 0),
+  }))
+}
+
+function lastHourWithData(totals) {
+  for (let i = totals.length - 1; i >= 0; i--) {
+    if (totals[i].revenue > 0) return i
+  }
+  return -1
+}
+
+// eslint-disable-next-line no-unused-vars
+function comparisonLabel(preset) {
+  switch (preset) {
+    case 'today': return 'vs вчера'
+    case 'yesterday': return 'vs позавчера'
+    case 'week': return 'vs прошлая неделя'
+    case 'month': return 'vs прошлый месяц'
+    default: return 'vs предыдущий период'
+  }
+}
+
+// eslint-disable-next-line no-unused-vars
+function previousLabelFor(preset) {
+  switch (preset) {
+    case 'today': return 'вчера'
+    case 'yesterday': return 'позавчера'
+    case 'week': return 'прошлая неделя'
+    case 'month': return 'прошлый месяц'
+    default: return 'предыдущий период'
+  }
+}
+
+export function RevenueByHourChart({ rows, prevRows = [], period }) {
   const [chartType, setChartType] = useState('bar')
   const [expanded, setExpanded] = useState(true)
 
   const [hMin, hMax] = period.hours
-  const hours = Array.from({ length: 24 }, (_, i) => i).filter((h) => h >= hMin && h <= hMax)
+  const allHours = Array.from({ length: 24 }, (_, i) => i).filter((h) => h >= hMin && h <= hMax)
 
-  const hourlyTotals = hours
-    .map((h) => ({
-      hour: `${String(h).padStart(2, '0')}:00`,
-      revenue: rows.reduce((s, op) => s + (op[`h${h}`] || 0), 0),
-    }))
-    .filter((x) => x.revenue > 0)
+  const currentRaw = buildHourlyTotals(rows, allHours)
+  const prevRaw = buildHourlyTotals(prevRows, allHours)
+
+  const hasCurrentData = currentRaw.some((x) => x.revenue > 0)
+  const isToday = period.preset === 'today'
+  const lastIdx = isToday ? lastHourWithData(currentRaw) : currentRaw.length - 1
+
+  const hourlyTotals = hasCurrentData
+    ? currentRaw
+        .slice(0, lastIdx + 1)
+        .map((c, i) => ({
+          hour: c.hour,
+          revenue: c.revenue,
+          prevRevenue: prevRaw[i]?.revenue ?? null,
+        }))
+        .filter((x) => x.revenue > 0)
+    : []
 
   const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
   const gridColor = isDark ? '#334155' : '#e2e8f0'
