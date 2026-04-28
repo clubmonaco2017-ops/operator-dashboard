@@ -2,7 +2,7 @@
 // scripts/seed-test-users.mjs
 //
 // Idempotent. Creates / refreshes three test users used by tests/security/.
-// userA: regular operator, has create_clients permission
+// userA: regular operator, has list_clients + create_clients permissions
 // userB: regular operator, no special permissions
 // userC: regular operator (deactivation target in tests)
 // Each user has a Supabase Auth row with a known password.
@@ -11,7 +11,10 @@ import { createClient } from '@supabase/supabase-js';
 
 const URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!URL || !SERVICE_ROLE) { console.error('Missing env'); process.exit(1); }
+if (!URL || !SERVICE_ROLE) {
+  console.error('Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY before running.');
+  process.exit(1);
+}
 
 // dashboard_users.password_hash is NOT NULL with no default.
 // Seed users authenticate exclusively via Supabase Auth (signInWithPassword),
@@ -28,7 +31,8 @@ const FIXTURES = [
 ];
 
 async function findOrCreateAuthUser({ email, password }) {
-  const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (listErr) throw listErr;
   const existing = list.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
   if (existing) {
     await admin.auth.admin.updateUserById(existing.id, { password });
@@ -42,7 +46,10 @@ async function findOrCreateAuthUser({ email, password }) {
 async function findOrCreateDashboardUser({ email, role, authUserId }) {
   const { data: existing } = await admin.from('dashboard_users').select('id').eq('email', email).maybeSingle();
   if (existing) {
-    await admin.from('dashboard_users').update({ auth_user_id: authUserId, is_active: true, role }).eq('id', existing.id);
+    const { error: updateErr } = await admin.from('dashboard_users')
+      .update({ auth_user_id: authUserId, is_active: true, role })
+      .eq('id', existing.id);
+    if (updateErr) throw updateErr;
     return existing.id;
   }
   const { data: created, error } = await admin
@@ -66,9 +73,12 @@ async function findOrCreateDashboardUser({ email, role, authUserId }) {
 }
 
 async function setPermissions(dashboardUserId, perms) {
-  await admin.from('user_permissions').delete().eq('user_id', dashboardUserId);
+  const { error: delErr } = await admin.from('user_permissions').delete().eq('user_id', dashboardUserId);
+  if (delErr) throw delErr;
   if (perms.length > 0) {
-    await admin.from('user_permissions').insert(perms.map((p) => ({ user_id: dashboardUserId, permission: p })));
+    const { error: insErr } = await admin.from('user_permissions')
+      .insert(perms.map((p) => ({ user_id: dashboardUserId, permission: p })));
+    if (insErr) throw insErr;
   }
 }
 
