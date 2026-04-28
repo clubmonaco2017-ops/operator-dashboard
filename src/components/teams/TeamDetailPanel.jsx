@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTeam } from '../../hooks/useTeam.js'
 import { useTeamActions } from '../../hooks/useTeamActions.js'
+import { useSectionTitle } from '../../hooks/useSectionTitle.jsx'
 import { canEditTeam, formatLeadRole } from '../../lib/teams.js'
 import { TeamMembersTab } from './TeamMembersTab.jsx'
 import { TeamClientsTab } from './TeamClientsTab.jsx'
@@ -30,6 +31,7 @@ const TAB_LABELS = {
 export function TeamDetailPanel({ callerId, user, teamId, siblings = [], onChanged, onBack }) {
   const navigate = useNavigate()
   const { row, loading, error, reload } = useTeam(callerId, teamId)
+  useSectionTitle(row?.name || 'Команда', { backTo: '/teams' })
   const { archiveTeam, restoreTeam } = useTeamActions(callerId)
 
   const [tab, setTab] = useState('members')

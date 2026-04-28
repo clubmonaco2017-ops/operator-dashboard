@@ -5,6 +5,7 @@ import { useTeamActions } from '../../hooks/useTeamActions.js'
 import { validateTeamName, formatLeadRole } from '../../lib/teams.js'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 /**
  * Slide-out форма создания команды. Минимальная — два поля:
@@ -22,6 +23,7 @@ import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/com
  * @param {function} props.onCreated — (newTeamId) => void
  */
 export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
+  const isMobile = useIsMobile()
   const { createTeam } = useTeamActions(callerId)
 
   const [name, setName] = useState('')
@@ -119,8 +121,8 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
   return (
     <Sheet open onOpenChange={(next) => !next && !submitting && onClose()}>
       <SheetContent
-        side="right"
-        className="flex w-full flex-col gap-0 sm:max-w-[440px]"
+        side={isMobile ? 'bottom' : 'right'}
+        className={`flex w-full flex-col gap-0 sm:max-w-[440px]${isMobile ? ' h-[90vh]' : ''}`}
       >
         <SheetHeader className="border-b border-border px-6 py-5">
           <SheetTitle className="text-lg font-bold text-foreground">

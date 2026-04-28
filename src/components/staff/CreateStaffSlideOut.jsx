@@ -5,6 +5,7 @@ import { defaultPermissions } from '../../lib/defaultPermissions.js'
 import { permissionGroups } from '../../lib/permissionGroups.js'
 import { RefCodePreview } from './RefCodePreview.jsx'
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const ROLES = [
   { value: 'admin',     label: 'Администратор' },
@@ -14,6 +15,7 @@ const ROLES = [
 ]
 
 export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
+  const isMobile = useIsMobile()
   const [role, setRole] = useState('moderator')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -91,8 +93,8 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
   return (
     <Sheet open onOpenChange={(next) => !next && !submitting && onClose()}>
       <SheetContent
-        side="right"
-        className="flex w-full flex-col gap-0 sm:max-w-[480px]"
+        side={isMobile ? 'bottom' : 'right'}
+        className={`flex w-full flex-col gap-0 sm:max-w-[480px]${isMobile ? ' h-[90vh]' : ''}`}
       >
         <SheetHeader className="border-b border-border px-6 py-5">
           <SheetTitle className="text-lg font-bold text-foreground">

@@ -4,8 +4,10 @@ import { isSuperadmin } from '../lib/permissions.js'
 import { useDeletionRequests } from '../hooks/useDeletionRequests.js'
 import { ApprovalReviewModal } from '../components/staff/ApprovalReviewModal.jsx'
 import { Button } from '@/components/ui/button'
+import { useSectionTitle } from '../hooks/useSectionTitle.jsx'
 
 export function NotificationsPage() {
+  useSectionTitle('Оповещения')
   const { user } = useAuth()
   const { rows, loading, error, reload } = useDeletionRequests(user?.id, 'pending')
   const [reviewing, setReviewing] = useState(null)

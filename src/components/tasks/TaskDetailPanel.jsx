@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabaseClient.js'
 import { useTask } from '../../hooks/useTask.js'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
+import { useSectionTitle } from '../../hooks/useSectionTitle.jsx'
 import {
   canCancelTask,
   canDeleteTask,
@@ -40,7 +41,14 @@ export function TaskDetailPanel({
   onDeleted,
 }) {
   const navigate = useNavigate()
+  const location = useLocation()
+  const taskBox = location.pathname.startsWith('/tasks/all')
+    ? '/tasks/all'
+    : location.pathname.startsWith('/tasks/outbox')
+      ? '/tasks/outbox'
+      : '/tasks'
   const { row, loading, error, reload } = useTask(callerId, taskId)
+  useSectionTitle(row?.title || 'Задача', { backTo: taskBox })
   const actions = useTaskActions(callerId)
 
   const [cancelOpen, setCancelOpen] = useState(false)

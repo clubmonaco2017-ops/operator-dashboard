@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { supabase } from '../../supabaseClient'
 import { useStaff } from '../../hooks/useStaff.js'
+import { useSectionTitle } from '../../hooks/useSectionTitle.jsx'
 import { hasPermission, isSuperadmin } from '../../lib/permissions.js'
 import { validateFile, FILE_LIMITS } from '../../lib/clients.js'
 import { ChangePasswordModal } from './ChangePasswordModal.jsx'
@@ -53,6 +54,7 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
   const { pathname } = useLocation()
   const activeTab = tabFromPathname(pathname)
   const { row, loading, error, reload } = useStaff(callerId, refCode)
+  useSectionTitle(row?.alias || row?.first_name || 'Сотрудник', { backTo: '/staff' })
   const [pwOpen, setPwOpen] = useState(false)
   const [delOpen, setDelOpen] = useState(false)
   const [delSubmitting, setDelSubmitting] = useState(false)
