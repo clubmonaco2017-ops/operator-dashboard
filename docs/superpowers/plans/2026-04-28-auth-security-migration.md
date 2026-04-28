@@ -1628,7 +1628,7 @@ PR boundary: own PR. Apply **§B** to:
 
 ### Task 7.1: Bucket migration
 
-**Files:** Create `db/migrations/20260428_40_rpc_client_media_auth.sql`.
+**Files:** Create `db/migrations/20260428_41_rpc_client_media_auth.sql`.
 
 - [ ] **Step 1–3: Same flow as Task 5.1** — read source bodies, emit migration, apply on dev.
 
@@ -1665,7 +1665,7 @@ Likely: `src/clients/PhotoGalleryTab.jsx`, `src/clients/VideoGalleryTab.jsx`, `s
 
 ### Task 8.1: Bucket migration
 
-**Files:** Create `db/migrations/20260428_41_rpc_tasks_crud_auth.sql`.
+**Files:** Create `db/migrations/20260428_42_rpc_tasks_crud_auth.sql`.
 
 - [ ] Same flow.
 
@@ -1710,7 +1710,7 @@ Note: `src/components/dashboard/cards/OverdueAllCard.jsx:20` calls `count_overdu
 
 ### Task 9.1: Bucket migration
 
-**Files:** Create `db/migrations/20260428_42_rpc_teams_crud_auth.sql`.
+**Files:** Create `db/migrations/20260428_43_rpc_teams_crud_auth.sql`.
 
 ### Task 9.2: Sweep callsites
 
@@ -1734,7 +1734,7 @@ Likely: `src/teams/**`, `src/hooks/useTeam*.js`, `src/hooks/useTeamMembershipsMa
 
 ### Task 10.1: Bucket migration
 
-**Files:** `db/migrations/20260428_43_rpc_staff_auth.sql`.
+**Files:** `db/migrations/20260428_44_rpc_staff_auth.sql`.
 
 > `change_staff_password` is special: it currently re-uses `pgcrypto.crypt()` to set `dashboard_users.password_hash`. After Stage 14's `auth_login` drop, `password_hash` is unused; this RPC must instead call into Supabase Auth admin API to set the password — but Edge Functions / SQL can't reach `auth.admin` directly. **Resolution:** convert this RPC into a thin frontend flow: an admin who wants to reset a user's password redirects the user via "send recovery email" UI button → calls `supabase.auth.resetPasswordForEmail` (or service-role `generateLink` from an Edge Function). Drop the SQL RPC entirely.
 >
@@ -1764,7 +1764,7 @@ For `change_staff_password` callsite (likely `src/staff/ChangePasswordModal.jsx`
 
 ### Task 11.1: Bucket migration
 
-**Files:** `db/migrations/20260428_44_rpc_deletion_auth.sql`.
+**Files:** `db/migrations/20260428_45_rpc_deletion_auth.sql`.
 
 ### Task 11.2: Sweep callsites
 
@@ -1786,7 +1786,7 @@ Likely: `src/notifications/*`, `src/clients/RequestDeletionModal.jsx`, related a
 
 ### Task 12.1: Bucket migration
 
-**Files:** `db/migrations/20260428_45_rpc_curatorship_auth.sql`.
+**Files:** `db/migrations/20260428_46_rpc_curatorship_auth.sql`.
 
 ### Task 12.2: Sweep callsites
 
@@ -1915,7 +1915,7 @@ PR boundary: own PR.
 ### Task 14.1: Anon-grant audit migration
 
 **Files:**
-- Create: `db/migrations/20260428_46_anon_grant_audit.sql`
+- Create: `db/migrations/20260428_47_anon_grant_audit.sql`
 
 - [ ] **Step 1: Discover any remaining anon grants**
 
@@ -1956,7 +1956,7 @@ $$;
 - [ ] **Step 3: Apply to dev**
 
 ```bash
-psql "$DEV_DB_URL" -f db/migrations/20260428_46_anon_grant_audit.sql
+psql "$DEV_DB_URL" -f db/migrations/20260428_47_anon_grant_audit.sql
 ```
 
 Expected: zero or a few NOTICE lines listing what was revoked.
@@ -1968,7 +1968,7 @@ Expected: empty result — no anon grants remain.
 ### Task 14.2: Drop `auth_login`
 
 **Files:**
-- Create: `db/migrations/20260428_47_drop_auth_login.sql`
+- Create: `db/migrations/20260428_48_drop_auth_login.sql`
 
 - [ ] **Step 1: Write migration**
 
@@ -1986,7 +1986,7 @@ COMMENT ON COLUMN public.dashboard_users.password_hash IS
 - [ ] **Step 2: Apply to dev**
 
 ```bash
-psql "$DEV_DB_URL" -f db/migrations/20260428_47_drop_auth_login.sql
+psql "$DEV_DB_URL" -f db/migrations/20260428_48_drop_auth_login.sql
 ```
 
 ### Task 14.3: Final invariant checks
@@ -2046,7 +2046,7 @@ Expected: 237/237 (or whatever the new baseline is — was 235 + 2 SetPasswordPa
 - [ ] **Step 1: Commit**
 
 ```bash
-git add db/migrations/20260428_46_anon_grant_audit.sql db/migrations/20260428_47_drop_auth_login.sql
+git add db/migrations/20260428_47_anon_grant_audit.sql db/migrations/20260428_48_drop_auth_login.sql
 git commit -m "feat(auth): cleanup — anon-grant audit + drop auth_login
 
 Final SQL migration of the auth security migration. Defence-in-depth
@@ -2117,14 +2117,14 @@ psql "$PROD_DB_URL" -f db/migrations/20260428_36_current_dashboard_user_id.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_37_get_current_user_profile.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_39_rpc_permissions_attributes_auth.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_40_rpc_clients_crud_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_40_rpc_client_media_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_41_rpc_tasks_crud_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_42_rpc_teams_crud_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_43_rpc_staff_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_44_rpc_deletion_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_45_rpc_curatorship_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_46_anon_grant_audit.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_47_drop_auth_login.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_41_rpc_client_media_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_42_rpc_tasks_crud_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_43_rpc_teams_crud_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_44_rpc_staff_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_45_rpc_deletion_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_46_rpc_curatorship_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_47_anon_grant_audit.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_48_drop_auth_login.sql
 ```
 
 Each must complete without error. If any fail, **STOP** — do not proceed; revert applied migrations from history and abort cutover.

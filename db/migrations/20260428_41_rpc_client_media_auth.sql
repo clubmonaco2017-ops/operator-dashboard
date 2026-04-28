@@ -4,7 +4,9 @@
 --   list_client_media, add_client_media, update_client_media,
 --   reorder_client_media, delete_client_media
 --
--- All 5 RPCs: REVOKE anon EXECUTE, GRANT to authenticated only.
+-- Anon grant from the original migration 15 (TO anon, authenticated) is
+-- dropped implicitly when DROP FUNCTION removes the old signature; the
+-- new GRANT below grants only to authenticated. No explicit REVOKE needed.
 -- Permission-fail RAISEs use errcode = '42501' for stable security-test signal.
 --
 -- Notes:

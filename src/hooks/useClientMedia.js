@@ -4,7 +4,11 @@ import { supabase } from '../supabaseClient'
 /**
  * Список media клиента (фото или видео) + actions для add/update/reorder/delete.
  *
- * @param {number|null} callerId
+ * @param {number|null} callerId - Hydration guard only. The RPCs derive
+ *   identity server-side via current_dashboard_user_id(). This parameter
+ *   is checked to prevent firing RPCs before useAuth has resolved the
+ *   user — passing null causes the read effect to skip and the
+ *   mutating callbacks to throw 'not authenticated'.
  * @param {number|null} clientId
  * @param {'photo'|'video'} type
  * @param {object} [opts]
