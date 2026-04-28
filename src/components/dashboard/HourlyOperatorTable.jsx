@@ -236,7 +236,7 @@ export function HourlyOperatorTable({ rows, operatorMap, period, loading, error 
                     <td className={`sticky left-0 bg-card px-3 py-2 whitespace-nowrap ${borderClass}`}>
                       <div className="flex items-center gap-2">
                         {dotClass && <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotClass}`} />}
-                        <span className="font-medium text-foreground">{name}</span>
+                        <span className="font-medium text-foreground truncate max-w-[180px] md:max-w-none" title={name}>{name}</span>
                       </div>
                       {shift && <span className="text-[10px] text-muted-foreground ml-4">{shift}</span>}
                     </td>
