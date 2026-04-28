@@ -16,6 +16,7 @@ import {
 import { CreateClientCloseConfirm } from './CreateClientCloseConfirm.jsx'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const EMPTY_FORM = {
   name: '',
@@ -42,6 +43,7 @@ const EMPTY_FORM = {
  */
 export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
   const { createClient } = useClientActions(callerId)
   const { rows: platforms, loading: platformsLoading } = usePlatforms()
   const [form, setForm] = useState(EMPTY_FORM)
@@ -183,8 +185,8 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
     <>
       <Sheet open onOpenChange={(next) => !next && attemptClose()}>
         <SheetContent
-          side="right"
-          className="flex w-full flex-col gap-0 sm:max-w-[480px]"
+          side={isMobile ? 'bottom' : 'right'}
+          className={`flex w-full flex-col gap-0 sm:max-w-[480px]${isMobile ? ' h-[90vh]' : ''}`}
         >
           <SheetHeader className="border-b border-border px-6 py-5">
             <SheetTitle className="text-lg font-bold text-foreground">

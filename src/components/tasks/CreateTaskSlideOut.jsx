@@ -5,6 +5,7 @@ import { validateTaskTitle } from '../../lib/tasks.js'
 import { AssigneeSelector } from './AssigneeSelector.jsx'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { useIsMobile } from '@/hooks/use-mobile'
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,7 @@ import {
  * @param {(newTaskId:number) => void} props.onCreated
  */
 export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
+  const isMobile = useIsMobile()
   const { createTask } = useTaskActions(callerId)
 
   const [title, setTitle] = useState('')
@@ -126,8 +128,8 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
     <>
       <Sheet open onOpenChange={(next) => !next && attemptClose()}>
         <SheetContent
-          side="right"
-          className="flex w-full flex-col gap-0 sm:max-w-[480px]"
+          side={isMobile ? 'bottom' : 'right'}
+          className={`flex w-full flex-col gap-0 sm:max-w-[480px]${isMobile ? ' h-[90vh]' : ''}`}
         >
           <SheetHeader className="border-b border-border px-6 py-5">
             <SheetTitle className="text-lg font-bold text-foreground">
