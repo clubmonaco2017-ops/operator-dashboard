@@ -28,7 +28,6 @@ export function normalizeProfile(row) {
   }
 }
 
-// Fix 5: context default shape matches provider value (including authError)
 const AuthContext = createContext({
   session: null,
   user: null,
@@ -36,9 +35,6 @@ const AuthContext = createContext({
   authError: null,
   signIn: async () => ({ error: null }),
   signOut: async () => {},
-  // Legacy aliases
-  login: async () => ({ success: false, error: 'no provider' }),
-  logout: async () => {},
 })
 
 export function AuthProvider({ children }) {
@@ -114,22 +110,8 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }, [])
 
-  // Legacy aliases — consumed by App.jsx (login/logout) until Stage 5+ sweep.
-  // login() wraps signIn and returns the { success, error } shape LoginPage expects.
-  const login = useCallback(async (email, password) => {
-    const { error } = await signIn(email, password)
-    if (error) {
-      return { success: false, error: error.message }
-    }
-    return { success: true }
-  }, [signIn])
-
-  const logout = useCallback(async () => {
-    await signOut()
-  }, [signOut])
-
   return (
-    <AuthContext.Provider value={{ session, user, loading, authError, signIn, signOut, login, logout }}>
+    <AuthContext.Provider value={{ session, user, loading, authError, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   )

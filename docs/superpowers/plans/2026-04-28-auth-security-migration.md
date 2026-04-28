@@ -288,13 +288,14 @@ psql "$DEV_DB_URL" -f db/migrations/20260428_36_current_dashboard_user_id.sql
 
 Expected: `CREATE FUNCTION` / `REVOKE` / `GRANT` / `COMMENT`.
 
-- [ ] **Step 3: Sanity-check anon path**
+- [ ] **Step 3: Sanity-check privileges via `has_function_privilege`**
 
 ```bash
-psql "$DEV_DB_URL" -c "SET ROLE anon; SELECT public.current_dashboard_user_id(); RESET ROLE;"
+psql "$DEV_DB_URL" -c "SELECT has_function_privilege('anon', 'public.current_dashboard_user_id()', 'EXECUTE');"
+psql "$DEV_DB_URL" -c "SELECT has_function_privilege('authenticated', 'public.current_dashboard_user_id()', 'EXECUTE');"
 ```
 
-Expected: returns NULL (anon has no `auth.uid()`). Note: `SET ROLE anon` requires `psql` connected as superuser; if it errors out with "permission denied", the function is correctly defined — proceed.
+Expected: first query returns `f` (false — anon revoked), second returns `t` (true — authenticated granted). This is more reliable than `SET ROLE anon` because it works as superuser without needing role-switch privileges.
 
 - [ ] **Step 4: Commit**
 
