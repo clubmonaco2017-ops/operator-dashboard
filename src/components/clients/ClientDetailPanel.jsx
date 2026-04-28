@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch'
 import { supabase } from '../../supabaseClient'
 import { useClient } from '../../hooks/useClient.js'
 import { useClientActions } from '../../hooks/useClientActions.js'
+import { useSectionTitle } from '../../hooks/useSectionTitle.jsx'
 import { initials, validateFile, FILE_LIMITS } from '../../lib/clients.js'
 import { ProfileTab } from './ProfileTab.jsx'
 import { PhotoGalleryTab } from './PhotoGalleryTab.jsx'
@@ -34,6 +35,7 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
   const navigate = useNavigate()
   const { archiveClient, restoreClient, updateClient } = useClientActions(callerId)
   const { row, loading, error, reload } = useClient(callerId, clientId)
+  useSectionTitle(row?.name || 'Клиент', { backTo: '/clients' })
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [statusBusy, setStatusBusy] = useState(false)
   const avatarInputRef = useRef(null)
