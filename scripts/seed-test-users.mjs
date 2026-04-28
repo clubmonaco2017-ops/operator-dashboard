@@ -13,6 +13,12 @@ const URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!URL || !SERVICE_ROLE) { console.error('Missing env'); process.exit(1); }
 
+// dashboard_users.password_hash is NOT NULL with no default.
+// Seed users authenticate exclusively via Supabase Auth (signInWithPassword),
+// NOT via the legacy auth_login RPC, so this value is never read at runtime.
+// We use a literal bcrypt-format stub purely to satisfy the NOT NULL constraint.
+const SEED_PASSWORD_HASH_STUB = '$2a$04$VTlDOq/bqe7KK5j4C1V9/.j6NQv.QXl1j5J8Yku5gB5TzmA1.SqTu';
+
 const admin = createClient(URL, SERVICE_ROLE, { auth: { autoRefreshToken: false, persistSession: false } });
 
 const FIXTURES = [
@@ -41,7 +47,18 @@ async function findOrCreateDashboardUser({ email, role, authUserId }) {
   }
   const { data: created, error } = await admin
     .from('dashboard_users')
-    .insert({ email, role, is_active: true, auth_user_id: authUserId, first_name: email.split('@')[0], last_name: 'Test' })
+    .insert({
+      email,
+      role,
+      is_active: true,
+      auth_user_id: authUserId,
+      first_name: email.split('@')[0],
+      last_name: 'Test',
+      password_hash: SEED_PASSWORD_HASH_STUB,
+      // permissions is a legacy jsonb column (NOT NULL in some deployments);
+      // supply an empty object to satisfy any such constraint.
+      permissions: {},
+    })
     .select('id')
     .single();
   if (error) throw error;
