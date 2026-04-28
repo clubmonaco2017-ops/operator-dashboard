@@ -26,6 +26,11 @@ const SHIFT_DOT = {
   НОЧНАЯ: 'bg-blue-500',
 }
 
+const capitalizeShift = (s) =>
+  typeof s === 'string' && s.length > 0
+    ? s.charAt(0) + s.slice(1).toLowerCase()
+    : s
+
 const opName = (rc, operatorMap) => operatorMap[rc]?.name || rc
 const opShift = (rc, operatorMap) => operatorMap[rc]?.shift || ''
 
@@ -121,7 +126,17 @@ export function HourlyOperatorTable({ rows, operatorMap, period, loading, error 
             <TabsList>
               {shifts.map((s) => (
                 <TabsTrigger key={s} value={s}>
-                  {s === 'ALL' ? 'Все смены' : s}
+                  {s === 'ALL' ? (
+                    'Все смены'
+                  ) : (
+                    <>
+                      <span
+                        aria-hidden
+                        className={`inline-block h-2 w-2 rounded-full ${SHIFT_DOT[s] ?? 'bg-muted-foreground'}`}
+                      />
+                      {capitalizeShift(s)}
+                    </>
+                  )}
                 </TabsTrigger>
               ))}
             </TabsList>
