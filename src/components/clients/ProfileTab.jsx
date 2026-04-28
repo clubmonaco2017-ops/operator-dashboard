@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Pencil, Lock, Loader2 } from 'lucide-react'
+import { Pencil, Lock, Loader2, Image as ImageIcon, Upload, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { supabase } from '../../supabaseClient'
 import { useClientActions } from '../../hooks/useClientActions.js'
 import { usePlatforms } from '../../hooks/usePlatforms.js'
 import { useAgencies } from '../../hooks/useAgencies.js'
-import { validateAlias, validateName, validateTableauId, formatFileSize } from '../../lib/clients.js'
+import { validateAlias, validateName, validateTableauId, formatFileSize, validateFile, FILE_LIMITS } from '../../lib/clients.js'
 
 /**
  * Контент таба «Профиль» — три карточки: Описание, Поля профиля, Файлы профиля.
@@ -194,32 +195,132 @@ function ProfileFieldsCard({ callerId, client, onChanged }) {
 // ============================================================================
 
 function ProfileFilesCard({ callerId, client, onChanged }) {
+  const { updateClient } = useClientActions(callerId)
+  const fileInputRef = useRef(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+  const [dragOver, setDragOver] = useState(false)
+
+  async function handleFile(file) {
+    if (!file) return
+    setError(null)
+    const v = validateFile(file, 'avatar')
+    if (!v.valid) {
+      setError(v.error)
+      return
+    }
+    setBusy(true)
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+      const path = `client-${client.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('client-avatars')
+        .upload(path, file, { upsert: false, contentType: file.type })
+      if (uploadErr) throw new Error(uploadErr.message)
+      const { data } = supabase.storage.from('client-avatars').getPublicUrl(path)
+      await updateClient(client.id, { avatarUrl: data.publicUrl })
+      onChanged?.()
+    } catch (e) {
+      setError(e.message || String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function onDrop(e) {
+    e.preventDefault()
+    setDragOver(false)
+    if (busy) return
+    const f = e.dataTransfer.files?.[0]
+    if (f) handleFile(f)
+  }
+
   return (
     <Card>
       <CardHeader title="Файлы профиля" />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={FILE_LIMITS.avatar.mimeTypes.join(',')}
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0]
+          handleFile(f)
+          e.target.value = ''
+        }}
+      />
       {client.avatar_url ? (
         <div className="flex items-center gap-4 rounded-lg border border-border p-3">
           <img src={client.avatar_url} alt="" className="h-14 w-14 rounded-lg object-cover" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-foreground">
-              avatar
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Не попадает в фото-галерею
-            </p>
+            <p className="truncate text-sm font-medium text-foreground">avatar</p>
+            <p className="text-xs text-muted-foreground">Не попадает в фото-галерею</p>
+            {error && (
+              <p className="mt-1 text-xs text-[var(--danger-ink)]" role="alert">
+                {error}
+              </p>
+            )}
           </div>
           <button
             type="button"
-            onClick={() => alert('Замена аватара — Stage 8')}
-            className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-[var(--primary-soft)]"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={busy}
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-[var(--primary-soft)] disabled:opacity-50"
           >
-            Заменить
+            {busy && <Loader2 size={12} className="animate-spin" />}
+            {busy ? 'Загрузка…' : 'Заменить'}
           </button>
         </div>
       ) : (
-        <p className="text-sm italic text-[var(--fg4)]">
-          Аватар не загружен.
-        </p>
+        <div
+          onDragOver={(e) => {
+            e.preventDefault()
+            if (!busy) setDragOver(true)
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDrop}
+          onClick={() => !busy && fileInputRef.current?.click()}
+          className={[
+            'flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 transition-colors',
+            dragOver
+              ? 'border-primary bg-[var(--primary-soft)]/40'
+              : error
+                ? 'border-[var(--danger)]'
+                : 'border-border-strong hover:border-[var(--fg4)]',
+            busy && 'cursor-not-allowed opacity-60',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-muted text-[var(--fg4)]">
+            <ImageIcon size={22} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground">Аватар</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              PNG / JPG · до 5 МБ · не попадает в фото-галерею
+            </p>
+            <p className="text-xs text-[var(--fg4)]">Нажмите или перетащите файл</p>
+            {error && (
+              <p className="mt-1 text-xs text-[var(--danger-ink)]" role="alert">
+                {error}
+              </p>
+            )}
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (!busy) fileInputRef.current?.click()
+            }}
+            disabled={busy}
+          >
+            {busy ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+            {busy ? 'Загрузка…' : 'Загрузить'}
+          </Button>
+        </div>
       )}
     </Card>
   )
@@ -353,7 +454,7 @@ function InlineSelectField({ label, required, value, options, onSave, onChanged 
   return (
     <FieldShell label={label} required={required} error={error}>
       <div className="relative">
-        <select value={draft} onChange={onChange} disabled={saving} className={inputCls(!!error) + ' cursor-pointer'}>
+        <select value={draft} onChange={onChange} disabled={saving} className={inputCls(!!error) + ' cursor-pointer appearance-none pr-9'}>
           <option value="">— не указано —</option>
           {options.map((o) => (
             <option key={o.value} value={o.value}>
@@ -361,11 +462,13 @@ function InlineSelectField({ label, required, value, options, onSave, onChanged 
             </option>
           ))}
         </select>
-        {saving && (
-          <span className="absolute right-8 top-1/2 -translate-y-1/2 text-blue-600">
-            <Loader2 size={12} className="animate-spin" />
-          </span>
-        )}
+        <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--fg4)]">
+          {saving ? (
+            <Loader2 size={14} className="animate-spin text-blue-600" />
+          ) : (
+            <ChevronDown size={14} />
+          )}
+        </span>
       </div>
     </FieldShell>
   )
@@ -410,7 +513,7 @@ function Card({ children }) {
 
 function CardHeader({ title, action }) {
   return (
-    <header className="mb-3 flex items-center justify-between">
+    <header className="-mx-5 -mt-5 mb-5 flex items-center justify-between gap-2 border-b border-border px-5 py-3">
       <h3 className="label-caps">
         {title}
       </h3>

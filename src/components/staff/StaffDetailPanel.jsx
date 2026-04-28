@@ -1,10 +1,12 @@
-import { useState } from 'react'
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Loader2, Plus } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Switch } from '@/components/ui/switch'
 import { supabase } from '../../supabaseClient'
 import { useStaff } from '../../hooks/useStaff.js'
 import { hasPermission, isSuperadmin } from '../../lib/permissions.js'
+import { validateFile, FILE_LIMITS } from '../../lib/clients.js'
 import { ChangePasswordModal } from './ChangePasswordModal.jsx'
 import { DeleteRequestModal } from './DeleteRequestModal.jsx'
 
@@ -55,10 +57,50 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
   const [delOpen, setDelOpen] = useState(false)
   const [delSubmitting, setDelSubmitting] = useState(false)
   const [delError, setDelError] = useState(null)
+  const avatarInputRef = useRef(null)
+  const [avatarBusy, setAvatarBusy] = useState(false)
+  const [avatarError, setAvatarError] = useState(null)
 
   function bothChanged() {
     reload()
     onChanged?.()
+  }
+
+  const canEditAvatar = row && (user.id === row.id || hasPermission(user, 'create_users'))
+
+  async function uploadAvatar(file) {
+    if (!file) return
+    setAvatarError(null)
+    const v = validateFile(file, 'avatar')
+    if (!v.valid) {
+      setAvatarError(v.error)
+      return
+    }
+    setAvatarBusy(true)
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+      const path = `staff-${row.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('staff-avatars')
+        .upload(path, file, { upsert: false, contentType: file.type })
+      if (uploadErr) throw new Error(uploadErr.message)
+      const { data } = supabase.storage.from('staff-avatars').getPublicUrl(path)
+      const { error: rpcErr } = await supabase.rpc('update_staff_profile', {
+        p_caller_id: user.id,
+        p_user_id: row.id,
+        p_first_name: row.first_name,
+        p_last_name: row.last_name,
+        p_alias: row.alias,
+        p_email: row.email,
+        p_avatar_url: data.publicUrl,
+      })
+      if (rpcErr) throw new Error(rpcErr.message)
+      bothChanged()
+    } catch (e) {
+      setAvatarError(e.message || String(e))
+    } finally {
+      setAvatarBusy(false)
+    }
   }
 
   async function submitDeletion(reason) {
@@ -109,22 +151,28 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="flex items-center gap-2 border-b border-border bg-card px-4 py-3 sm:px-6">
-        <button
-          type="button"
-          onClick={() => onBack?.()}
-          className="flex items-center gap-1 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground sm:hidden"
-          aria-label="Назад к списку сотрудников"
+      <header className="flex items-center justify-between gap-3 border-b border-border bg-card px-4 py-3 sm:px-6">
+        <nav
+          className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground"
+          aria-label="Хлебные крошки"
         >
-          <ChevronLeft size={18} />
-        </button>
-        <Link
-          to="/staff"
-          className="hidden items-center gap-1 rounded-md p-1 text-xs text-muted-foreground hover:text-foreground sm:flex"
-        >
-          <ChevronLeft size={14} /> Сотрудники
-        </Link>
-        <div className="flex-1" />
+          <button
+            type="button"
+            onClick={() => (onBack ? onBack() : navigate('/staff'))}
+            className="rounded hover:text-foreground"
+            aria-label="Вернуться к списку сотрудников"
+          >
+            <span className="lg:hidden">← Список</span>
+            <span className="hidden lg:inline">Сотрудники</span>
+          </button>
+          <span className="hidden lg:inline" aria-hidden>›</span>
+          <span
+            className="hidden truncate font-medium text-foreground lg:inline"
+            title={`${row.first_name} ${row.last_name}`}
+          >
+            {row.first_name} {row.last_name}
+          </span>
+        </nav>
         <div className="flex flex-shrink-0 gap-2">
           <button
             type="button"
@@ -133,26 +181,15 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
           >
             Сменить пароль
           </button>
-          {isSuperadmin(user) ? (
+          {!isSuperadmin(user) && hasPermission(user, 'create_users') && (
             <button
               type="button"
-              onClick={doDeactivate}
-              disabled={!row.is_active}
+              onClick={() => setDelOpen(true)}
+              disabled={row.has_pending_deletion}
               className="rounded-lg border border-[var(--danger)] bg-card px-3 py-1.5 text-xs font-medium text-[var(--danger-ink)] hover:bg-[var(--danger-soft)] disabled:opacity-40"
             >
-              Деактивировать
+              {row.has_pending_deletion ? 'Запрос отправлен' : 'Запросить удаление'}
             </button>
-          ) : (
-            hasPermission(user, 'create_users') && (
-              <button
-                type="button"
-                onClick={() => setDelOpen(true)}
-                disabled={row.has_pending_deletion}
-                className="rounded-lg border border-[var(--danger)] bg-card px-3 py-1.5 text-xs font-medium text-[var(--danger-ink)] hover:bg-[var(--danger-soft)] disabled:opacity-40"
-              >
-                {row.has_pending_deletion ? 'Запрос отправлен' : 'Запросить удаление'}
-              </button>
-            )
           )}
         </div>
       </header>
@@ -160,21 +197,49 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 sm:p-6">
           <div className="mb-4 flex flex-col gap-4 rounded-lg border border-border bg-card p-5 sm:flex-row sm:items-start sm:gap-6">
-            <div
-              className={[
-                'relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl font-bold',
-                row.is_active ? 'bg-muted text-muted-foreground' : 'bg-muted text-muted-foreground/60',
-              ].join(' ')}
-            >
-              {initials || '?'}
-              <button
-                type="button"
-                title="Загрузить аватар (в разработке)"
-                className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-primary text-xs text-primary-foreground"
-                onClick={(e) => e.preventDefault()}
-              >
-                +
-              </button>
+            <div className="relative h-14 w-14 shrink-0">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept={FILE_LIMITS.avatar.mimeTypes.join(',')}
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  uploadAvatar(f)
+                  e.target.value = ''
+                }}
+              />
+              {row.avatar_url ? (
+                <img
+                  src={row.avatar_url}
+                  alt=""
+                  className={[
+                    'h-14 w-14 rounded-full object-cover',
+                    !row.is_active && 'opacity-60',
+                  ].filter(Boolean).join(' ')}
+                />
+              ) : (
+                <div
+                  className={[
+                    'flex h-14 w-14 items-center justify-center rounded-full text-xl font-bold',
+                    row.is_active ? 'bg-muted text-muted-foreground' : 'bg-muted text-muted-foreground/60',
+                  ].join(' ')}
+                >
+                  {initials || '?'}
+                </div>
+              )}
+              {canEditAvatar && (
+                <button
+                  type="button"
+                  title={row.avatar_url ? 'Заменить аватар' : 'Загрузить аватар'}
+                  aria-label={row.avatar_url ? 'Заменить аватар' : 'Загрузить аватар'}
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={avatarBusy}
+                  className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60"
+                >
+                  {avatarBusy ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+                </button>
+              )}
             </div>
 
             <div className="min-w-0 flex-1">
@@ -189,15 +254,32 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
                 >
                   {ROLE_LABEL[row.role] ?? row.role}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
-                  <span
-                    className={[
-                      'h-2 w-2 rounded-full',
-                      row.is_active ? 'bg-emerald-500' : 'bg-muted-foreground',
-                    ].join(' ')}
-                  />
-                  {row.is_active ? 'Активен' : 'Неактивен'}
-                </span>
+                {isSuperadmin(user) ? (
+                  <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-foreground">
+                    <Switch
+                      size="sm"
+                      checked={row.is_active}
+                      disabled={!row.is_active}
+                      onCheckedChange={(next) => {
+                        if (!next) doDeactivate()
+                      }}
+                      aria-label={row.is_active ? 'Деактивировать сотрудника' : 'Сотрудник деактивирован'}
+                    />
+                    <span className={row.is_active ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground'}>
+                      {row.is_active ? 'Активен' : 'Неактивен'}
+                    </span>
+                  </label>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                    <span
+                      className={[
+                        'h-2 w-2 rounded-full',
+                        row.is_active ? 'bg-emerald-500' : 'bg-muted-foreground',
+                      ].join(' ')}
+                    />
+                    {row.is_active ? 'Активен' : 'Неактивен'}
+                  </span>
+                )}
                 {row.has_pending_deletion && (
                   <span className="inline-flex items-center rounded-full bg-[var(--danger-soft)] px-2.5 py-0.5 text-xs font-medium text-[var(--danger-ink)]">
                     Запрос на удаление
@@ -254,6 +336,14 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
           className="fixed bottom-4 right-4 rounded-lg bg-[var(--danger)] px-4 py-2 text-sm text-white"
         >
           {delError}
+        </p>
+      )}
+      {avatarError && (
+        <p
+          role="alert"
+          className="fixed bottom-4 right-4 rounded-lg bg-[var(--danger)] px-4 py-2 text-sm text-white"
+        >
+          {avatarError}
         </p>
       )}
     </div>
