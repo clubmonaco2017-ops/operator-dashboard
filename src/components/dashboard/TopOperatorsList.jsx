@@ -1,10 +1,14 @@
 import { useState } from 'react'
-import { Trophy, Crown, Award, Medal, ChevronDown } from 'lucide-react'
+import { Trophy, ChevronDown } from 'lucide-react'
+import goldMedal from '../../assets/medals/gold.svg'
+import silverMedal from '../../assets/medals/silver.svg'
+import bronzeMedal from '../../assets/medals/bronze.svg'
 
 const fmt = (n) =>
   Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-const MEDAL_BY_RANK = [Crown, Award, Medal]
+const MEDALS = [goldMedal, silverMedal, bronzeMedal]
+const MEDAL_ALT = ['Золото', 'Серебро', 'Бронза']
 
 export function TopOperatorsList({ rows, operatorMap, period }) {
   const [expanded, setExpanded] = useState(false)
@@ -52,16 +56,18 @@ export function TopOperatorsList({ rows, operatorMap, period }) {
           ) : (
             visible.map((op, i) => {
               const pct = grand > 0 ? (op.total / grand) * 100 : 0
-              const MedalIcon = MEDAL_BY_RANK[i]
+              const medal = MEDALS[i]
               const name = operatorMap[op.refcode]?.name || op.refcode
               const shift = operatorMap[op.refcode]?.shift
               return (
                 <div key={op.refcode} className="flex items-center gap-2 text-xs">
                   <span className="w-6 flex items-center justify-center">
-                    {MedalIcon ? (
-                      <MedalIcon size={14} className="text-amber-500" />
+                    {medal ? (
+                      <img src={medal} alt={MEDAL_ALT[i]} className="size-6" />
                     ) : (
-                      <span className="font-mono text-muted-foreground">#{i + 1}</span>
+                      <span className="inline-flex size-5 items-center justify-center rounded bg-muted text-[10px] font-medium text-[var(--fg3)]">
+                        {i + 1}
+                      </span>
                     )}
                   </span>
                   <div className="w-28 min-w-0">

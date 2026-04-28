@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import {
   Bell,
   CheckSquare,
-  Home,
+  LayoutDashboard,
   Network,
   UserCircle,
   Users,
@@ -18,6 +18,7 @@ import { canSeeTeamsNav } from '../../lib/teams.js'
 import { useUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
 import { useUserOverdueCount } from '../../hooks/useUserOverdueCount.js'
 import { usePendingDeletionCount } from '../../hooks/usePendingDeletionCount.js'
+import { ThemeToggle } from './ThemeToggle.jsx'
 import { UserMenuDropdown } from './UserMenuDropdown.jsx'
 
 function RailItem({ to, end, icon, label, badge }) {
@@ -40,7 +41,7 @@ function RailItem({ to, end, icon, label, badge }) {
             {icon}
             {badge > 0 && (
               <span
-                className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-[var(--danger)] text-white text-[9px] font-semibold rounded-full px-1 flex items-center justify-center tabular"
+                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[var(--danger)] text-white text-[10px] font-bold rounded-full px-1 ring-2 ring-card flex items-center justify-center tabular"
                 aria-label={`${badge} непрочитанных`}
               >
                 {badge > 99 ? '99+' : badge}
@@ -73,7 +74,7 @@ export function RailNav({ className = '' }) {
       className={`w-14 bg-card border-r border-border flex flex-col items-center py-3 gap-1 ${className}`}
       aria-label="Главное меню"
     >
-      <RailItem to="/" end icon={<Home size={20} />} label="Дашборд" />
+      <RailItem to="/" end icon={<LayoutDashboard size={20} />} label="Дашборд" />
       {canSeeStaff && (
         <RailItem to="/staff" icon={<Users size={20} />} label="Сотрудники" />
       )}
@@ -102,6 +103,7 @@ export function RailNav({ className = '' }) {
           badge={pending}
         />
       )}
+      <ThemeToggle />
       <UserMenuDropdown user={user} onLogout={logout} />
     </aside>
   )

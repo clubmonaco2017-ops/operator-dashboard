@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { supabase } from '../../supabaseClient'
 import { useStaff } from '../../hooks/useStaff.js'
 import { hasPermission, isSuperadmin } from '../../lib/permissions.js'
@@ -23,9 +24,17 @@ const ROLE_LABEL = {
   operator: 'Оператор',
 }
 
-const TAB_BASE = 'px-4 py-2 text-sm font-medium border-b-2 transition-colors'
-const TAB_IDLE = 'border-transparent text-muted-foreground hover:text-foreground'
-const TAB_ACTIVE = 'border-primary text-foreground'
+function tabFromPathname(pathname) {
+  if (pathname.endsWith('/attributes')) return 'attributes'
+  if (pathname.endsWith('/permissions')) return 'permissions'
+  if (pathname.endsWith('/activity')) return 'activity'
+  return 'profile'
+}
+
+function tabToPath(refCode, tabKey) {
+  const base = `/staff/${encodeURIComponent(refCode)}`
+  return tabKey === 'profile' ? base : `${base}/${tabKey}`
+}
 
 /**
  * Detail-панель открытого сотрудника.
@@ -39,6 +48,8 @@ const TAB_ACTIVE = 'border-primary text-foreground'
  */
 export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack }) {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const activeTab = tabFromPathname(pathname)
   const { row, loading, error, reload } = useStaff(callerId, refCode)
   const [pwOpen, setPwOpen] = useState(false)
   const [delOpen, setDelOpen] = useState(false)
@@ -201,11 +212,18 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
             </div>
           </div>
 
-          <div className="mb-4 flex gap-1 border-b border-border">
-            <TabLink refCode={row.ref_code} tab="" label="Профиль" />
-            <TabLink refCode={row.ref_code} tab="attributes" label="Атрибуты" />
-            <TabLink refCode={row.ref_code} tab="permissions" label="Права" />
-            <TabLink refCode={row.ref_code} tab="activity" label="Активность" />
+          <div className="mb-4">
+            <Tabs
+              value={activeTab}
+              onValueChange={(next) => navigate(tabToPath(row.ref_code, next))}
+            >
+              <TabsList>
+                <TabsTrigger value="profile">Профиль</TabsTrigger>
+                <TabsTrigger value="attributes">Атрибуты</TabsTrigger>
+                <TabsTrigger value="permissions">Права</TabsTrigger>
+                <TabsTrigger value="activity">Активность</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
 
           <div>
@@ -242,24 +260,3 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
   )
 }
 
-function TabLink({ refCode, tab, label }) {
-  return (
-    <NavLink
-      to={
-        tab
-          ? `/staff/${encodeURIComponent(refCode)}/${tab}`
-          : `/staff/${encodeURIComponent(refCode)}`
-      }
-      end
-    >
-      {({ isActive }) => (
-        <span
-          className={`${TAB_BASE} ${isActive ? TAB_ACTIVE : TAB_IDLE}`}
-          aria-current={isActive ? 'page' : undefined}
-        >
-          {label}
-        </span>
-      )}
-    </NavLink>
-  )
-}

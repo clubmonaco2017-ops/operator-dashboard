@@ -8,15 +8,15 @@ import {
   canDeleteTask,
   canSubmitReport,
   canTakeInProgress,
-  formatDeadlineRelative,
 } from '../../lib/tasks.js'
 import { TaskDescriptionCard } from './TaskDescriptionCard.jsx'
-import { TaskFieldsCard } from './TaskFieldsCard.jsx'
+import { TaskMetaSidebar } from './TaskMetaSidebar.jsx'
 import { TaskReportCard } from './TaskReportCard.jsx'
 import { TaskActivityCard } from './TaskActivityCard.jsx'
 import { CancelTaskConfirmDialog } from './CancelTaskConfirmDialog.jsx'
 import { DeleteTaskConfirmDialog } from './DeleteTaskConfirmDialog.jsx'
 import { Button } from '@/components/ui/button.jsx'
+import { StatusPill } from './StatusPill.jsx'
 
 /**
  * Detail-панель открытой задачи (Subplan 5 Stage 7).
@@ -143,7 +143,6 @@ export function TaskDetailPanel({
 
   const status = row.effective_status || row.status
   const cancelled = status === 'cancelled'
-  const deadlineLabel = formatDeadlineRelative(row.deadline)
   const showTake = canTakeInProgress(user, row)
   const showSubmitJump = canSubmitReport(user, row)
   const showCancel = canCancelTask(user, row)
@@ -186,8 +185,8 @@ export function TaskDetailPanel({
       </div>
 
       {/* Header */}
-      <header className="px-6 pt-5 pb-4">
-        <div className="flex flex-wrap items-baseline gap-2">
+      <header className="flex flex-wrap items-start justify-between gap-3 px-6 pt-5 pb-4">
+        <div className="min-w-0 flex flex-wrap items-baseline gap-2">
           <h1
             className={[
               'truncate text-xl font-bold text-foreground',
@@ -201,25 +200,9 @@ export function TaskDetailPanel({
           </h1>
           <StatusPill status={status} />
         </div>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          От{' '}
-          <span className="font-medium text-foreground">
-            {row.created_by_name ?? '—'}
-          </span>{' '}
-          · Исполнитель{' '}
-          <span className="font-medium text-foreground">
-            {row.assigned_to_name ?? '—'}
-          </span>
-          {deadlineLabel && (
-            <>
-              {' '}· Дедлайн{' '}
-              <span className="font-medium text-foreground">{deadlineLabel}</span>
-            </>
-          )}
-        </p>
 
         {(showTake || showSubmitJump || showCancel || showDelete) && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             {showTake && (
               <Button
                 type="button"
@@ -264,27 +247,48 @@ export function TaskDetailPanel({
       </header>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto bg-background px-4 py-5 sm:px-6">
-        <div className="mx-auto flex max-w-3xl flex-col gap-4">
-          <TaskDescriptionCard
-            callerId={callerId}
-            user={user}
-            task={row}
-            onChanged={bothChanged}
-          />
-          <TaskFieldsCard
-            callerId={callerId}
-            user={user}
-            task={row}
-            onChanged={bothChanged}
-          />
-          <TaskReportCard
-            callerId={callerId}
-            user={user}
-            task={row}
-            onChanged={bothChanged}
-          />
-          <TaskActivityCard activity={row.activity || []} />
+      <div className="flex-1 overflow-auto bg-background">
+        <div className="px-4 py-5 sm:px-6 xl:px-8">
+          <div className="mx-auto flex max-w-3xl flex-col gap-4 xl:max-w-none xl:grid xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-6">
+            {/* Main column */}
+            <div className="flex min-w-0 flex-col gap-4">
+              <TaskDescriptionCard
+                callerId={callerId}
+                user={user}
+                task={row}
+                onChanged={bothChanged}
+              />
+              {/* Meta as card — single-column режим, скрыт на xl+ */}
+              <div className="xl:hidden">
+                <TaskMetaSidebar
+                  callerId={callerId}
+                  user={user}
+                  task={row}
+                  status={status}
+                  onChanged={bothChanged}
+                  variant="card"
+                />
+              </div>
+              <TaskReportCard
+                callerId={callerId}
+                user={user}
+                task={row}
+                onChanged={bothChanged}
+              />
+              <TaskActivityCard activity={row.activity || []} />
+            </div>
+            {/* Sidebar — только xl+ */}
+            <aside className="hidden xl:block xl:sticky xl:top-5 xl:self-start xl:max-h-[calc(100vh-3rem)] xl:overflow-auto">
+              <TaskMetaSidebar
+                callerId={callerId}
+                user={user}
+                task={row}
+                status={status}
+                onChanged={bothChanged}
+                variant="sidebar"
+              />
+            </aside>
+          </div>
         </div>
       </div>
 
@@ -313,45 +317,6 @@ export function TaskDetailPanel({
 // ============================================================================
 // Sub-components
 // ============================================================================
-
-const STATUS_LABELS = {
-  pending: 'В ожидании',
-  in_progress: 'В работе',
-  done: 'Завершена',
-  overdue: 'Просрочена',
-  cancelled: 'Отменена',
-}
-
-function statusPillClasses(status) {
-  switch (status) {
-    case 'in_progress':
-      return 'bg-[var(--primary-soft)] text-[var(--primary-ink)]'
-    case 'done':
-      return 'bg-[var(--success-soft)] text-[var(--success-ink)]'
-    case 'overdue':
-      return 'bg-[var(--danger-soft)] text-[var(--danger-ink)]'
-    case 'cancelled':
-      return 'bg-muted text-muted-foreground'
-    case 'pending':
-    default:
-      return 'bg-muted text-[var(--fg2)]'
-  }
-}
-
-function StatusPill({ status }) {
-  const label = STATUS_LABELS[status] ?? status
-  return (
-    <span
-      className={[
-        'inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
-        statusPillClasses(status),
-      ].join(' ')}
-      title={label}
-    >
-      {label}
-    </span>
-  )
-}
 
 function Pagination({ position, total, prev, next, onGo }) {
   return (
@@ -403,24 +368,34 @@ function TaskDetailSkeleton() {
         <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
       </div>
       {/* Header */}
-      <header className="px-6 pt-5 pb-4">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <div className="h-7 w-3/5 animate-pulse rounded bg-muted" />
+      <header className="flex flex-wrap items-start justify-between gap-3 px-6 pt-5 pb-4">
+        <div className="min-w-0 flex flex-wrap items-baseline gap-2">
+          <div className="h-7 w-72 animate-pulse rounded bg-muted" />
           <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
         </div>
-        <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-muted/70" />
-        {/* Action row */}
-        <div className="mt-4 flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <div className="h-9 w-32 animate-pulse rounded-md bg-muted" />
         </div>
       </header>
-      {/* Body cards */}
-      <div className="flex-1 overflow-hidden bg-background px-4 py-5 sm:px-6">
-        <div className="mx-auto flex max-w-3xl flex-col gap-4">
-          <div className="surface-card h-32 animate-pulse" />
-          <div className="surface-card h-40 animate-pulse" />
-          <div className="surface-card h-48 animate-pulse" />
-          <div className="surface-card h-32 animate-pulse" />
+      {/* Body */}
+      <div className="flex-1 overflow-hidden bg-background">
+        <div className="px-4 py-5 sm:px-6 xl:px-8">
+          <div className="mx-auto flex max-w-3xl flex-col gap-4 xl:max-w-none xl:grid xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-6">
+            <div className="flex min-w-0 flex-col gap-4">
+              <div className="surface-card h-32 animate-pulse" />
+              <div className="surface-card h-40 animate-pulse xl:hidden" />
+              <div className="surface-card h-48 animate-pulse" />
+              <div className="surface-card h-32 animate-pulse" />
+            </div>
+            <aside className="hidden xl:block xl:sticky xl:top-5 xl:self-start">
+              <div className="flex flex-col gap-5">
+                <div className="h-10 w-full animate-pulse rounded bg-muted/70" />
+                <div className="h-10 w-full animate-pulse rounded bg-muted/70" />
+                <div className="h-12 w-full animate-pulse rounded bg-muted/70" />
+                <div className="h-12 w-full animate-pulse rounded bg-muted/70" />
+              </div>
+            </aside>
+          </div>
         </div>
       </div>
     </div>

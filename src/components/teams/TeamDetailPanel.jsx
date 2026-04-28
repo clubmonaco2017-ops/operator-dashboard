@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTeam } from '../../hooks/useTeam.js'
 import { useTeamActions } from '../../hooks/useTeamActions.js'
 import { canEditTeam, formatLeadRole } from '../../lib/teams.js'
@@ -180,47 +181,24 @@ export function TeamDetailPanel({ callerId, user, teamId, siblings = [], onChang
       </header>
 
       {/* Tabs */}
-      <div className="border-b border-border px-6">
-        <nav
-          className="-mb-px flex gap-6 overflow-x-auto"
-          aria-label="Разделы команды"
-          role="tablist"
-        >
-          {Object.entries(TAB_LABELS).map(([key, label]) => {
-            const isActive = key === tab
-            const count = counts[key]
-            return (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                aria-current={isActive ? 'page' : undefined}
-                onClick={() => setTab(key)}
-                className={[
-                  'flex shrink-0 items-center gap-2 border-b-2 py-3 text-sm transition-colors rounded-t',
-                  isActive
-                    ? 'border-primary font-semibold text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground',
-                ].join(' ')}
-              >
-                {label}
-                {count != null && (
-                  <span
-                    className={[
-                      'rounded-full px-2 py-0.5 text-[11px] font-medium tabular',
-                      isActive
-                        ? 'bg-[var(--primary-soft)] text-[var(--primary-ink)]'
-                        : 'bg-muted text-muted-foreground',
-                    ].join(' ')}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </nav>
+      <div className="px-6 pt-4 pb-0">
+        <Tabs value={tab} onValueChange={setTab} aria-label="Разделы команды">
+          <TabsList>
+            {Object.entries(TAB_LABELS).map(([key, label]) => {
+              const count = counts[key]
+              return (
+                <TabsTrigger key={key} value={key}>
+                  {label}
+                  {count != null && (
+                    <span className="rounded-full border border-border bg-background px-1.5 text-[11px] font-medium tabular text-muted-foreground">
+                      {count}
+                    </span>
+                  )}
+                </TabsTrigger>
+              )
+            })}
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* Body */}

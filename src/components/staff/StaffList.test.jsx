@@ -88,10 +88,9 @@ describe('<StaffList>', () => {
     expect(screen.getByText('ТЛ')).toBeInTheDocument()
   })
 
-  it('renders email and ref_code as subtitle', () => {
+  it('renders email as subtitle', () => {
     renderList({ selectedRefCode: null })
     expect(screen.getByText('ivan@example.com')).toBeInTheDocument()
-    expect(screen.getByText('OP-IPE-001')).toBeInTheDocument()
   })
 
   it('renders status dot with active aria-label', () => {
