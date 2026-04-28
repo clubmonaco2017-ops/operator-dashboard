@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { AlertTriangle, Inbox } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SearchInput } from '../shell/index.js'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
@@ -115,22 +116,17 @@ export function HourlyOperatorTable({ rows, operatorMap, period, loading, error 
             ariaLabel="Поиск оператора"
           />
         </div>
-        {shifts.length > 1 &&
-          shifts.map((s) => {
-            const active = shiftFilter === s
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setShiftFilter(s)}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                  active ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-foreground hover:border-primary'
-                }`}
-              >
-                {s === 'ALL' ? 'Все смены' : s}
-              </button>
-            )
-          })}
+        {shifts.length > 1 && (
+          <Tabs value={shiftFilter} onValueChange={setShiftFilter}>
+            <TabsList>
+              {shifts.map((s) => (
+                <TabsTrigger key={s} value={s}>
+                  {s === 'ALL' ? 'Все смены' : s}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
         <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none ml-auto">
           <input
             type="checkbox"

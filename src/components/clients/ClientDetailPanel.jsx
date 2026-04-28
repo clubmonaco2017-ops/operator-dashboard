@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Globe, Briefcase, Calendar, BarChart3 } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useClient } from '../../hooks/useClient.js'
 import { useClientActions } from '../../hooks/useClientActions.js'
 import { initials } from '../../lib/clients.js'
@@ -165,47 +166,36 @@ export function ClientDetailPanel({ callerId, clientId, activeTab = 'profile', s
       </header>
 
       {/* Tabs */}
-      <div className="border-b border-border px-6">
-        <nav className="mt-4 flex gap-6" aria-label="Разделы клиента">
-          {Object.entries(TAB_LABELS).map(([key, label]) => {
-            const isActive = key === activeTab
-            const path = key === 'profile' ? `/clients/${row.id}` : `/clients/${row.id}/${key}`
-            const count = key === 'photos' ? row.photos_count : key === 'videos' ? row.videos_count : null
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => navigate(path)}
-                aria-current={isActive ? 'page' : undefined}
-                className={[
-                  'flex items-center gap-2 border-b-2 py-3 text-sm transition-colors rounded-t',
-                  isActive
-                    ? 'border-primary font-semibold text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground',
-                ].join(' ')}
-              >
-                {label}
-                {count != null && (
-                  <span
-                    className={[
-                      'rounded-full px-2 py-0.5 text-[11px] font-medium tabular',
-                      isActive
-                        ? 'bg-[var(--primary-soft)] text-[var(--primary-ink)]'
-                        : 'bg-muted text-muted-foreground',
-                    ].join(' ')}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </nav>
+      <div className="px-6 pt-4 pb-0">
+        <Tabs
+          value={activeTab}
+          onValueChange={(next) =>
+            navigate(next === 'profile' ? `/clients/${row.id}` : `/clients/${row.id}/${next}`)
+          }
+          aria-label="Разделы клиента"
+        >
+          <TabsList>
+            {Object.entries(TAB_LABELS).map(([key, label]) => {
+              const count =
+                key === 'photos' ? row.photos_count : key === 'videos' ? row.videos_count : null
+              return (
+                <TabsTrigger key={key} value={key}>
+                  {label}
+                  {count != null && (
+                    <span className="rounded-full border border-border bg-background px-1.5 text-[11px] font-medium tabular text-muted-foreground">
+                      {count}
+                    </span>
+                  )}
+                </TabsTrigger>
+              )
+            })}
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* Body: tab content + right column (Activity + Summary) */}
       <div className="flex-1 overflow-auto bg-background">
-        <div className="grid grid-cols-1 gap-5 px-4 py-5 sm:px-6 xl:grid-cols-[minmax(0,1fr),320px]">
+        <div className="grid grid-cols-1 gap-5 px-4 pt-3 pb-5 sm:px-6 xl:grid-cols-[minmax(0,1fr),320px]">
           <main className="min-w-0">
             {activeTab === 'profile' && (
               <ProfileTab callerId={callerId} client={row} onChanged={bothChanged} />

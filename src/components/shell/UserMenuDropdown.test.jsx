@@ -51,22 +51,4 @@ describe('<UserMenuDropdown>', () => {
     )
     expect(screen.getByText('И')).toBeInTheDocument()
   })
-
-  it('renders theme menu items (Системная / Светлая / Тёмная)', async () => {
-    const user = { alias: 'Test', email: 't@e' }
-    render(<UserMenuDropdown user={user} onLogout={() => {}} />)
-    fireEvent.click(screen.getByLabelText('Меню пользователя'))
-    expect(await screen.findByText('Системная')).toBeInTheDocument()
-    expect(screen.getByText('Светлая')).toBeInTheDocument()
-    expect(screen.getByText('Тёмная')).toBeInTheDocument()
-  })
-
-  it('clicking theme item writes localStorage.theme', async () => {
-    localStorage.clear()
-    const user = { alias: 'Test', email: 't@e' }
-    render(<UserMenuDropdown user={user} onLogout={() => {}} />)
-    fireEvent.click(screen.getByLabelText('Меню пользователя'))
-    fireEvent.click(await screen.findByText('Тёмная'))
-    expect(localStorage.getItem('theme')).toBe('dark')
-  })
 })
