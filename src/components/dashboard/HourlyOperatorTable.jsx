@@ -1,7 +1,16 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle, Inbox } from 'lucide-react'
+import { AlertTriangle, ChevronDown, Inbox, Check } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+  DrawerClose,
+} from '@/components/ui/drawer'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { SearchInput } from '../shell/index.js'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
@@ -38,9 +47,11 @@ const opShift = (rc, operatorMap) => operatorMap[rc]?.shift || ''
 export function HourlyOperatorTable({ rows, operatorMap, period, loading, error }) {
   const [search, setSearch] = useState('')
   const [shiftFilter, setShiftFilter] = useState('ALL')
+  const [shiftDrawerOpen, setShiftDrawerOpen] = useState(false)
   const [onlyActive, setOnlyActive] = useState(false)
   const [sortCol, setSortCol] = useState('total')
   const [sortDir, setSortDir] = useState('desc')
+  const isMobile = useIsMobile()
 
   const [hMin, hMax] = period.hours
   const visibleHours = HOURS.filter((h) => h >= hMin && h <= hMax)
@@ -122,28 +133,79 @@ export function HourlyOperatorTable({ rows, operatorMap, period, loading, error 
             ariaLabel="Поиск оператора"
           />
         </div>
-        {shifts.length > 1 && (
-          <div className="-mx-4 w-[calc(100%+2rem)] overflow-x-auto px-4 md:mx-0 md:w-auto md:overflow-visible md:px-0">
-            <Tabs value={shiftFilter} onValueChange={setShiftFilter}>
-              <TabsList>
-                {shifts.map((s) => (
-                  <TabsTrigger key={s} value={s}>
-                    {s === 'ALL' ? (
-                      'Все смены'
-                    ) : (
-                      <>
-                        <span
-                          aria-hidden
-                          className={`inline-block h-2 w-2 rounded-full ${SHIFT_DOT[s] ?? 'bg-muted-foreground'}`}
-                        />
-                        {capitalizeShift(s)}
-                      </>
-                    )}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
+        {shifts.length > 1 && isMobile && (
+          <Drawer open={shiftDrawerOpen} onOpenChange={setShiftDrawerOpen}>
+            <DrawerTrigger asChild>
+              <button
+                type="button"
+                className="flex h-9 items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-accent transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  {shiftFilter !== 'ALL' && (
+                    <span
+                      aria-hidden
+                      className={`inline-block h-2 w-2 rounded-full ${SHIFT_DOT[shiftFilter] ?? 'bg-muted-foreground'}`}
+                    />
+                  )}
+                  {shiftFilter === 'ALL' ? 'Все смены' : capitalizeShift(shiftFilter)}
+                </span>
+                <ChevronDown size={16} className="text-muted-foreground" />
+              </button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Смена</DrawerTitle>
+              </DrawerHeader>
+              <div className="flex flex-col px-2 pb-4">
+                {shifts.map((s) => {
+                  const active = s === shiftFilter
+                  return (
+                    <DrawerClose asChild key={s}>
+                      <button
+                        type="button"
+                        onClick={() => setShiftFilter(s)}
+                        className="flex items-center justify-between gap-3 rounded-md px-3 py-3 text-left text-sm hover:bg-accent transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          {s !== 'ALL' && (
+                            <span
+                              aria-hidden
+                              className={`inline-block h-2 w-2 rounded-full ${SHIFT_DOT[s] ?? 'bg-muted-foreground'}`}
+                            />
+                          )}
+                          <span className={active ? 'font-semibold text-foreground' : 'text-foreground'}>
+                            {s === 'ALL' ? 'Все смены' : capitalizeShift(s)}
+                          </span>
+                        </span>
+                        {active && <Check size={16} className="text-primary" />}
+                      </button>
+                    </DrawerClose>
+                  )
+                })}
+              </div>
+            </DrawerContent>
+          </Drawer>
+        )}
+        {shifts.length > 1 && !isMobile && (
+          <Tabs value={shiftFilter} onValueChange={setShiftFilter}>
+            <TabsList>
+              {shifts.map((s) => (
+                <TabsTrigger key={s} value={s}>
+                  {s === 'ALL' ? (
+                    'Все смены'
+                  ) : (
+                    <>
+                      <span
+                        aria-hidden
+                        className={`inline-block h-2 w-2 rounded-full ${SHIFT_DOT[s] ?? 'bg-muted-foreground'}`}
+                      />
+                      {capitalizeShift(s)}
+                    </>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         )}
         <label className="ml-auto flex cursor-pointer items-center gap-2 text-xs text-foreground select-none">
           <Switch
