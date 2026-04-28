@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { AlertTriangle, Inbox } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Switch } from '@/components/ui/switch'
 import { SearchInput } from '../shell/index.js'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
@@ -142,12 +143,12 @@ export function HourlyOperatorTable({ rows, operatorMap, period, loading, error 
             </TabsList>
           </Tabs>
         )}
-        <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none ml-auto">
-          <input
-            type="checkbox"
+        <label className="ml-auto flex cursor-pointer items-center gap-2 text-xs text-foreground select-none">
+          <Switch
+            size="sm"
             checked={onlyActive}
-            onChange={(e) => setOnlyActive(e.target.checked)}
-            className="accent-primary"
+            onCheckedChange={setOnlyActive}
+            aria-label="Только активные"
           />
           Только активные
         </label>

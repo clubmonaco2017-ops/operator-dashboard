@@ -310,76 +310,76 @@ export function PhotoGalleryTab({ callerId, client, onChanged }) {
         onChange={onFileInputChange}
       />
 
-      {/* Toolbar */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <SortToggle value={sort} onChange={setSort} disabled={selectMode} />
-        <div className="flex-1" />
-        <Button
-          variant="ghost"
-          onClick={toggleSelectMode}
-          aria-pressed={selectMode}
-          className={selectMode ? 'bg-foreground text-background hover:opacity-90' : undefined}
-        >
-          {selectMode ? <Check size={16} /> : <CheckSquare size={14} />}
-          {selectMode ? 'Готово' : 'Выбрать'}
-        </Button>
-        <Button
-          onClick={onPickClick}
-          disabled={!!upload && !upload.done}
-        >
-          <Upload size={14} /> Загрузить
-        </Button>
-      </div>
+      <section className="surface-card">
+        <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-3">
+          <SortToggle value={sort} onChange={setSort} disabled={selectMode} />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              onClick={toggleSelectMode}
+              aria-pressed={selectMode}
+              className={selectMode ? 'bg-foreground text-background hover:opacity-90' : undefined}
+            >
+              {selectMode ? <Check size={16} /> : <CheckSquare size={14} />}
+              {selectMode ? 'Готово' : 'Выбрать'}
+            </Button>
+            <Button
+              onClick={onPickClick}
+              disabled={!!upload && !upload.done}
+            >
+              <Upload size={14} /> Загрузить
+            </Button>
+          </div>
+        </header>
 
-      {/* Bulk action bar */}
-      {selectMode && (
-        <BulkActionBar
-          selectedCount={selectedIds.size}
-          totalCount={allIds.length}
-          allSelected={allSelected}
-          busy={bulkBusy}
-          onSelectAll={selectAll}
-          onClearAll={clearAll}
-          onDownload={bulkDownload}
-          onDelete={bulkDelete}
-        />
-      )}
+        <div className="p-5">
+          {selectMode && (
+            <BulkActionBar
+              selectedCount={selectedIds.size}
+              totalCount={allIds.length}
+              allSelected={allSelected}
+              busy={bulkBusy}
+              onSelectAll={selectAll}
+              onClearAll={clearAll}
+              onDownload={bulkDownload}
+              onDelete={bulkDelete}
+            />
+          )}
 
-      {/* Hint */}
-      <p className="mb-3 text-xs text-muted-foreground">
-        До 25 МБ · форматы: JPG, PNG, WEBP · drag-and-drop поддерживается
-      </p>
+          <p className="mb-3 text-xs text-muted-foreground">
+            До 25 МБ · форматы: JPG, PNG, WEBP · drag-and-drop поддерживается
+          </p>
 
-      {/* Upload progress */}
-      {upload && <UploadBanner upload={upload} onClose={() => setUpload(null)} />}
+          {upload && <UploadBanner upload={upload} onClose={() => setUpload(null)} />}
 
-      {/* Body */}
-      {loading && rows.length === 0 ? (
-        <GridSkeletonWithSlowHint />
-      ) : error ? (
-        <p className="text-sm text-[var(--danger-ink)]" role="alert">Ошибка: {error}</p>
-      ) : displayRows.length === 0 ? (
-        <EmptyPhotos onUpload={onPickClick} />
-      ) : (
-        <PhotoGrid
-          rows={displayRows}
-          sortable={sort === 'manual' && !selectMode}
-          sensors={sensors}
-          onDragEnd={handleDragEnd}
-          selectMode={selectMode}
-          selectedIds={selectedIds}
-          onToggle={toggleId}
-          onOpen={(idx) => setLightboxIndex(idx)}
-          onDelete={async (media) => {
-            try {
-              await deleteMedia(media.id)
-              onChanged?.()
-            } catch (e) {
-              alert(`Не удалось удалить: ${e.message}`)
-            }
-          }}
-        />
-      )}
+          {loading && rows.length === 0 ? (
+            <GridSkeletonWithSlowHint />
+          ) : error ? (
+            <p className="text-sm text-[var(--danger-ink)]" role="alert">Ошибка: {error}</p>
+          ) : displayRows.length === 0 ? (
+            <EmptyPhotos onUpload={onPickClick} />
+          ) : (
+            <PhotoGrid
+              rows={displayRows}
+              sortable={sort === 'manual' && !selectMode}
+              sensors={sensors}
+              onDragEnd={handleDragEnd}
+              selectMode={selectMode}
+              selectedIds={selectedIds}
+              onToggle={toggleId}
+              onOpen={(idx) => setLightboxIndex(idx)}
+              onDelete={async (media) => {
+                try {
+                  await deleteMedia(media.id)
+                  onChanged?.()
+                } catch (e) {
+                  alert(`Не удалось удалить: ${e.message}`)
+                }
+              }}
+            />
+          )}
+        </div>
+      </section>
 
       {dragActive && (
         <DropOverlay

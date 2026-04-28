@@ -37,7 +37,7 @@ export function TaskReportCard({ callerId, user, task, onChanged }) {
 
   return (
     <section id="task-report" className="surface-card p-5">
-      <header className="mb-3 flex items-center justify-between">
+      <header className="-mx-5 -mt-5 mb-5 flex items-center justify-between gap-2 border-b border-border px-5 py-3">
         <h3 className="label-caps">Отчёт</h3>
       </header>
       {status === 'pending' ? (

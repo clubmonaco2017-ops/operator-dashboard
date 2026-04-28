@@ -27,10 +27,10 @@ export function CuratedOperatorsBlock({ callerId, user, staff }) {
 
   return (
     <section className="surface-card mt-4 px-5 py-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="min-w-0">
+      <div className="-mx-5 -mt-4 mb-4 flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+        <div className="flex min-w-0 items-baseline gap-2">
           <div className="label-caps text-muted-foreground">Курирует операторов</div>
-          <div className="mt-0.5 text-sm font-semibold text-foreground tabular">
+          <div className="text-sm font-semibold text-foreground tabular">
             {loading ? '…' : operators.length}
           </div>
         </div>

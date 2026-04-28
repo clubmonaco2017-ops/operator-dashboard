@@ -23,7 +23,7 @@ export function ClientFilterChips({ value, onChange, platforms, agencies, counts
   const agencyChanged = value.agencyId !== null
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-1.5">
       {/* Active / Archived */}
       <Chip
         active={activeChanged}
@@ -42,7 +42,7 @@ export function ClientFilterChips({ value, onChange, platforms, agencies, counts
         <select
           value={value.active}
           onChange={(e) => set({ active: e.target.value })}
-          className="cursor-pointer bg-transparent text-sm outline-none"
+          className="cursor-pointer bg-transparent text-xs outline-none"
         >
           <option value="active">Активные {counts ? counts.active : ''}</option>
           <option value="archived">Архив {counts ? counts.archived : ''}</option>
@@ -55,11 +55,11 @@ export function ClientFilterChips({ value, onChange, platforms, agencies, counts
         active={platformChanged}
         onClear={platformChanged ? () => set({ platformId: null }) : null}
       >
-        <Globe size={14} />
+        <Globe size={12} />
         <select
           value={value.platformId ?? ''}
           onChange={(e) => set({ platformId: e.target.value || null })}
-          className="cursor-pointer bg-transparent text-sm outline-none"
+          className="cursor-pointer bg-transparent text-xs outline-none"
         >
           <option value="">Платформа все</option>
           {platforms.map((p) => (
@@ -75,11 +75,11 @@ export function ClientFilterChips({ value, onChange, platforms, agencies, counts
         active={agencyChanged}
         onClear={agencyChanged ? () => set({ agencyId: null }) : null}
       >
-        <Briefcase size={14} />
+        <Briefcase size={12} />
         <select
           value={value.agencyId ?? ''}
           onChange={(e) => set({ agencyId: e.target.value || null })}
-          className="cursor-pointer bg-transparent text-sm outline-none"
+          className="cursor-pointer bg-transparent text-xs outline-none"
         >
           <option value="">Агентство все</option>
           {agencies.map((a) => (
@@ -97,7 +97,7 @@ function Chip({ children, active, onClear }) {
   return (
     <div
       className={[
-        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors',
+        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 transition-colors',
         active
           ? 'border-primary bg-[var(--primary-soft)] text-[var(--primary-ink)]'
           : 'border-border text-[var(--fg2)] hover:border-border-strong',
@@ -111,7 +111,7 @@ function Chip({ children, active, onClear }) {
           className="ml-0.5 rounded-full p-0.5 text-[var(--primary-ink)]/70 hover:bg-[var(--primary-soft)] hover:text-[var(--primary-ink)]"
           aria-label="Снять фильтр"
         >
-          <X size={12} />
+          <X size={10} />
         </button>
       )}
     </div>

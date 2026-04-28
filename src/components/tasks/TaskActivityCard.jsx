@@ -16,7 +16,7 @@ import {
 export function TaskActivityCard({ activity = [] }) {
   return (
     <section className="surface-card p-4">
-      <header className="mb-3 flex items-center justify-between">
+      <header className="-mx-4 -mt-4 mb-4 flex items-center justify-between gap-2 border-b border-border px-4 py-3">
         <h3 className="label-caps">История</h3>
       </header>
       {activity.length === 0 ? (
