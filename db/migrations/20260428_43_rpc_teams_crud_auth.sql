@@ -261,7 +261,8 @@ BEGIN
   IF NOT has_permission(v_caller_id, 'manage_teams')
      OR v_caller_role IS NULL
      OR v_caller_role NOT IN ('superadmin','admin') THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   IF p_name IS NULL OR length(trim(p_name)) = 0 THEN
@@ -333,7 +334,8 @@ BEGIN
   IF NOT has_permission(v_caller_id, 'manage_teams')
      OR v_caller_role IS NULL
      OR v_caller_role NOT IN ('superadmin','admin') THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   -- Lock the row so concurrent updates can't race the audit «from» values.
@@ -416,7 +418,8 @@ BEGIN
   IF NOT has_permission(v_caller_id, 'manage_teams')
      OR v_caller_role IS NULL
      OR v_caller_role NOT IN ('superadmin','admin') THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   SELECT is_active INTO v_was_active FROM teams WHERE id = p_team_id FOR UPDATE;
@@ -482,7 +485,8 @@ BEGIN
   IF NOT has_permission(v_caller_id, 'manage_teams')
      OR v_caller_role IS NULL
      OR v_caller_role NOT IN ('superadmin','admin') THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   SELECT is_active INTO v_was_active FROM teams WHERE id = p_team_id FOR UPDATE;
@@ -614,7 +618,8 @@ BEGIN
   SELECT u.role INTO v_caller_role FROM dashboard_users u WHERE u.id = v_caller_id;
 
   IF NOT has_permission(v_caller_id, 'manage_teams') OR v_caller_role IS NULL THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   -- Lock target team for the duration of the transaction.
@@ -627,7 +632,8 @@ BEGIN
 
   IF v_caller_role NOT IN ('superadmin','admin')
      AND v_lead_user_id IS DISTINCT FROM v_caller_id THEN
-    RAISE EXCEPTION 'caller % is not lead of team %', v_caller_id, p_team_id;
+    RAISE EXCEPTION 'caller % is not lead of team %', v_caller_id, p_team_id
+      USING errcode = '42501';
   END IF;
 
   -- Validate operator: exists, active, role=operator.
@@ -695,7 +701,8 @@ BEGIN
   SELECT u.role INTO v_caller_role FROM dashboard_users u WHERE u.id = v_caller_id;
 
   IF NOT has_permission(v_caller_id, 'manage_teams') OR v_caller_role IS NULL THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   SELECT t.lead_user_id INTO v_lead_user_id
@@ -707,7 +714,8 @@ BEGIN
 
   IF v_caller_role NOT IN ('superadmin','admin')
      AND v_lead_user_id IS DISTINCT FROM v_caller_id THEN
-    RAISE EXCEPTION 'caller % is not lead of team %', v_caller_id, p_team_id;
+    RAISE EXCEPTION 'caller % is not lead of team %', v_caller_id, p_team_id
+      USING errcode = '42501';
   END IF;
 
   WITH del AS (
@@ -763,7 +771,8 @@ BEGIN
   SELECT u.role INTO v_caller_role FROM dashboard_users u WHERE u.id = v_caller_id;
 
   IF NOT has_permission(v_caller_id, 'manage_teams') OR v_caller_role IS NULL THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   IF p_from_team = p_to_team THEN
@@ -798,7 +807,8 @@ BEGIN
   IF v_caller_role NOT IN ('superadmin','admin')
      AND (v_from_lead IS DISTINCT FROM v_caller_id
           OR v_to_lead IS DISTINCT FROM v_caller_id) THEN
-    RAISE EXCEPTION 'caller % must lead both teams to move members', v_caller_id;
+    RAISE EXCEPTION 'caller % must lead both teams to move members', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   IF v_to_active IS DISTINCT FROM true THEN
@@ -867,7 +877,8 @@ BEGIN
   SELECT u.role INTO v_caller_role FROM dashboard_users u WHERE u.id = v_caller_id;
 
   IF NOT has_permission(v_caller_id, 'manage_teams') OR v_caller_role IS NULL THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   IF p_client_ids IS NULL OR array_length(p_client_ids, 1) IS NULL THEN
@@ -887,7 +898,8 @@ BEGIN
 
   IF v_caller_role NOT IN ('superadmin','admin')
      AND v_lead_user_id IS DISTINCT FROM v_caller_id THEN
-    RAISE EXCEPTION 'caller % is not lead of team %', v_caller_id, p_team_id;
+    RAISE EXCEPTION 'caller % is not lead of team %', v_caller_id, p_team_id
+      USING errcode = '42501';
   END IF;
 
   -- Validate all client ids exist and are active.
@@ -966,7 +978,8 @@ BEGIN
   SELECT u.role INTO v_caller_role FROM dashboard_users u WHERE u.id = v_caller_id;
 
   IF NOT has_permission(v_caller_id, 'manage_teams') OR v_caller_role IS NULL THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   SELECT t.lead_user_id INTO v_lead_user_id
@@ -978,7 +991,8 @@ BEGIN
 
   IF v_caller_role NOT IN ('superadmin','admin')
      AND v_lead_user_id IS DISTINCT FROM v_caller_id THEN
-    RAISE EXCEPTION 'caller % is not lead of team %', v_caller_id, p_team_id;
+    RAISE EXCEPTION 'caller % is not lead of team %', v_caller_id, p_team_id
+      USING errcode = '42501';
   END IF;
 
   WITH del AS (
@@ -1033,7 +1047,8 @@ BEGIN
   SELECT u.role INTO v_caller_role FROM dashboard_users u WHERE u.id = v_caller_id;
 
   IF NOT has_permission(v_caller_id, 'manage_teams') OR v_caller_role IS NULL THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   IF p_from_team = p_to_team THEN
@@ -1067,7 +1082,8 @@ BEGIN
   IF v_caller_role NOT IN ('superadmin','admin')
      AND (v_from_lead IS DISTINCT FROM v_caller_id
           OR v_to_lead IS DISTINCT FROM v_caller_id) THEN
-    RAISE EXCEPTION 'caller % must lead both teams to move clients', v_caller_id;
+    RAISE EXCEPTION 'caller % must lead both teams to move clients', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   IF v_to_active IS DISTINCT FROM true THEN
@@ -1126,7 +1142,8 @@ BEGIN
   END IF;
 
   IF NOT has_permission(v_caller_id, 'manage_teams') THEN
-    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id;
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id
+      USING errcode = '42501';
   END IF;
 
   RETURN QUERY
