@@ -36,21 +36,19 @@ export function useDashboardData({ from, to }) {
 
     const run = async () => {
       try {
-        // Expand UTC range by ±1 day to capture rows that fall into the local TZ window
-        const d1 = new Date(from + 'T00:00:00Z')
-        const d2 = new Date(to + 'T00:00:00Z')
-        d1.setUTCDate(d1.getUTCDate() - 1)
-        d2.setUTCDate(d2.getUTCDate() + 1)
-        const utcFrom = d1.toISOString().slice(0, 10)
-        const utcTo = d2.toISOString().slice(0, 10)
-
+        // The previous implementation read hourly_revenue directly via
+        // PostgREST and silently hit the supabase-js default 1000-row cap on
+        // multi-day periods (e.g. a week ≈ 5000 rows would underreport).
+        // The dashboard_hourly_revenue RPC does the TZ conversion and the
+        // (refcode, local_hour) aggregation server-side so the response is
+        // always ≤ N_operators × 24 ≈ 700 rows.
         const [opsResult, revResult] = await Promise.all([
           supabase.from('operators').select('refcode, name, shift'),
-          supabase
-            .from('hourly_revenue')
-            .select('refcode, date, hour, delta')
-            .gte('date', utcFrom)
-            .lte('date', utcTo),
+          supabase.rpc('dashboard_hourly_revenue', {
+            p_from: from,
+            p_to: to,
+            p_tz: TZ,
+          }),
         ])
 
         if (cancelled) return
@@ -64,17 +62,15 @@ export function useDashboardData({ from, to }) {
 
         const map = {}
         for (const row of revResult.data || []) {
+          // Defensive: skip the deprecated 'all' refcode in case the RPC
+          // ever forgets to filter (the SQL already excludes it).
           if (row.refcode?.toString().trim().toLowerCase() === 'all') continue
-          // Convert UTC date+hour → local date+hour
-          const utcDt = new Date(row.date + 'T00:00:00Z')
-          utcDt.setUTCHours(row.hour)
-          const localDt = new Date(utcDt.toLocaleString('en-US', { timeZone: TZ }))
-          const localDate = localDt.toLocaleDateString('sv-SE')
-          const localHour = localDt.getHours()
-          if (localDate < from || localDate > to) continue
-          if (localDate === DATA_START.date && localHour < DATA_START.hour) continue
+          const localHour = Number(row.local_hour)
+          // Boundary guard for the very first day of data ingestion.
+          if (from === DATA_START.date && localHour < DATA_START.hour) continue
           if (!map[row.refcode]) map[row.refcode] = { refcode: row.refcode }
-          map[row.refcode][`h${localHour}`] = (map[row.refcode][`h${localHour}`] || 0) + Number(row.delta)
+          map[row.refcode][`h${localHour}`] =
+            (map[row.refcode][`h${localHour}`] || 0) + Number(row.delta_sum)
         }
 
         Object.keys(opMap).forEach((refcode) => {
