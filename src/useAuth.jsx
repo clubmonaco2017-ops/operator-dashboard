@@ -13,6 +13,10 @@ export function normalizeProfile(row) {
   const attributes =
     row.attributes && typeof row.attributes === 'object' ? row.attributes : {}
 
+  const availableAgencies = Array.isArray(row.available_agencies)
+    ? row.available_agencies
+    : []
+
   return {
     id: row.id ?? null,
     email: row.email ?? null,
@@ -25,6 +29,8 @@ export function normalizeProfile(row) {
     attributes,
     timezone: row.timezone || 'Europe/Kiev',
     isActive: row.is_active !== false,
+    agencyId: row.agency_id ?? null,
+    availableAgencies,
   }
 }
 
