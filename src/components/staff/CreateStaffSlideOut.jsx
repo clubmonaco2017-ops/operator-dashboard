@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { defaultPermissions } from '../../lib/defaultPermissions.js'
 import { permissionGroups } from '../../lib/permissionGroups.js'
+import { useAgencyContext } from '../../lib/agencyContext.jsx'
 import { RefCodePreview } from './RefCodePreview.jsx'
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -16,6 +17,7 @@ const ROLES = [
 
 export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
   const isMobile = useIsMobile()
+  const { activeAgencyId } = useAgencyContext()
   const [role, setRole] = useState('moderator')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -60,7 +62,12 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
     setSubmitting(true)
     setError(null)
 
-    const { data: newId, error: rpcError } = await supabase.rpc('create_staff', {
+    // For non-admin roles: pin to active agency. For admin: agency_id stays NULL,
+    // and assign-to-agency defaults to active agency (if any) so the new admin
+    // immediately sees data in the current scope. Stage 11 will add a multi-select
+    // form for cross-agency admin creation.
+    const isAdminRole = role === 'admin'
+    const rpcArgs = {
       p_email: email.trim(),
       p_password: password,
       p_role: role,
@@ -68,7 +75,10 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
       p_last_name: lastName.trim(),
       p_alias: alias.trim() || null,
       p_permissions: Array.from(perms),
-    })
+      p_agency_id: isAdminRole ? null : activeAgencyId,
+      p_admin_agency_ids: isAdminRole && activeAgencyId ? [activeAgencyId] : [],
+    }
+    const { data: newId, error: rpcError } = await supabase.rpc('create_staff', rpcArgs)
 
     if (rpcError) {
       setError(rpcError.message)

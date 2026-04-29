@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 export function useStaff(callerId, refCode) {
+  const { activeAgencyId } = useAgencyContext()
   const [row, setRow] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -13,7 +15,7 @@ export function useStaff(callerId, refCode) {
     setLoading(true)
     setError(null)
     supabase
-      .rpc('list_staff')
+      .rpc('list_staff', { p_agency_id: activeAgencyId })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {
@@ -35,7 +37,7 @@ export function useStaff(callerId, refCode) {
     return () => {
       cancelled = true
     }
-  }, [callerId, refCode, reloadKey])
+  }, [callerId, refCode, activeAgencyId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
   return { row, loading, error, reload }

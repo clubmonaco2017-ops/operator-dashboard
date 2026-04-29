@@ -7,6 +7,15 @@ vi.mock('../../supabaseClient', () => ({
     rpc: vi.fn(),
   },
 }))
+vi.mock('../../lib/agencyContext.jsx', () => ({
+  useAgencyContext: () => ({
+    availableAgencies: [{ id: 'agency-x', name: 'Test Agency' }],
+    activeAgencyId: 'agency-x',
+    activeAgency: { id: 'agency-x', name: 'Test Agency' },
+    setActiveAgency: vi.fn(),
+    isMultiAgency: false,
+  }),
+}))
 import { supabase } from '../../supabaseClient'
 
 describe('<CreateStaffSlideOut>', () => {

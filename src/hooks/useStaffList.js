@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 export function useStaffList(callerId) {
+  const { activeAgencyId } = useAgencyContext()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -14,7 +16,7 @@ export function useStaffList(callerId) {
     setError(null)
 
     supabase
-      .rpc('list_staff')
+      .rpc('list_staff', { p_agency_id: activeAgencyId })
       .then(({ data, error }) => {
         if (cancelled) return
         if (error) {
@@ -31,7 +33,7 @@ export function useStaffList(callerId) {
     return () => {
       cancelled = true
     }
-  }, [callerId, reloadKey])
+  }, [callerId, activeAgencyId, reloadKey])
 
   const counts = useMemo(() => {
     const c = { all: rows.length, admin: 0, moderator: 0, teamlead: 0, operator: 0, superadmin: 0 }
