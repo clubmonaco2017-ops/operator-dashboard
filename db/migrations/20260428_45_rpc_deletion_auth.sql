@@ -257,6 +257,17 @@ $$;
 REVOKE ALL ON FUNCTION public.count_pending_deletions() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.count_pending_deletions() TO authenticated;
 
+-- ============================================================
+-- Cross-cutting: apply_user_archived_side_effects
+-- ============================================================
+-- This internal PL/pgSQL helper is called from approve_deletion (above)
+-- and deactivate_staff (Stage 10 / migration 44).  It was granted
+-- TO anon, authenticated in migration 24.  Revoke anon now and
+-- re-grant explicitly to authenticated (defence-in-depth — the
+-- function has no intrinsic permission gate, relies on its callers).
+REVOKE ALL ON FUNCTION public.apply_user_archived_side_effects(integer, integer) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.apply_user_archived_side_effects(integer, integer) TO authenticated;
+
 COMMIT;
 
 -- VERIFY:
