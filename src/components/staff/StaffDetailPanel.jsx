@@ -88,7 +88,6 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
       if (uploadErr) throw new Error(uploadErr.message)
       const { data } = supabase.storage.from('staff-avatars').getPublicUrl(path)
       const { error: rpcErr } = await supabase.rpc('update_staff_profile', {
-        p_caller_id: user.id,
         p_user_id: row.id,
         p_first_name: row.first_name,
         p_last_name: row.last_name,
@@ -109,7 +108,6 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
     setDelSubmitting(true)
     setDelError(null)
     const { error: err } = await supabase.rpc('request_deletion', {
-      p_caller_id: user.id,
       p_target_user: row.id,
       p_reason: reason,
     })
@@ -125,7 +123,6 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
   async function doDeactivate() {
     if (!confirm('Деактивировать сотрудника?')) return
     const { error: err } = await supabase.rpc('deactivate_staff', {
-      p_caller_id: user.id,
       p_user_id: row.id,
     })
     if (err) {
@@ -181,7 +178,7 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
             onClick={() => setPwOpen(true)}
             className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
           >
-            Сменить пароль
+            Сбросить пароль
           </button>
           {!isSuperadmin(user) && hasPermission(user, 'create_users') && (
             <button
@@ -318,9 +315,8 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
 
       {pwOpen && (
         <ChangePasswordModal
-          userId={row.id}
+          staffEmail={row.email}
           onClose={() => setPwOpen(false)}
-          onDone={() => bothChanged()}
         />
       )}
       {delOpen && (

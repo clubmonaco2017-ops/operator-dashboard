@@ -36,7 +36,6 @@ export function ProfileTab() {
     setSaving(true)
     setError(null)
     const { error: err } = await supabase.rpc('update_staff_profile', {
-      p_caller_id: user.id,
       p_user_id: row.id,
       p_first_name: firstName.trim(),
       p_last_name: lastName.trim(),
@@ -70,11 +69,11 @@ export function ProfileTab() {
       {row.role === 'operator' && (
         <>
           <TeamMembershipBlock callerId={user.id} user={user} staff={row} />
-          <CuratorBlock callerId={user.id} user={user} staff={row} />
+          <CuratorBlock user={user} staff={row} />
         </>
       )}
       {row.role === 'moderator' && (
-        <CuratedOperatorsBlock callerId={user.id} user={user} staff={row} />
+        <CuratedOperatorsBlock user={user} staff={row} />
       )}
     </>
   )

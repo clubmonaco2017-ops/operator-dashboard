@@ -131,7 +131,6 @@ export function TeamMembersTab({ callerId, user, row, reload }) {
 
       {addOpen && (
         <AddMemberModal
-          callerId={callerId}
           teamId={row.id}
           onClose={() => setAddOpen(false)}
           onAdd={async (operatorId) => {

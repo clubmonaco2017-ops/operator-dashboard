@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { useAuth } from './useAuth.jsx'
+import { supabase } from './supabaseClient'
 
 function Logo() {
   return (
@@ -23,25 +25,33 @@ function Logo() {
   )
 }
 
-export default function LoginPage({ onLogin, loading }) {
+export default function LoginPage() {
+  const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState(null)
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault()
-    if (!email.trim() || !password) return
-    setError(null)
+    setError('')
+    setNotice('')
     setSubmitting(true)
-    const result = await onLogin(email.trim(), password)
-    if (!result.success) {
-      setError(result.error || 'Ошибка авторизации')
-    }
+    const { error: signInError } = await signIn(email, password)
     setSubmitting(false)
+    if (signInError) {
+      if (signInError.code === 'invalid_credentials') {
+        setError('Неверный email или пароль')
+      } else if (signInError.code === 'email_not_confirmed') {
+        setError('Email не подтверждён. Проверьте почту.')
+      } else {
+        setError('Ошибка входа. Попробуйте позже.')
+      }
+      return
+    }
+    // session set by AuthProvider; navigation happens via auth-aware Router (App.jsx).
   }
-
-  const busy = submitting || loading
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 transition-colors">
@@ -73,7 +83,7 @@ export default function LoginPage({ onLogin, loading }) {
                 placeholder="you@example.com"
                 required
                 autoFocus
-                disabled={busy}
+                disabled={submitting}
               />
             </div>
 
@@ -91,14 +101,14 @@ export default function LoginPage({ onLogin, loading }) {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                disabled={busy}
+                disabled={submitting}
               />
             </div>
 
             {error && (
               <div
                 role="alert"
-                className="flex items-start gap-2.5 bg-[var(--danger-soft)] border border-[var(--danger-strong)] rounded-xl px-4 py-3"
+                className="flex items-start gap-2.5 bg-[var(--danger-soft)] border border-[var(--danger)] rounded-xl px-4 py-3"
               >
                 <AlertCircle
                   size={16}
@@ -108,12 +118,21 @@ export default function LoginPage({ onLogin, loading }) {
               </div>
             )}
 
+            {notice && (
+              <div
+                role="status"
+                className="flex items-start gap-2.5 bg-[var(--success-soft)] border border-[var(--success)] rounded-xl px-4 py-3"
+              >
+                <p className="text-sm text-[var(--success-ink)]">{notice}</p>
+              </div>
+            )}
+
             <Button
               type="submit"
-              disabled={busy}
+              disabled={submitting}
               className="w-full"
             >
-              {busy ? (
+              {submitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin mr-1.5" />
                   Вход...
@@ -122,6 +141,34 @@ export default function LoginPage({ onLogin, loading }) {
                 'Войти'
               )}
             </Button>
+
+            <div className="flex justify-center">
+              <button
+                type="button"
+                disabled={submitting}
+                className="text-sm text-muted-foreground hover:text-foreground transition disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={async () => {
+                  if (!email) {
+                    setError('Введите email, чтобы получить ссылку для сброса.')
+                    return
+                  }
+                  setSubmitting(true)
+                  setError('')
+                  setNotice('')
+                  const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/set-password`,
+                  })
+                  setSubmitting(false)
+                  if (resetErr) {
+                    setError('Не удалось отправить письмо. Попробуйте позже.')
+                  } else {
+                    setNotice('Письмо со ссылкой отправлено на ' + email)
+                  }
+                }}
+              >
+                Забыли пароль?
+              </button>
+            </div>
           </form>
         </div>
       </div>

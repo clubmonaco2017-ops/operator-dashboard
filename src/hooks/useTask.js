@@ -24,7 +24,7 @@ export function useTask(callerId, taskId) {
     setError(null)
 
     supabase
-      .rpc('get_task_detail', { p_caller_id: callerId, p_task_id: id })
+      .rpc('get_task_detail', { p_task_id: id })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {

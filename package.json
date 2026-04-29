@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:security": "vitest run --config vitest.security.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

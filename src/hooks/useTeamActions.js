@@ -6,7 +6,7 @@ import { invalidateAllUserTeamMembership } from './useUserTeamMembership.js'
  * Mutating actions для команд: create, update, archive, restore.
  * createTeam → новый id; archiveTeam → JSON с released-счётчиками.
  *
- * @param {number|null} callerId
+ * @param {number|null} callerId — retained as null-guard; RPCs derive identity from JWT
  */
 export function useTeamActions(callerId) {
   const [loading, setLoading] = useState(false)
@@ -18,7 +18,6 @@ export function useTeamActions(callerId) {
       setError(null)
       try {
         const { data, error: err } = await supabase.rpc('create_team', {
-          p_caller_id: callerId,
           p_name: name,
           p_lead_user_id: leadUserId,
         })
@@ -40,7 +39,6 @@ export function useTeamActions(callerId) {
       setError(null)
       try {
         const { error: err } = await supabase.rpc('update_team', {
-          p_caller_id: callerId,
           p_team_id: teamId,
           p_name: name ?? null,
           p_lead_user_id: leadUserId ?? null,
@@ -62,7 +60,6 @@ export function useTeamActions(callerId) {
       setError(null)
       try {
         const { data, error: err } = await supabase.rpc('archive_team', {
-          p_caller_id: callerId,
           p_team_id: teamId,
         })
         if (err) throw new Error(err.message)
@@ -85,7 +82,6 @@ export function useTeamActions(callerId) {
       setError(null)
       try {
         const { error: err } = await supabase.rpc('restore_team', {
-          p_caller_id: callerId,
           p_team_id: teamId,
         })
         if (err) throw new Error(err.message)

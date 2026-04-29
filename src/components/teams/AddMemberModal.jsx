@@ -9,15 +9,14 @@ import { initials } from '../../lib/clients.js'
  * Модальное окно «Добавить оператора в команду».
  *
  * @param {object} props
- * @param {number} props.callerId
  * @param {number} props.teamId
  * @param {function} props.onClose
  * @param {function} props.onAdd — async (operatorId) => void
  */
-export function AddMemberModal({ callerId, onClose, onAdd }) {
+export function AddMemberModal({ onClose, onAdd }) {
   const [search, setSearch] = useState('')
   const debounced = useDebounce(search, 250)
-  const { rows, loading } = useUnassignedOperators(callerId, debounced)
+  const { rows, loading } = useUnassignedOperators(debounced)
 
   const [busyId, setBusyId] = useState(null)
   const [error, setError] = useState(null)

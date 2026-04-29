@@ -35,7 +35,6 @@ export function useTaskActions(callerId) {
       begin()
       try {
         const { data, error: err } = await supabase.rpc('create_task', {
-          p_caller_id: callerId,
           p_title: title,
           p_description: description ?? null,
           p_deadline: deadline ?? null,
@@ -62,7 +61,6 @@ export function useTaskActions(callerId) {
       begin()
       try {
         const { error: err } = await supabase.rpc('update_task', {
-          p_caller_id: callerId,
           p_task_id: taskId,
           p_title: title ?? null,
           p_description: description ?? null,
@@ -87,7 +85,6 @@ export function useTaskActions(callerId) {
       begin()
       try {
         const { error: err } = await supabase.rpc('cancel_task', {
-          p_caller_id: callerId,
           p_task_id: taskId,
         })
         if (err) throw new Error(err.message)
@@ -107,7 +104,6 @@ export function useTaskActions(callerId) {
       begin()
       try {
         const { error: err } = await supabase.rpc('take_task_in_progress', {
-          p_caller_id: callerId,
           p_task_id: taskId,
         })
         if (err) throw new Error(err.message)
@@ -127,7 +123,6 @@ export function useTaskActions(callerId) {
       begin()
       try {
         const { error: err } = await supabase.rpc('submit_task_report', {
-          p_caller_id: callerId,
           p_task_id: taskId,
           p_content: content ?? null,
           p_media: media ?? [],
@@ -149,7 +144,6 @@ export function useTaskActions(callerId) {
       begin()
       try {
         const { error: err } = await supabase.rpc('update_task_report', {
-          p_caller_id: callerId,
           p_task_id: taskId,
           p_content: content ?? null,
           p_media: media ?? null,
@@ -171,7 +165,6 @@ export function useTaskActions(callerId) {
       begin()
       try {
         const { data, error: err } = await supabase.rpc('delete_task', {
-          p_caller_id: callerId,
           p_task_id: taskId,
         })
         if (err) throw new Error(err.message)

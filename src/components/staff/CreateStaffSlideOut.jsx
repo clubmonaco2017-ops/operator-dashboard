@@ -61,7 +61,6 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
     setError(null)
 
     const { data: newId, error: rpcError } = await supabase.rpc('create_staff', {
-      p_caller_id: callerId,
       p_email: email.trim(),
       p_password: password,
       p_role: role,
@@ -78,7 +77,6 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
     }
 
     const { data: detail, error: detailErr } = await supabase.rpc('get_staff_detail', {
-      p_caller_id: callerId,
       p_user_id: newId,
     })
     if (detailErr || !detail?.[0]) {

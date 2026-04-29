@@ -6,9 +6,8 @@ import { KpiCard } from '../KpiCard.jsx'
 
 /**
  * Admin-scope all-overdue count.
- * Uses RPC `count_overdue_tasks` with p_caller_id=null (admin-scope).
- * If the RPC rejects null at the DB level, replace with caller-id of the
- * current admin user — same effect (admin sees all per RLS).
+ * Uses RPC `count_overdue_tasks` — scope (all vs own) decided server-side
+ * via view_all_tasks permission check in the RPC body.
  */
 export function OverdueAllCard({ user }) {
   const [count, setCount] = useState(0)
@@ -17,7 +16,7 @@ export function OverdueAllCard({ user }) {
   useEffect(() => {
     let cancelled = false
     supabase
-      .rpc('count_overdue_tasks', { p_caller_id: user?.id ?? null })
+      .rpc('count_overdue_tasks')
       .then(({ data }) => {
         if (cancelled) return
         setCount(Number(data ?? 0))

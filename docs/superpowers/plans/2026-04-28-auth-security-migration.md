@@ -75,13 +75,19 @@ BEGIN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
   -- existing body, but every `p_caller_id` reference rewritten to `v_caller_id`.
-  -- existing has_permission(p_caller_id, '...') becomes has_permission(v_caller_id, '...').
+  -- existing has_permission(p_caller_id, '<the actual permission name from the source RPC body — DO NOT invent>') becomes
+  --   has_permission(v_caller_id, '<the actual permission name from the source RPC body — DO NOT invent>').
 END;
 $$;
 
--- DROP cleared all grants. Re-grant only to authenticated.
+-- CREATE FUNCTION re-grants EXECUTE to PUBLIC by default. Revoke that
+-- and grant explicitly to authenticated only — layered security so
+-- anon can't reach the function body even if the helper has a bug.
+REVOKE ALL ON FUNCTION public.<name>(<rest>) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.<name>(<rest>) TO authenticated;
 ```
+
+> **Permission names:** Always read the actual permission name from the source RPC body. The `<perm>` placeholder above is illustrative — never substitute a permission name from your training data or this template literally without verifying against the source migration. Each bucket uses different permission names (`manage_roles`, `create_users`, `list_clients`, etc.); copy them verbatim from the original `CREATE FUNCTION` body.
 
 For RPCs that **already** lack `p_caller_id` (e.g. `get_user_attributes(p_user_id integer)` — `p_user_id` is the subject, not the caller):
 
@@ -288,13 +294,14 @@ psql "$DEV_DB_URL" -f db/migrations/20260428_36_current_dashboard_user_id.sql
 
 Expected: `CREATE FUNCTION` / `REVOKE` / `GRANT` / `COMMENT`.
 
-- [ ] **Step 3: Sanity-check anon path**
+- [ ] **Step 3: Sanity-check privileges via `has_function_privilege`**
 
 ```bash
-psql "$DEV_DB_URL" -c "SET ROLE anon; SELECT public.current_dashboard_user_id(); RESET ROLE;"
+psql "$DEV_DB_URL" -c "SELECT has_function_privilege('anon', 'public.current_dashboard_user_id()', 'EXECUTE');"
+psql "$DEV_DB_URL" -c "SELECT has_function_privilege('authenticated', 'public.current_dashboard_user_id()', 'EXECUTE');"
 ```
 
-Expected: returns NULL (anon has no `auth.uid()`). Note: `SET ROLE anon` requires `psql` connected as superuser; if it errors out with "permission denied", the function is correctly defined — proceed.
+Expected: first query returns `f` (false — anon revoked), second returns `t` (true — authenticated granted). This is more reliable than `SET ROLE anon` because it works as superuser without needing role-switch privileges.
 
 - [ ] **Step 4: Commit**
 
@@ -1342,7 +1349,7 @@ PR boundary: own PR. Apply **Bucket Migration Template (§B)** above to:
 ### Task 5.1: Write bucket migration
 
 **Files:**
-- Create: `db/migrations/20260428_38_rpc_permissions_attributes_auth.sql`
+- Create: `db/migrations/20260428_39_rpc_permissions_attributes_auth.sql`
 
 - [ ] **Step 1: Read each source RPC** to capture the existing body verbatim (you'll re-emit it with only the caller-id swap).
 
@@ -1376,7 +1383,7 @@ BEGIN
   IF v_caller_id IS NULL THEN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
-  IF NOT has_permission(v_caller_id, 'manage_permissions') THEN
+  IF NOT has_permission(v_caller_id, 'manage_roles') THEN
     RAISE EXCEPTION 'forbidden' USING errcode = '42501';
   END IF;
   INSERT INTO public.user_permissions(user_id, permission)
@@ -1401,7 +1408,7 @@ BEGIN
   IF v_caller_id IS NULL THEN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
-  IF NOT has_permission(v_caller_id, 'manage_permissions') THEN
+  IF NOT has_permission(v_caller_id, 'manage_roles') THEN
     RAISE EXCEPTION 'forbidden' USING errcode = '42501';
   END IF;
   DELETE FROM public.user_permissions
@@ -1426,7 +1433,7 @@ BEGIN
   IF v_caller_id IS NULL THEN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
-  IF NOT has_permission(v_caller_id, 'edit_users') AND v_caller_id <> p_user_id THEN
+  IF NOT has_permission(v_caller_id, 'create_users') AND v_caller_id <> p_user_id THEN
     RAISE EXCEPTION 'forbidden' USING errcode = '42501';
   END IF;
   INSERT INTO public.user_attributes(user_id, key, value)
@@ -1451,7 +1458,7 @@ BEGIN
   IF v_caller_id IS NULL THEN
     RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
   END IF;
-  IF NOT has_permission(v_caller_id, 'edit_users') AND v_caller_id <> p_user_id THEN
+  IF NOT has_permission(v_caller_id, 'create_users') THEN
     RAISE EXCEPTION 'forbidden' USING errcode = '42501';
   END IF;
   DELETE FROM public.user_attributes WHERE user_id = p_user_id AND key = p_key;
@@ -1477,7 +1484,7 @@ COMMIT;
 - [ ] **Step 3: Apply to dev**
 
 ```bash
-psql "$DEV_DB_URL" -f db/migrations/20260428_38_rpc_permissions_attributes_auth.sql
+psql "$DEV_DB_URL" -f db/migrations/20260428_39_rpc_permissions_attributes_auth.sql
 ```
 
 Expected: `BEGIN`, multiple `DROP/CREATE/GRANT/REVOKE`, `COMMIT`.
@@ -1530,7 +1537,7 @@ Expected: assertions for `grant_permission`, `revoke_permission`, `set_user_attr
 - [ ] **Step 1: Commit**
 
 ```bash
-git add db/migrations/20260428_38_rpc_permissions_attributes_auth.sql src/
+git add db/migrations/20260428_39_rpc_permissions_attributes_auth.sql src/
 git commit -m "feat(rpc): migrate permissions/attributes bucket to current_dashboard_user_id()
 
 Bucket 1 of 8 in the auth security migration. Migrates 4 mutating RPCs
@@ -1569,7 +1576,7 @@ PR boundary: own PR. Apply **Bucket Migration Template (§B)** to:
 ### Task 6.1: Bucket migration file
 
 **Files:**
-- Create: `db/migrations/20260428_39_rpc_clients_crud_auth.sql`
+- Create: `db/migrations/20260428_40_rpc_clients_crud_auth.sql`
 
 - [ ] **Step 1: Read each source RPC body** verbatim:
 
@@ -1585,7 +1592,7 @@ Same structure as Task 5.1 — `BEGIN; ... COMMIT;` block, one DROP+CREATE+GRANT
 - [ ] **Step 3: Apply to dev**
 
 ```bash
-psql "$DEV_DB_URL" -f db/migrations/20260428_39_rpc_clients_crud_auth.sql
+psql "$DEV_DB_URL" -f db/migrations/20260428_40_rpc_clients_crud_auth.sql
 ```
 
 ### Task 6.2: Sweep frontend callsites
@@ -1624,7 +1631,7 @@ PR boundary: own PR. Apply **§B** to:
 
 ### Task 7.1: Bucket migration
 
-**Files:** Create `db/migrations/20260428_40_rpc_client_media_auth.sql`.
+**Files:** Create `db/migrations/20260428_41_rpc_client_media_auth.sql`.
 
 - [ ] **Step 1–3: Same flow as Task 5.1** — read source bodies, emit migration, apply on dev.
 
@@ -1661,7 +1668,7 @@ Likely: `src/clients/PhotoGalleryTab.jsx`, `src/clients/VideoGalleryTab.jsx`, `s
 
 ### Task 8.1: Bucket migration
 
-**Files:** Create `db/migrations/20260428_41_rpc_tasks_crud_auth.sql`.
+**Files:** Create `db/migrations/20260428_42_rpc_tasks_crud_auth.sql`.
 
 - [ ] Same flow.
 
@@ -1690,15 +1697,23 @@ Note: `src/components/dashboard/cards/OverdueAllCard.jsx:20` calls `count_overdu
 - `assign_team_clients`, `unassign_team_client`, `move_team_client`
 - `list_active_teams_for_assignment`, `list_assignable_users`
 
+> **Warning — `list_unassigned_clients` is NOT in scope here.**
+> Its source body lives in `20260425_22_rpc_teams_clients.sql`, but it was already
+> migrated to the clients CRUD bucket in **Stage 6**. Stage 9's bucket migration
+> must drop and recreate only the 3 team-clients RPCs listed above
+> (`assign_team_clients`, `unassign_team_client`, `move_team_client`).
+> Do NOT emit a `DROP FUNCTION IF EXISTS list_unassigned_clients(...)` here —
+> that would silently undo the Stage-6 migration.
+
 **Source migrations:**
 - `db/migrations/20260425_19_teams_schema.sql`
 - `db/migrations/20260425_20_rpc_teams_crud.sql`
 - `db/migrations/20260425_21_rpc_teams_members.sql`
-- `db/migrations/20260425_22_rpc_teams_clients.sql`
+- `db/migrations/20260425_22_rpc_teams_clients.sql` ← 3 RPCs only (see warning above)
 
 ### Task 9.1: Bucket migration
 
-**Files:** Create `db/migrations/20260428_42_rpc_teams_crud_auth.sql`.
+**Files:** Create `db/migrations/20260428_43_rpc_teams_crud_auth.sql`.
 
 ### Task 9.2: Sweep callsites
 
@@ -1722,7 +1737,7 @@ Likely: `src/teams/**`, `src/hooks/useTeam*.js`, `src/hooks/useTeamMembershipsMa
 
 ### Task 10.1: Bucket migration
 
-**Files:** `db/migrations/20260428_43_rpc_staff_auth.sql`.
+**Files:** `db/migrations/20260428_44_rpc_staff_auth.sql`.
 
 > `change_staff_password` is special: it currently re-uses `pgcrypto.crypt()` to set `dashboard_users.password_hash`. After Stage 14's `auth_login` drop, `password_hash` is unused; this RPC must instead call into Supabase Auth admin API to set the password — but Edge Functions / SQL can't reach `auth.admin` directly. **Resolution:** convert this RPC into a thin frontend flow: an admin who wants to reset a user's password redirects the user via "send recovery email" UI button → calls `supabase.auth.resetPasswordForEmail` (or service-role `generateLink` from an Edge Function). Drop the SQL RPC entirely.
 >
@@ -1752,7 +1767,7 @@ For `change_staff_password` callsite (likely `src/staff/ChangePasswordModal.jsx`
 
 ### Task 11.1: Bucket migration
 
-**Files:** `db/migrations/20260428_44_rpc_deletion_auth.sql`.
+**Files:** `db/migrations/20260428_45_rpc_deletion_auth.sql`.
 
 ### Task 11.2: Sweep callsites
 
@@ -1774,7 +1789,7 @@ Likely: `src/notifications/*`, `src/clients/RequestDeletionModal.jsx`, related a
 
 ### Task 12.1: Bucket migration
 
-**Files:** `db/migrations/20260428_45_rpc_curatorship_auth.sql`.
+**Files:** `db/migrations/20260428_46_rpc_curatorship_auth.sql`.
 
 ### Task 12.2: Sweep callsites
 
@@ -1903,7 +1918,7 @@ PR boundary: own PR.
 ### Task 14.1: Anon-grant audit migration
 
 **Files:**
-- Create: `db/migrations/20260428_46_anon_grant_audit.sql`
+- Create: `db/migrations/20260428_47_anon_grant_audit.sql`
 
 - [ ] **Step 1: Discover any remaining anon grants**
 
@@ -1944,7 +1959,7 @@ $$;
 - [ ] **Step 3: Apply to dev**
 
 ```bash
-psql "$DEV_DB_URL" -f db/migrations/20260428_46_anon_grant_audit.sql
+psql "$DEV_DB_URL" -f db/migrations/20260428_47_anon_grant_audit.sql
 ```
 
 Expected: zero or a few NOTICE lines listing what was revoked.
@@ -1956,7 +1971,7 @@ Expected: empty result — no anon grants remain.
 ### Task 14.2: Drop `auth_login`
 
 **Files:**
-- Create: `db/migrations/20260428_47_drop_auth_login.sql`
+- Create: `db/migrations/20260428_48_drop_auth_login.sql`
 
 - [ ] **Step 1: Write migration**
 
@@ -1974,7 +1989,7 @@ COMMENT ON COLUMN public.dashboard_users.password_hash IS
 - [ ] **Step 2: Apply to dev**
 
 ```bash
-psql "$DEV_DB_URL" -f db/migrations/20260428_47_drop_auth_login.sql
+psql "$DEV_DB_URL" -f db/migrations/20260428_48_drop_auth_login.sql
 ```
 
 ### Task 14.3: Final invariant checks
@@ -2034,7 +2049,7 @@ Expected: 237/237 (or whatever the new baseline is — was 235 + 2 SetPasswordPa
 - [ ] **Step 1: Commit**
 
 ```bash
-git add db/migrations/20260428_46_anon_grant_audit.sql db/migrations/20260428_47_drop_auth_login.sql
+git add db/migrations/20260428_47_anon_grant_audit.sql db/migrations/20260428_48_drop_auth_login.sql
 git commit -m "feat(auth): cleanup — anon-grant audit + drop auth_login
 
 Final SQL migration of the auth security migration. Defence-in-depth
@@ -2103,16 +2118,16 @@ This stage is **operational, not code**. Each step is a human action or script i
 psql "$PROD_DB_URL" -f db/migrations/20260428_35_auth_user_id_link.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_36_current_dashboard_user_id.sql
 psql "$PROD_DB_URL" -f db/migrations/20260428_37_get_current_user_profile.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_38_rpc_permissions_attributes_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_39_rpc_clients_crud_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_40_rpc_client_media_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_41_rpc_tasks_crud_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_42_rpc_teams_crud_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_43_rpc_staff_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_44_rpc_deletion_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_45_rpc_curatorship_auth.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_46_anon_grant_audit.sql
-psql "$PROD_DB_URL" -f db/migrations/20260428_47_drop_auth_login.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_39_rpc_permissions_attributes_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_40_rpc_clients_crud_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_41_rpc_client_media_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_42_rpc_tasks_crud_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_43_rpc_teams_crud_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_44_rpc_staff_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_45_rpc_deletion_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_46_rpc_curatorship_auth.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_47_anon_grant_audit.sql
+psql "$PROD_DB_URL" -f db/migrations/20260428_48_drop_auth_login.sql
 ```
 
 Each must complete without error. If any fail, **STOP** — do not proceed; revert applied migrations from history and abort cutover.

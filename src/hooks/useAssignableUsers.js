@@ -6,7 +6,7 @@ import { supabase } from '../supabaseClient'
  * (через RPC list_assignable_users). Поиск — server-side, без debounce
  * (RPC отдаёт ≤50 строк, список короткий).
  *
- * @param {number|null} callerId
+ * @param {number|null} callerId — retained as null-guard; RPC derives identity from JWT
  * @param {string} [search]
  */
 export function useAssignableUsers(callerId, search = '') {
@@ -23,7 +23,6 @@ export function useAssignableUsers(callerId, search = '') {
 
     supabase
       .rpc('list_assignable_users', {
-        p_caller_id: callerId,
         p_search: search ?? '',
       })
       .then(({ data, error: err }) => {

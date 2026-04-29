@@ -4,7 +4,11 @@ import { supabase } from '../supabaseClient'
 /**
  * Список media клиента (фото или видео) + actions для add/update/reorder/delete.
  *
- * @param {number|null} callerId
+ * @param {number|null} callerId - Hydration guard only. The RPCs derive
+ *   identity server-side via current_dashboard_user_id(). This parameter
+ *   is checked to prevent firing RPCs before useAuth has resolved the
+ *   user — passing null causes the read effect to skip and the
+ *   mutating callbacks to throw 'not authenticated'.
  * @param {number|null} clientId
  * @param {'photo'|'video'} type
  * @param {object} [opts]
@@ -28,7 +32,6 @@ export function useClientMedia(callerId, clientId, type, opts = {}) {
 
     supabase
       .rpc('list_client_media', {
-        p_caller_id: callerId,
         p_client_id: id,
         p_type: type,
         p_sort: sort,
@@ -57,8 +60,8 @@ export function useClientMedia(callerId, clientId, type, opts = {}) {
 
   const addMedia = useCallback(
     async ({ storagePath, filename, sizeBytes, mimeType, width, height, durationMs, caption, status = 'ready' }) => {
+      if (!callerId) throw new Error('unauthorized')
       const { data, error: err } = await supabase.rpc('add_client_media', {
-        p_caller_id: callerId,
         p_client_id: id,
         p_type: type,
         p_storage_path: storagePath,
@@ -80,8 +83,8 @@ export function useClientMedia(callerId, clientId, type, opts = {}) {
 
   const updateMedia = useCallback(
     async (mediaId, { caption, clearCaption = false, status, errorReason, width, height, durationMs }) => {
+      if (!callerId) throw new Error('unauthorized')
       const { error: err } = await supabase.rpc('update_client_media', {
-        p_caller_id: callerId,
         p_media_id: mediaId,
         p_caption: caption ?? null,
         p_clear_caption: clearCaption,
@@ -99,8 +102,8 @@ export function useClientMedia(callerId, clientId, type, opts = {}) {
 
   const reorderMedia = useCallback(
     async (orderedIds) => {
+      if (!callerId) throw new Error('unauthorized')
       const { error: err } = await supabase.rpc('reorder_client_media', {
-        p_caller_id: callerId,
         p_client_id: id,
         p_type: type,
         p_ordered_ids: orderedIds,
@@ -113,8 +116,8 @@ export function useClientMedia(callerId, clientId, type, opts = {}) {
 
   const deleteMedia = useCallback(
     async (mediaId) => {
+      if (!callerId) throw new Error('unauthorized')
       const { data, error: err } = await supabase.rpc('delete_client_media', {
-        p_caller_id: callerId,
         p_media_id: mediaId,
       })
       if (err) throw new Error(err.message)

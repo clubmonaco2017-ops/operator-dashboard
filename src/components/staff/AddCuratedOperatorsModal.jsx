@@ -13,13 +13,12 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
  * отображаем ошибку inline.
  *
  * @param {object} props
- * @param {number} props.callerId
  * @param {number} props.moderatorId
  * @param {function} props.onClose
  * @param {function} props.onAdded
  */
-export function AddCuratedOperatorsModal({ callerId, moderatorId, onClose, onAdded }) {
-  const { bulkAssign, mutating } = useCuratorship(callerId, moderatorId)
+export function AddCuratedOperatorsModal({ moderatorId, onClose, onAdded }) {
+  const { bulkAssign, mutating } = useCuratorship(moderatorId)
 
   const [allOperators, setAllOperators] = useState([])
   const [loading, setLoading] = useState(true)

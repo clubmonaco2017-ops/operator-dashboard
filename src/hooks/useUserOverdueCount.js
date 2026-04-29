@@ -85,9 +85,7 @@ export function useUserOverdueCount(userId) {
     setLoading(true)
 
     const run = async () => {
-      const { data, error: err } = await supabase.rpc('count_overdue_tasks', {
-        p_caller_id: userId,
-      })
+      const { data, error: err } = await supabase.rpc('count_overdue_tasks')
       if (cancelled) return
       if (err) {
         // Тихо: показываем 0; не кешируем.

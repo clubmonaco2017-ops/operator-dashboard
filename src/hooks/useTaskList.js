@@ -34,7 +34,6 @@ export function useTaskList(callerId, opts = {}) {
 
     supabase
       .rpc('list_tasks', {
-        p_caller_id: callerId,
         p_box: box,
         p_status: status,
         p_search: debouncedSearch ?? '',

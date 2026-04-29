@@ -1,0 +1,586 @@
+-- Migration 39: Stage 6 — Migrate clients CRUD bucket to current_dashboard_user_id()
+--
+-- Mutating RPCs (6): drop p_caller_id from signature, derive via current_dashboard_user_id()
+--   create_client, update_client, archive_client, restore_client,
+--   list_clients, get_client_detail, list_client_activity
+--
+-- list_unassigned_clients lives in migration 22 (rpc_teams_clients) — migrated here too.
+--
+-- All 8 RPCs: REVOKE anon EXECUTE, GRANT to authenticated only.
+-- Permission-fail RAISEs use errcode = '42501' for stable security-test signal.
+
+BEGIN;
+
+-- ============================================================
+-- 1. create_client
+--    Original signature: (p_caller_id integer, p_name text, p_alias text,
+--                         p_description text, p_avatar_url text,
+--                         p_platform_id uuid, p_agency_id uuid, p_tableau_id text)
+--    New signature:      (p_name text, p_alias text, p_description text,
+--                         p_avatar_url text, p_platform_id uuid,
+--                         p_agency_id uuid, p_tableau_id text)
+-- ============================================================
+
+DROP FUNCTION IF EXISTS public.create_client(integer, text, text, text, text, uuid, uuid, text);
+
+CREATE OR REPLACE FUNCTION public.create_client(
+  p_name        text,
+  p_alias       text,
+  p_description text,
+  p_avatar_url  text,
+  p_platform_id uuid,
+  p_agency_id   uuid,
+  p_tableau_id  text
+) RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_caller_id integer := current_dashboard_user_id();
+  v_new_id    integer;
+BEGIN
+  IF v_caller_id IS NULL THEN
+    RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
+  END IF;
+  IF NOT has_permission(v_caller_id, 'manage_clients') THEN
+    RAISE EXCEPTION 'caller % lacks manage_clients', v_caller_id USING errcode = '42501';
+  END IF;
+
+  IF p_name IS NULL OR length(trim(p_name)) = 0 THEN
+    RAISE EXCEPTION 'name is required';
+  END IF;
+  IF p_platform_id IS NULL THEN
+    RAISE EXCEPTION 'platform_id is required';
+  END IF;
+  IF p_agency_id IS NULL THEN
+    RAISE EXCEPTION 'agency_id is required';
+  END IF;
+
+  INSERT INTO clients (
+    name, alias, description, avatar_url,
+    platform_id, agency_id, tableau_id,
+    is_active, created_by
+  )
+  VALUES (
+    trim(p_name),
+    NULLIF(trim(p_alias), ''),
+    NULLIF(p_description, ''),
+    NULLIF(p_avatar_url, ''),
+    p_platform_id,
+    p_agency_id,
+    NULLIF(trim(p_tableau_id), ''),
+    true,
+    v_caller_id
+  )
+  RETURNING id INTO v_new_id;
+
+  -- Activity: created
+  INSERT INTO client_activity (client_id, actor_id, event_type, payload)
+  VALUES (v_new_id, v_caller_id, 'created', jsonb_build_object('name', trim(p_name)));
+
+  RETURN v_new_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.create_client(text, text, text, text, uuid, uuid, text)
+  TO authenticated;
+
+-- ============================================================
+-- 2. list_clients
+--    Original signature: (p_caller_id integer, p_filter_active text,
+--                         p_filter_platform uuid, p_filter_agency uuid, p_search text)
+--    New signature:      (p_filter_active text, p_filter_platform uuid,
+--                         p_filter_agency uuid, p_search text)
+-- ============================================================
+
+DROP FUNCTION IF EXISTS public.list_clients(integer, text, uuid, uuid, text);
+
+CREATE OR REPLACE FUNCTION public.list_clients(
+  p_filter_active   text DEFAULT 'active',   -- 'active' | 'archived' | 'all'
+  p_filter_platform uuid DEFAULT NULL,
+  p_filter_agency   uuid DEFAULT NULL,
+  p_search          text DEFAULT NULL
+) RETURNS TABLE (
+  id            integer,
+  name          text,
+  alias         text,
+  description   text,
+  avatar_url    text,
+  platform_id   uuid,
+  platform_name text,
+  agency_id     uuid,
+  agency_name   text,
+  tableau_id    text,
+  is_active     boolean,
+  photos_count  integer,
+  videos_count  integer,
+  files_count   integer,
+  created_at    timestamptz,
+  updated_at    timestamptz
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_caller_id integer := current_dashboard_user_id();
+BEGIN
+  IF v_caller_id IS NULL THEN
+    RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
+  END IF;
+  IF NOT has_permission(v_caller_id, 'manage_clients') THEN
+    RAISE EXCEPTION 'caller % lacks manage_clients', v_caller_id USING errcode = '42501';
+  END IF;
+
+  RETURN QUERY
+  WITH media_counts AS (
+    SELECT
+      m.client_id,
+      COUNT(*) FILTER (WHERE m.type = 'photo' AND m.status = 'ready')::int AS photos,
+      COUNT(*) FILTER (WHERE m.type = 'video' AND m.status = 'ready')::int AS videos
+    FROM client_media m
+    GROUP BY m.client_id
+  )
+  SELECT
+    c.id,
+    c.name,
+    c.alias,
+    c.description,
+    c.avatar_url,
+    c.platform_id,
+    p.name AS platform_name,
+    c.agency_id,
+    a.name AS agency_name,
+    c.tableau_id,
+    c.is_active,
+    COALESCE(mc.photos, 0) AS photos_count,
+    COALESCE(mc.videos, 0) AS videos_count,
+    COALESCE(mc.photos, 0) + COALESCE(mc.videos, 0) AS files_count,
+    c.created_at,
+    c.updated_at
+  FROM clients c
+  LEFT JOIN platforms p ON p.id = c.platform_id
+  LEFT JOIN agencies  a ON a.id = c.agency_id
+  LEFT JOIN media_counts mc ON mc.client_id = c.id
+  WHERE
+    (p_filter_active = 'all'
+       OR (p_filter_active = 'active'   AND c.is_active = true)
+       OR (p_filter_active = 'archived' AND c.is_active = false))
+    AND (p_filter_platform IS NULL OR c.platform_id = p_filter_platform)
+    AND (p_filter_agency   IS NULL OR c.agency_id   = p_filter_agency)
+    AND (p_search IS NULL
+         OR length(trim(p_search)) = 0
+         OR lower(c.name)  LIKE '%' || lower(trim(p_search)) || '%'
+         OR lower(COALESCE(c.alias, '')) LIKE '%' || lower(trim(p_search)) || '%')
+  ORDER BY c.is_active DESC, lower(c.name) ASC;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.list_clients(text, uuid, uuid, text)
+  TO authenticated;
+
+-- ============================================================
+-- 3. get_client_detail
+--    Original signature: (p_caller_id integer, p_client_id integer)
+--    New signature:      (p_client_id integer)
+-- ============================================================
+
+DROP FUNCTION IF EXISTS public.get_client_detail(integer, integer);
+
+CREATE OR REPLACE FUNCTION public.get_client_detail(
+  p_client_id integer
+) RETURNS TABLE (
+  id            integer,
+  name          text,
+  alias         text,
+  description   text,
+  avatar_url    text,
+  platform_id   uuid,
+  platform_name text,
+  agency_id     uuid,
+  agency_name   text,
+  tableau_id    text,
+  is_active     boolean,
+  photos_count  integer,
+  videos_count  integer,
+  files_count   integer,
+  created_by    integer,
+  created_at    timestamptz,
+  updated_at    timestamptz
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_caller_id integer := current_dashboard_user_id();
+BEGIN
+  IF v_caller_id IS NULL THEN
+    RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
+  END IF;
+  IF NOT has_permission(v_caller_id, 'manage_clients') THEN
+    RAISE EXCEPTION 'caller % lacks manage_clients', v_caller_id USING errcode = '42501';
+  END IF;
+
+  RETURN QUERY
+  WITH media_counts AS (
+    SELECT
+      COUNT(*) FILTER (WHERE m.type = 'photo' AND m.status = 'ready')::int AS photos,
+      COUNT(*) FILTER (WHERE m.type = 'video' AND m.status = 'ready')::int AS videos
+    FROM client_media m
+    WHERE m.client_id = p_client_id
+  )
+  SELECT
+    c.id, c.name, c.alias, c.description, c.avatar_url,
+    c.platform_id, p.name AS platform_name,
+    c.agency_id,   a.name AS agency_name,
+    c.tableau_id, c.is_active,
+    COALESCE(mc.photos, 0) AS photos_count,
+    COALESCE(mc.videos, 0) AS videos_count,
+    COALESCE(mc.photos, 0) + COALESCE(mc.videos, 0) AS files_count,
+    c.created_by, c.created_at, c.updated_at
+  FROM clients c
+  LEFT JOIN platforms p ON p.id = c.platform_id
+  LEFT JOIN agencies  a ON a.id = c.agency_id
+  CROSS JOIN media_counts mc
+  WHERE c.id = p_client_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_client_detail(integer)
+  TO authenticated;
+
+-- ============================================================
+-- 4. update_client
+--    Original signature: (p_caller_id integer, p_client_id integer,
+--                         p_name text, p_alias text, p_description text,
+--                         p_avatar_url text, p_platform_id uuid, p_agency_id uuid,
+--                         p_tableau_id text, p_clear_alias boolean,
+--                         p_clear_description boolean, p_clear_avatar_url boolean,
+--                         p_clear_tableau_id boolean)
+--    New signature:      (p_client_id integer, p_name text, ...)
+-- ============================================================
+
+DROP FUNCTION IF EXISTS public.update_client(
+  integer, integer, text, text, text, text, uuid, uuid, text,
+  boolean, boolean, boolean, boolean
+);
+
+CREATE OR REPLACE FUNCTION public.update_client(
+  p_client_id         integer,
+  p_name              text    DEFAULT NULL,
+  p_alias             text    DEFAULT NULL,
+  p_description       text    DEFAULT NULL,
+  p_avatar_url        text    DEFAULT NULL,
+  p_platform_id       uuid    DEFAULT NULL,
+  p_agency_id         uuid    DEFAULT NULL,
+  p_tableau_id        text    DEFAULT NULL,
+  p_clear_alias       boolean DEFAULT false,
+  p_clear_description boolean DEFAULT false,
+  p_clear_avatar_url  boolean DEFAULT false,
+  p_clear_tableau_id  boolean DEFAULT false
+) RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_caller_id           integer := current_dashboard_user_id();
+  v_changed_fields      text[]  := ARRAY[]::text[];
+  v_description_changed boolean := false;
+  v_profile_changed     boolean := false;
+BEGIN
+  IF v_caller_id IS NULL THEN
+    RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
+  END IF;
+  IF NOT has_permission(v_caller_id, 'manage_clients') THEN
+    RAISE EXCEPTION 'caller % lacks manage_clients', v_caller_id USING errcode = '42501';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM clients WHERE id = p_client_id) THEN
+    RAISE EXCEPTION 'client % not found', p_client_id;
+  END IF;
+
+  v_description_changed := (p_description IS NOT NULL OR p_clear_description);
+  v_profile_changed := (
+    p_name IS NOT NULL
+    OR p_alias IS NOT NULL OR p_clear_alias
+    OR p_avatar_url IS NOT NULL OR p_clear_avatar_url
+    OR p_platform_id IS NOT NULL
+    OR p_agency_id IS NOT NULL
+    OR p_tableau_id IS NOT NULL OR p_clear_tableau_id
+  );
+
+  UPDATE clients SET
+    name        = COALESCE(NULLIF(trim(p_name), ''), name),
+    alias       = CASE WHEN p_clear_alias THEN NULL
+                       WHEN p_alias IS NULL THEN alias
+                       ELSE NULLIF(trim(p_alias), '') END,
+    description = CASE WHEN p_clear_description THEN NULL
+                       WHEN p_description IS NULL THEN description
+                       ELSE p_description END,
+    avatar_url  = CASE WHEN p_clear_avatar_url THEN NULL
+                       WHEN p_avatar_url IS NULL THEN avatar_url
+                       ELSE p_avatar_url END,
+    platform_id = COALESCE(p_platform_id, platform_id),
+    agency_id   = COALESCE(p_agency_id, agency_id),
+    tableau_id  = CASE WHEN p_clear_tableau_id THEN NULL
+                       WHEN p_tableau_id IS NULL THEN tableau_id
+                       ELSE NULLIF(trim(p_tableau_id), '') END
+  WHERE id = p_client_id;
+
+  IF v_profile_changed THEN
+    IF p_name IS NOT NULL THEN
+      v_changed_fields := array_append(v_changed_fields, 'name');
+    END IF;
+    IF p_alias IS NOT NULL OR p_clear_alias THEN
+      v_changed_fields := array_append(v_changed_fields, 'alias');
+    END IF;
+    IF p_avatar_url IS NOT NULL OR p_clear_avatar_url THEN
+      v_changed_fields := array_append(v_changed_fields, 'avatar_url');
+    END IF;
+    IF p_platform_id IS NOT NULL THEN
+      v_changed_fields := array_append(v_changed_fields, 'platform_id');
+    END IF;
+    IF p_agency_id IS NOT NULL THEN
+      v_changed_fields := array_append(v_changed_fields, 'agency_id');
+    END IF;
+    IF p_tableau_id IS NOT NULL OR p_clear_tableau_id THEN
+      v_changed_fields := array_append(v_changed_fields, 'tableau_id');
+    END IF;
+
+    INSERT INTO client_activity (client_id, actor_id, event_type, payload)
+    VALUES (
+      p_client_id, v_caller_id, 'updated_profile',
+      jsonb_build_object('fields', v_changed_fields)
+    );
+  END IF;
+
+  IF v_description_changed THEN
+    INSERT INTO client_activity (client_id, actor_id, event_type, payload)
+    VALUES (
+      p_client_id, v_caller_id, 'updated_description', '{}'::jsonb
+    );
+  END IF;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.update_client(
+  integer, text, text, text, text, uuid, uuid, text,
+  boolean, boolean, boolean, boolean
+) TO authenticated;
+
+-- ============================================================
+-- 5. archive_client
+--    Original signature: (p_caller_id integer, p_client_id integer)
+--    New signature:      (p_client_id integer)
+-- ============================================================
+
+DROP FUNCTION IF EXISTS public.archive_client(integer, integer);
+
+CREATE OR REPLACE FUNCTION public.archive_client(
+  p_client_id integer
+) RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_caller_id integer := current_dashboard_user_id();
+BEGIN
+  IF v_caller_id IS NULL THEN
+    RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
+  END IF;
+  IF NOT has_permission(v_caller_id, 'manage_clients') THEN
+    RAISE EXCEPTION 'caller % lacks manage_clients', v_caller_id USING errcode = '42501';
+  END IF;
+
+  UPDATE clients SET is_active = false WHERE id = p_client_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'client % not found', p_client_id;
+  END IF;
+
+  INSERT INTO client_activity (client_id, actor_id, event_type, payload)
+  VALUES (p_client_id, v_caller_id, 'archived', '{}'::jsonb);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.archive_client(integer) TO authenticated;
+
+-- ============================================================
+-- 6. restore_client
+--    Original signature: (p_caller_id integer, p_client_id integer)
+--    New signature:      (p_client_id integer)
+-- ============================================================
+
+DROP FUNCTION IF EXISTS public.restore_client(integer, integer);
+
+CREATE OR REPLACE FUNCTION public.restore_client(
+  p_client_id integer
+) RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_caller_id integer := current_dashboard_user_id();
+BEGIN
+  IF v_caller_id IS NULL THEN
+    RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
+  END IF;
+  IF NOT has_permission(v_caller_id, 'manage_clients') THEN
+    RAISE EXCEPTION 'caller % lacks manage_clients', v_caller_id USING errcode = '42501';
+  END IF;
+
+  UPDATE clients SET is_active = true WHERE id = p_client_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'client % not found', p_client_id;
+  END IF;
+
+  INSERT INTO client_activity (client_id, actor_id, event_type, payload)
+  VALUES (p_client_id, v_caller_id, 'restored', '{}'::jsonb);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.restore_client(integer) TO authenticated;
+
+-- ============================================================
+-- 7. list_client_activity
+--    Original signature: (p_caller_id integer, p_client_id integer, p_limit integer)
+--    New signature:      (p_client_id integer, p_limit integer)
+-- ============================================================
+
+DROP FUNCTION IF EXISTS public.list_client_activity(integer, integer, integer);
+
+CREATE OR REPLACE FUNCTION public.list_client_activity(
+  p_client_id integer,
+  p_limit     integer DEFAULT 12
+) RETURNS TABLE (
+  id           integer,
+  actor_id     integer,
+  actor_name   text,
+  actor_role   text,
+  event_type   text,
+  payload      jsonb,
+  created_at   timestamptz
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_caller_id integer := current_dashboard_user_id();
+BEGIN
+  IF v_caller_id IS NULL THEN
+    RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
+  END IF;
+  IF NOT has_permission(v_caller_id, 'manage_clients') THEN
+    RAISE EXCEPTION 'caller % lacks manage_clients', v_caller_id USING errcode = '42501';
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    a.id,
+    a.actor_id,
+    CASE
+      WHEN a.actor_id IS NULL THEN 'Система'
+      ELSE COALESCE(NULLIF(trim(u.first_name || ' ' || u.last_name), ''), u.email)
+    END AS actor_name,
+    u.role AS actor_role,
+    a.event_type,
+    a.payload,
+    a.created_at
+  FROM client_activity a
+  LEFT JOIN dashboard_users u ON u.id = a.actor_id
+  WHERE a.client_id = p_client_id
+  ORDER BY a.created_at DESC
+  LIMIT GREATEST(1, LEAST(p_limit, 100));
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.list_client_activity(integer, integer)
+  TO authenticated;
+
+-- ============================================================
+-- 8. list_unassigned_clients  (originally in migration 22)
+--    Original signature: (p_caller_id integer, p_search text)
+--    New signature:      (p_search text)
+--    Permission: manage_teams (not manage_clients)
+-- ============================================================
+
+DROP FUNCTION IF EXISTS public.list_unassigned_clients(integer, text);
+
+CREATE OR REPLACE FUNCTION public.list_unassigned_clients(
+  p_search text DEFAULT NULL
+) RETURNS TABLE (
+  id            integer,
+  name          text,
+  alias         text,
+  avatar_url    text,
+  platform_name text,
+  agency_name   text
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_caller_id integer := current_dashboard_user_id();
+BEGIN
+  IF v_caller_id IS NULL THEN
+    RAISE EXCEPTION 'unauthorized' USING errcode = '28000';
+  END IF;
+  IF NOT has_permission(v_caller_id, 'manage_teams') THEN
+    RAISE EXCEPTION 'caller % lacks manage_teams', v_caller_id USING errcode = '42501';
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    c.id,
+    c.name,
+    c.alias,
+    c.avatar_url,
+    p.name AS platform_name,
+    a.name AS agency_name
+  FROM clients c
+  LEFT JOIN platforms p ON p.id = c.platform_id
+  LEFT JOIN agencies  a ON a.id = c.agency_id
+  WHERE c.is_active = true
+    AND NOT EXISTS (SELECT 1 FROM team_clients tc WHERE tc.client_id = c.id)
+    AND (p_search IS NULL
+         OR length(trim(p_search)) = 0
+         OR lower(c.name)                LIKE '%' || lower(trim(p_search)) || '%'
+         OR lower(COALESCE(c.alias, '')) LIKE '%' || lower(trim(p_search)) || '%')
+  ORDER BY lower(c.name)
+  LIMIT 50;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.list_unassigned_clients(text)
+  TO authenticated;
+
+COMMIT;
+
+-- VERIFY:
+--   SELECT routine_name FROM information_schema.routines
+--     WHERE routine_schema = 'public'
+--       AND routine_name IN (
+--         'create_client', 'update_client', 'archive_client', 'restore_client',
+--         'list_clients', 'get_client_detail', 'list_client_activity',
+--         'list_unassigned_clients'
+--       )
+--     ORDER BY routine_name;
+--   -- Expected: 8 rows.
+--
+--   SELECT routine_name, specific_name
+--     FROM information_schema.routines
+--     WHERE routine_schema = 'public'
+--       AND routine_name = 'create_client';
+--   -- Expected: signature WITHOUT p_caller_id (no integer as first param).
+--
+-- ROLLBACK:
+--   -- Re-apply migration 14 to restore original signatures.
+--   -- Re-apply migration 22 for list_unassigned_clients.

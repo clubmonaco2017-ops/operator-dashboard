@@ -11,7 +11,7 @@ export function usePendingDeletionCount({ enabled = true } = {}) {
     let cancelled = false
     const fetch = () => {
       supabase
-        .rpc('count_pending_deletions', { p_caller_id: user.id })
+        .rpc('count_pending_deletions')
         .then(({ data, error }) => {
           if (cancelled || error) return
           setCount(data ?? 0)

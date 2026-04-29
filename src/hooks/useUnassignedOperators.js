@@ -5,24 +5,21 @@ import { supabase } from '../supabaseClient'
  * Операторы без команды (через RPC list_unassigned_operators).
  * Поиск — серверный аргумент RPC.
  *
- * @param {number|null} callerId
  * @param {string} [search]
  */
-export function useUnassignedOperators(callerId, search = '') {
+export function useUnassignedOperators(search = '') {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    if (!callerId) return
     let cancelled = false
     setLoading(true)
     setError(null)
 
     supabase
       .rpc('list_unassigned_operators', {
-        p_caller_id: callerId,
         p_search: search || null,
       })
       .then(({ data, error: err }) => {
@@ -41,7 +38,7 @@ export function useUnassignedOperators(callerId, search = '') {
     return () => {
       cancelled = true
     }
-  }, [callerId, search, reloadKey])
+  }, [search, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 

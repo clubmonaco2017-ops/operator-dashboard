@@ -1,35 +1,23 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Modal, InputField, TextArea, Toast } from '../components/ui'
+import { adminFetch } from '../lib/adminFetch.js'
 
 async function platformApi(action, params = {}) {
-  const res = await fetch('/api/admin/platforms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, ...params }),
-  })
-  const json = await res.json()
-  if (!res.ok || json.error) return { data: null, error: { message: json.error || 'Unknown error' } }
-  return { data: json.data, error: null }
+  return adminFetch('/api/admin/platforms', { action, ...params })
 }
 
-async function uploadLogo(callerId, file) {
+async function uploadLogo(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = async () => {
       const base64 = reader.result.split(',')[1]
-      const res = await fetch('/api/admin/upload-logo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          caller_id: callerId,
-          file: base64,
-          filename: file.name,
-          content_type: file.type,
-        }),
+      const { data, error } = await adminFetch('/api/admin/upload-logo', {
+        file: base64,
+        filename: file.name,
+        content_type: file.type,
       })
-      const json = await res.json()
-      if (!res.ok || json.error) reject(new Error(json.error || 'Upload failed'))
-      else resolve(json.data.url)
+      if (error) reject(new Error(error.message || 'Upload failed'))
+      else resolve(data.url)
     }
     reader.onerror = () => reject(new Error('File read error'))
     reader.readAsDataURL(file)
@@ -116,7 +104,7 @@ function ContactFields({ contacts, onChange }) {
   )
 }
 
-function PlatformModal({ platform, onClose, onSaved, onDeleted, callerId }) {
+function PlatformModal({ platform, onClose, onSaved, onDeleted }) {
   const isEdit = !!platform?.id
   const [form, setForm] = useState({
     name: platform?.name || '',
@@ -136,7 +124,7 @@ function PlatformModal({ platform, onClose, onSaved, onDeleted, callerId }) {
     if (!file) return
     setUploading(true)
     try {
-      const url = await uploadLogo(callerId, file)
+      const url = await uploadLogo(file)
       setForm(f => ({ ...f, logo_url: url }))
     } catch (err) {
       setError(err.message)
@@ -151,7 +139,6 @@ function PlatformModal({ platform, onClose, onSaved, onDeleted, callerId }) {
     setSubmitting(true)
 
     const payload = {
-      caller_id: callerId,
       ...form,
       contacts: form.contacts.filter(c => c.name || c.phone || c.email),
     }
@@ -172,7 +159,7 @@ function PlatformModal({ platform, onClose, onSaved, onDeleted, callerId }) {
   const handleDelete = async () => {
     if (!window.confirm(`Удалить платформу "${platform.name}"?`)) return
     setSubmitting(true)
-    const { error: err } = await platformApi('delete', { caller_id: callerId, id: platform.id })
+    const { error: err } = await platformApi('delete', { id: platform.id })
     setSubmitting(false)
     if (err) {
       setError(err.message)
@@ -307,8 +294,7 @@ function PlatformModal({ platform, onClose, onSaved, onDeleted, callerId }) {
   )
 }
 
-export default function PlatformsSection({ currentUser }) {
-  const callerId = currentUser?.id
+export default function PlatformsSection() {
   const [platforms, setPlatforms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -323,11 +309,11 @@ export default function PlatformsSection({ currentUser }) {
   const fetchPlatforms = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const { data, error: err } = await platformApi('list', { caller_id: callerId })
+    const { data, error: err } = await platformApi('list')
     setLoading(false)
     if (err) setError(err.message)
     else setPlatforms(data || [])
-  }, [callerId])
+  }, [])
 
   useEffect(() => { fetchPlatforms() }, [fetchPlatforms])
 
@@ -409,7 +395,6 @@ export default function PlatformsSection({ currentUser }) {
       {editTarget && (
         <PlatformModal
           platform={editTarget.id ? editTarget : null}
-          callerId={callerId}
           onClose={() => setEditTarget(null)}
           onSaved={() => { showToast(editTarget.id ? 'Платформа обновлена' : 'Платформа создана'); fetchPlatforms() }}
           onDeleted={() => { showToast('Платформа удалена'); fetchPlatforms() }}

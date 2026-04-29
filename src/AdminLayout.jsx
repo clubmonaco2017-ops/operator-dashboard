@@ -139,9 +139,9 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-6">
           <Routes>
-            <Route index element={<AdminPanel currentUser={currentUser} />} />
-            <Route path="platforms" element={<PlatformsSection currentUser={currentUser} />} />
-            <Route path="agencies" element={<AgenciesSection currentUser={currentUser} />} />
+            <Route index element={<AdminPanel />} />
+            <Route path="platforms" element={<PlatformsSection />} />
+            <Route path="agencies" element={<AgenciesSection />} />
             <Route path="clients" element={<ClientsSection />} />
             <Route path="operators" element={<OperatorsSection />} />
           </Routes>

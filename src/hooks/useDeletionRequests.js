@@ -13,7 +13,7 @@ export function useDeletionRequests(callerId, status = 'pending') {
     setLoading(true)
     setError(null)
     supabase
-      .rpc('list_deletion_requests', { p_caller_id: callerId, p_status: status })
+      .rpc('list_deletion_requests', { p_status: status })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) { setError(err.message); setRows([]) }

@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from './_supabase.js'
+import { authorize } from './_auth.js'
 import { randomUUID } from 'crypto'
 
 export const config = { api: { bodyParser: { sizeLimit: '4mb' } } }
@@ -6,9 +7,11 @@ export const config = { api: { bodyParser: { sizeLimit: '4mb' } } }
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
+  const caller = await authorize(req, res)
+  if (!caller) return
+
   try {
-    const { caller_id, file, filename, content_type } = req.body || {}
-    if (!caller_id) return res.status(401).json({ error: 'Unauthorized' })
+    const { file, filename, content_type } = req.body || {}
     if (!file) return res.status(400).json({ error: 'No file provided' })
 
     const sb = getSupabaseAdmin()

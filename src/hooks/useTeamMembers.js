@@ -8,7 +8,7 @@ import { invalidateUserTeamMembership } from './useUserTeamMembership.js'
  * Selector + actions: получает уже загруженный `row` от родительского useTeam
  * и его `reload`, чтобы избежать второго вызова get_team_detail на странице.
  *
- * @param {number|null} callerId
+ * @param {number|null} callerId — retained as null-guard; RPCs derive identity from JWT
  * @param {object|null} row — результат useTeam(callerId, teamId).row
  * @param {Function|null} reload — useTeam(...).reload
  */
@@ -24,7 +24,6 @@ export function useTeamMembers(callerId, row, reload) {
       setMutating(true)
       try {
         const { error: err } = await supabase.rpc('add_team_member', {
-          p_caller_id: callerId,
           p_team_id: row?.id,
           p_operator_id: operatorId,
         })
@@ -47,7 +46,6 @@ export function useTeamMembers(callerId, row, reload) {
       setMutating(true)
       try {
         const { error: err } = await supabase.rpc('remove_team_member', {
-          p_caller_id: callerId,
           p_team_id: row?.id,
           p_operator_id: operatorId,
         })
@@ -70,7 +68,6 @@ export function useTeamMembers(callerId, row, reload) {
       setMutating(true)
       try {
         const { error: err } = await supabase.rpc('move_team_member', {
-          p_caller_id: callerId,
           p_from_team: row?.id,
           p_to_team: toTeamId,
           p_operator_id: operatorId,
