@@ -23,8 +23,12 @@ export function ChangePasswordModal({ staffEmail, onClose }) {
 
   const submit = async (e) => {
     e.preventDefault()
-    setSubmitting(true)
     setError(null)
+    if (!staffEmail?.trim()) {
+      setError('У сотрудника не указан email — невозможно отправить ссылку')
+      return
+    }
+    setSubmitting(true)
     const { error: err } = await supabase.auth.resetPasswordForEmail(staffEmail, {
       redirectTo: `${window.location.origin}/set-password`,
     })
@@ -45,7 +49,7 @@ export function ChangePasswordModal({ staffEmail, onClose }) {
 
         {sent ? (
           <div className="space-y-4">
-            <p className="text-sm text-foreground">
+            <p role="status" className="text-sm text-foreground">
               Письмо отправлено на{' '}
               <span className="font-medium">{staffEmail}</span>.
               Сотрудник должен перейти по ссылке в письме, чтобы установить новый пароль.

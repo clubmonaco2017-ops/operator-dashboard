@@ -52,7 +52,7 @@ export function useStaffTeamMembership(callerId, operatorUserId) {
           lead_role: row.lead_role ?? null,
         })
       })
-      .then(() => {
+      .finally(() => {
         if (!cancelled) setLoading(false)
       })
     return () => {
