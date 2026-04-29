@@ -43,8 +43,8 @@ DELETE FROM user_attributes
 
 -- 7. Deletion requests (если есть)
 DELETE FROM deletion_requests
-  WHERE target_user_id IN (SELECT id FROM dashboard_users WHERE email != 'vedvoy@gmail.com')
-     OR requested_by  IN (SELECT id FROM dashboard_users WHERE email != 'vedvoy@gmail.com');
+  WHERE target_user  IN (SELECT id FROM dashboard_users WHERE email != 'vedvoy@gmail.com')
+     OR requested_by IN (SELECT id FROM dashboard_users WHERE email != 'vedvoy@gmail.com');
 
 -- 8. Auth users — удаляем auth.users для всех кроме superadmin
 -- ВНИМАНИЕ: на dev-окружении ОК; на проде это нарушит integrity. Здесь
