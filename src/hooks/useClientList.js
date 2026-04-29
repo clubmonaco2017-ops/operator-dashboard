@@ -34,7 +34,7 @@ export function useClientList(callerId, filters = {}) {
       .rpc('list_clients', {
         p_filter_active: active,
         p_filter_platform: platformId,
-        p_filter_agency: agencyId,
+        p_agency_id: agencyId,
         p_search: search || null,
       })
       .then(({ data, error: err }) => {
