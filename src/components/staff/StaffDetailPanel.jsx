@@ -132,6 +132,18 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
     bothChanged()
   }
 
+  async function doActivate() {
+    if (!confirm('Активировать сотрудника? Связи с командами и кураторство были сброшены при деактивации — назначьте заново при необходимости.')) return
+    const { error: err } = await supabase.rpc('activate_staff', {
+      p_user_id: row.id,
+    })
+    if (err) {
+      alert(err.message)
+      return
+    }
+    bothChanged()
+  }
+
   if (loading) {
     return <div className="p-6 text-sm text-muted-foreground">Загрузка…</div>
   }
@@ -258,11 +270,11 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
                     <Switch
                       size="sm"
                       checked={row.is_active}
-                      disabled={!row.is_active}
                       onCheckedChange={(next) => {
-                        if (!next) doDeactivate()
+                        if (next && !row.is_active) doActivate()
+                        else if (!next && row.is_active) doDeactivate()
                       }}
-                      aria-label={row.is_active ? 'Деактивировать сотрудника' : 'Сотрудник деактивирован'}
+                      aria-label={row.is_active ? 'Деактивировать сотрудника' : 'Активировать сотрудника'}
                     />
                     <span className={row.is_active ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground'}>
                       {row.is_active ? 'Активен' : 'Неактивен'}
