@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 /**
  * Список задач (через RPC list_tasks).
@@ -13,6 +14,7 @@ import { supabase } from '../supabaseClient'
  */
 export function useTaskList(callerId, opts = {}) {
   const { box = 'inbox', status = 'all', search = '' } = opts
+  const { activeAgencyId } = useAgencyContext()
 
   const [debouncedSearch, setDebouncedSearch] = useState(search)
   const [rows, setRows] = useState([])
@@ -37,6 +39,7 @@ export function useTaskList(callerId, opts = {}) {
         p_box: box,
         p_status: status,
         p_search: debouncedSearch ?? '',
+        p_agency_id: activeAgencyId,
       })
       .then(({ data, error: err }) => {
         if (cancelled) return
@@ -54,7 +57,7 @@ export function useTaskList(callerId, opts = {}) {
     return () => {
       cancelled = true
     }
-  }, [callerId, box, status, debouncedSearch, reloadKey])
+  }, [callerId, box, status, debouncedSearch, activeAgencyId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 

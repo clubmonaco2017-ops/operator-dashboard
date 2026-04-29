@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { invalidateUserOverdueCount } from './useUserOverdueCount.js'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 /**
  * Mutating actions для задач: create / update / cancel / take / report / delete.
@@ -14,6 +15,7 @@ import { invalidateUserOverdueCount } from './useUserOverdueCount.js'
 export function useTaskActions(callerId) {
   const [inFlight, setInFlight] = useState(0)
   const [error, setError] = useState(null)
+  const { activeAgencyId } = useAgencyContext()
 
   const begin = useCallback(() => {
     setInFlight((n) => n + 1)
@@ -31,14 +33,18 @@ export function useTaskActions(callerId) {
   )
 
   const createTask = useCallback(
-    async ({ title, description, deadline, assignedTo }) => {
+    async ({ title, description, deadline, assignedTo, agencyId }) => {
       begin()
       try {
+        // agencyId override falls back to active agency from context. For tasks
+        // assigned to admin/superadmin (no agency), caller can pass null explicitly.
+        const effectiveAgencyId = agencyId === undefined ? activeAgencyId : agencyId
         const { data, error: err } = await supabase.rpc('create_task', {
           p_title: title,
           p_description: description ?? null,
           p_deadline: deadline ?? null,
           p_assigned_to: assignedTo,
+          p_agency_id: effectiveAgencyId,
         })
         if (err) throw new Error(err.message)
         invalidate(assignedTo)
@@ -50,7 +56,7 @@ export function useTaskActions(callerId) {
         end()
       }
     },
-    [callerId, begin, end, invalidate],
+    [callerId, begin, end, invalidate, activeAgencyId],
   )
 
   const updateTask = useCallback(
