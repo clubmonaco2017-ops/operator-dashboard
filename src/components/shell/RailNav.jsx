@@ -56,7 +56,7 @@ function RailItem({ to, end, icon, label, badge }) {
 }
 
 export function RailNav({ className = '' }) {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   const { has: hasTeamMembership } = useUserTeamMembership(user?.id)
 
   const canSeeStaff = hasPermission(user, 'create_users')
@@ -104,7 +104,7 @@ export function RailNav({ className = '' }) {
         />
       )}
       <ThemeToggle />
-      <UserMenuDropdown user={user} onLogout={logout} />
+      <UserMenuDropdown user={user} onLogout={signOut} />
     </aside>
   )
 }
