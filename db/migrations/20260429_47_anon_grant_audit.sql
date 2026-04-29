@@ -1,10 +1,15 @@
 -- Migration 47: Stage 14 — Anon-grant audit (defence-in-depth).
 --
--- After bucket migrations 39–46 each REVOKE EXECUTE ... FROM anon on the
--- functions they touch, this audit sweeps any remaining EXECUTE grants on
--- public functions held by the `anon` role. After this point the only
--- public RPCs anon can reach must be those Edge Functions / privileged
--- code paths grant explicitly via service-role.
+-- Sweeps every public function still reachable by `anon`. Anon gets EXECUTE
+-- two ways: (1) direct GRANT TO anon, (2) inheritance via the default
+-- GRANT EXECUTE TO PUBLIC that Postgres applies to every newly-created
+-- function. Several bucket migrations (39–44, 46) issued
+-- DROP FUNCTION + CREATE OR REPLACE FUNCTION + GRANT TO authenticated,
+-- but skipped the matching REVOKE FROM PUBLIC — so anon still reaches
+-- those functions via PUBLIC inheritance. A REVOKE FROM anon on such a
+-- function is a no-op (no direct grant to revoke); we must REVOKE FROM
+-- PUBLIC. Authenticated and service_role keep their explicit grants and
+-- continue working.
 --
 -- The loop is idempotent: a no-op once applied. NOTICE lines record what
 -- was revoked so dev runs leave an audit trail in psql output.
@@ -24,10 +29,14 @@ BEGIN
       AND has_function_privilege('anon', p.oid, 'EXECUTE')
   LOOP
     EXECUTE format(
+      'REVOKE EXECUTE ON FUNCTION %I.%I(%s) FROM PUBLIC',
+      rec.nspname, rec.proname, rec.args
+    );
+    EXECUTE format(
       'REVOKE EXECUTE ON FUNCTION %I.%I(%s) FROM anon',
       rec.nspname, rec.proname, rec.args
     );
-    RAISE NOTICE 'Revoked anon EXECUTE on %.%(%)',
+    RAISE NOTICE 'Revoked PUBLIC+anon EXECUTE on %.%(%)',
       rec.nspname, rec.proname, rec.args;
   END LOOP;
 END;

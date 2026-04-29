@@ -24,10 +24,12 @@ const SEED_PASSWORD_HASH_STUB = '$2a$04$VTlDOq/bqe7KK5j4C1V9/.j6NQv.QXl1j5J8Yku5
 
 const admin = createClient(URL, SERVICE_ROLE, { auth: { autoRefreshToken: false, persistSession: false } });
 
+// Permission names match those checked in the bucket-migration RPCs
+// (see has_permission(_, '...') calls in db/migrations/20260428_3*-4*.sql).
 const FIXTURES = [
-  { email: 'userA@test.local', password: 'TestPwUserA1', role: 'operator', perms: ['list_clients', 'create_clients'] },
+  { email: 'userA@test.local', password: 'TestPwUserA1', role: 'operator', perms: ['manage_clients'] },
   { email: 'userB@test.local', password: 'TestPwUserB1', role: 'operator', perms: [] },
-  { email: 'userC@test.local', password: 'TestPwUserC1', role: 'operator', perms: ['list_clients'] },
+  { email: 'userC@test.local', password: 'TestPwUserC1', role: 'operator', perms: ['manage_clients'] },
 ];
 
 async function findOrCreateAuthUser({ email, password }) {

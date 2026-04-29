@@ -8,9 +8,98 @@
 -- All migrated RPCs: REVOKE ALL FROM PUBLIC + GRANT EXECUTE TO authenticated.
 -- Permission-fail RAISEs use USING errcode = '42501'.
 --
--- Source migration: 20260424_11_rpc_deletion_workflow.sql
+-- Self-contained: re-creates the apply_user_archived_side_effects helper
+-- (originally created in migration 24) so this migration applies cleanly
+-- against any DB state — including environments where 24 was never run.
+-- approve_deletion preserves the cascade-via-helper semantics introduced
+-- in migration 24; same cascade lives on deactivate_staff (migration 44).
+--
+-- Source migration: 20260424_11_rpc_deletion_workflow.sql + 20260425_24_user_archive_cascade.sql
 
 BEGIN;
+
+-- ============================================================
+-- 0. Helper: apply_user_archived_side_effects
+--    Originally created in migration 24. Re-stated here as CREATE OR REPLACE
+--    so the deletion bucket is self-sufficient regardless of whether 24
+--    was applied. Body is byte-equivalent to migration 24's definition.
+--    No own permission gate — gate lives on callers (approve_deletion,
+--    deactivate_staff). Helper trusted; locks user row to avoid races.
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.apply_user_archived_side_effects(
+  p_user_id  integer,
+  p_actor_id integer
+) RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, extensions
+AS $$
+DECLARE
+  v_user_role     text;
+  v_blocking_team text;
+  v_n_members     integer;
+  v_n_curated_of  integer;
+  v_n_curated_by  integer;
+BEGIN
+  SELECT role INTO v_user_role
+    FROM dashboard_users
+    WHERE id = p_user_id
+    FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'user % not found', p_user_id;
+  END IF;
+
+  -- B1: блок при активной команде, где user — лид.
+  SELECT name INTO v_blocking_team
+    FROM teams
+    WHERE lead_user_id = p_user_id
+      AND is_active = true
+    LIMIT 1;
+  IF FOUND THEN
+    RAISE EXCEPTION 'Нельзя архивировать: ведёт команду "%". Смените лида сначала.', v_blocking_team;
+  END IF;
+
+  -- B2: блок при курируемых операторах (только для модератора).
+  IF v_user_role = 'moderator'
+     AND EXISTS (SELECT 1 FROM moderator_operators WHERE moderator_id = p_user_id)
+  THEN
+    RAISE EXCEPTION 'Нельзя архивировать модератора с курируемыми операторами. Переназначьте кураторство сначала.';
+  END IF;
+
+  WITH d_members AS (
+    DELETE FROM team_members
+      WHERE operator_id = p_user_id
+      RETURNING 1
+  ),
+  d_curated_of AS (
+    DELETE FROM moderator_operators
+      WHERE moderator_id = p_user_id
+      RETURNING 1
+  ),
+  d_curated_by AS (
+    DELETE FROM moderator_operators
+      WHERE operator_id = p_user_id
+      RETURNING 1
+  )
+  SELECT
+    (SELECT count(*) FROM d_members),
+    (SELECT count(*) FROM d_curated_of),
+    (SELECT count(*) FROM d_curated_by)
+  INTO v_n_members, v_n_curated_of, v_n_curated_by;
+
+  INSERT INTO staff_activity (user_id, actor_id, event_type, payload)
+  VALUES (
+    p_user_id,
+    p_actor_id,
+    'user_archived_with_cascade',
+    jsonb_build_object(
+      'user_role', v_user_role,
+      'removed_team_memberships',          v_n_members,
+      'removed_curatorships_as_moderator', v_n_curated_of,
+      'removed_curatorships_as_operator',  v_n_curated_by
+    )
+  );
+END $$;
 
 -- ============================================================
 -- 1. request_deletion
@@ -109,6 +198,8 @@ BEGIN
   IF v_target IS NULL THEN
     RAISE EXCEPTION 'request % not found or not pending', p_request_id;
   END IF;
+
+  PERFORM public.apply_user_archived_side_effects(v_target, v_caller_id);
 
   UPDATE dashboard_users SET is_active = false WHERE id = v_target;
 END;
