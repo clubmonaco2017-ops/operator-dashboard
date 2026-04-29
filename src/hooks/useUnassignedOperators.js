@@ -22,7 +22,6 @@ export function useUnassignedOperators(callerId, search = '') {
 
     supabase
       .rpc('list_unassigned_operators', {
-        p_caller_id: callerId,
         p_search: search || null,
       })
       .then(({ data, error: err }) => {

@@ -30,7 +30,6 @@ export function useStaffTeamMembership(callerId, operatorUserId) {
     setError(null)
     supabase
       .rpc('get_staff_team_membership', {
-        p_caller_id: callerId,
         p_staff_id: operatorUserId,
       })
       .then(({ data: rows, error: err }) => {

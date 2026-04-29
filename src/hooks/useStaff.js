@@ -13,7 +13,7 @@ export function useStaff(callerId, refCode) {
     setLoading(true)
     setError(null)
     supabase
-      .rpc('list_staff', { p_caller_id: callerId })
+      .rpc('list_staff')
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {

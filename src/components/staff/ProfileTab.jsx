@@ -36,7 +36,6 @@ export function ProfileTab() {
     setSaving(true)
     setError(null)
     const { error: err } = await supabase.rpc('update_staff_profile', {
-      p_caller_id: user.id,
       p_user_id: row.id,
       p_first_name: firstName.trim(),
       p_last_name: lastName.trim(),
