@@ -29,7 +29,7 @@ import {
 import { isSuperadmin } from './lib/permissions.js'
 
 export default function App() {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   const navigate = useNavigate()
 
   if (!user) {
@@ -80,7 +80,7 @@ export default function App() {
           element={
             <AdminLayout
               onClose={() => navigate('/')}
-              onLogout={logout}
+              onLogout={signOut}
               currentUser={user}
             />
           }
