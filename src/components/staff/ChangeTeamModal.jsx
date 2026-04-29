@@ -25,7 +25,7 @@ export function ChangeTeamModal({ callerId, operatorId, currentTeamId, onClose, 
     let cancelled = false
     setLoading(true)
     supabase
-      .rpc('list_active_teams_for_assignment', { p_caller_id: callerId })
+      .rpc('list_active_teams_for_assignment', {})
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {
@@ -51,13 +51,11 @@ export function ChangeTeamModal({ callerId, operatorId, currentTeamId, onClose, 
       let err
       if (currentTeamId == null) {
         ;({ error: err } = await supabase.rpc('add_team_member', {
-          p_caller_id: callerId,
           p_team_id: selected,
           p_operator_id: operatorId,
         }))
       } else {
         ;({ error: err } = await supabase.rpc('move_team_member', {
-          p_caller_id: callerId,
           p_from_team: currentTeamId,
           p_to_team: selected,
           p_operator_id: operatorId,

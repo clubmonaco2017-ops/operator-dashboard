@@ -5,7 +5,7 @@ import { supabase } from '../supabaseClient'
  * Деталь одной команды (через RPC get_team_detail).
  * RPC возвращает TABLE — берём первую строку.
  *
- * @param {number|null} callerId
+ * @param {number|null} callerId — retained as null-guard; RPC derives identity from JWT
  * @param {number|string|null} teamId
  */
 export function useTeam(callerId, teamId) {
@@ -24,7 +24,7 @@ export function useTeam(callerId, teamId) {
     setError(null)
 
     supabase
-      .rpc('get_team_detail', { p_caller_id: callerId, p_team_id: id })
+      .rpc('get_team_detail', { p_team_id: id })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {

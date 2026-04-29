@@ -6,7 +6,7 @@ import { supabase } from '../supabaseClient'
  * Поиск — client-side: фильтруем уже загруженные строки по name/lead_name
  * (case-insensitive substring), без дополнительного RPC.
  *
- * @param {number|null} callerId
+ * @param {number|null} callerId — retained as null-guard; RPC derives identity from JWT
  * @param {object} [opts]
  * @param {'active'|'archived'|'all'} [opts.active]  — default 'active'
  * @param {string} [opts.search]
@@ -26,7 +26,7 @@ export function useTeamList(callerId, opts = {}) {
     setError(null)
 
     supabase
-      .rpc('list_teams', { p_caller_id: callerId, p_active: active })
+      .rpc('list_teams', { p_active: active })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {

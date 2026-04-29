@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient'
 /**
  * События команды (правая колонка «Активность») с пагинацией.
  *
- * @param {number|null} callerId
+ * @param {number|null} callerId — retained as null-guard; RPC derives identity from JWT
  * @param {number|string|null} teamId
  * @param {number} [limit] — default 12
  */
@@ -34,7 +34,6 @@ export function useTeamActivity(callerId, teamId, limit = 12) {
 
     supabase
       .rpc('list_team_activity', {
-        p_caller_id: callerId,
         p_team_id: id,
         p_limit: limit,
         p_offset: 0,
@@ -69,7 +68,6 @@ export function useTeamActivity(callerId, teamId, limit = 12) {
     setError(null)
     try {
       const { data, error: err } = await supabase.rpc('list_team_activity', {
-        p_caller_id: callerId,
         p_team_id: id,
         p_limit: limit,
         p_offset: nextOffset,

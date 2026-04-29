@@ -141,7 +141,6 @@ export function useTeamMembershipsMap(callerId) {
     const run = async () => {
       try {
         const { data: teams, error: teamsErr } = await supabase.rpc('list_teams', {
-          p_caller_id: callerId,
           p_active: 'active',
         })
         if (cancelled) return
@@ -149,7 +148,7 @@ export function useTeamMembershipsMap(callerId) {
 
         const detailPromises = (teams || []).map((t) =>
           supabase
-            .rpc('get_team_detail', { p_caller_id: callerId, p_team_id: t.id })
+            .rpc('get_team_detail', { p_team_id: t.id })
             .then(({ data, error: detailErr }) => {
               if (detailErr) return { team: t, members: [] }
               return { team: t, members: data?.[0]?.members || [] }

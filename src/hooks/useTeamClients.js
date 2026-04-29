@@ -7,7 +7,7 @@ import { supabase } from '../supabaseClient'
  * Selector + actions: получает уже загруженный `row` от родительского useTeam
  * и его `reload`, чтобы избежать второго вызова get_team_detail на странице.
  *
- * @param {number|null} callerId
+ * @param {number|null} callerId — retained as null-guard; RPCs derive identity from JWT
  * @param {object|null} row — результат useTeam(callerId, teamId).row
  * @param {Function|null} reload — useTeam(...).reload
  */
@@ -23,7 +23,6 @@ export function useTeamClients(callerId, row, reload) {
       setMutating(true)
       try {
         const { error: err } = await supabase.rpc('assign_team_clients', {
-          p_caller_id: callerId,
           p_team_id: row?.id,
           p_client_ids: clientIds,
         })
@@ -45,7 +44,6 @@ export function useTeamClients(callerId, row, reload) {
       setMutating(true)
       try {
         const { error: err } = await supabase.rpc('unassign_team_client', {
-          p_caller_id: callerId,
           p_team_id: row?.id,
           p_client_id: clientId,
         })
@@ -67,7 +65,6 @@ export function useTeamClients(callerId, row, reload) {
       setMutating(true)
       try {
         const { error: err } = await supabase.rpc('move_team_client', {
-          p_caller_id: callerId,
           p_from_team: row?.id,
           p_to_team: toTeamId,
           p_client_id: clientId,
