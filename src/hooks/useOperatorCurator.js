@@ -5,7 +5,6 @@ import { supabase } from '../supabaseClient'
  * Возвращает текущего куратора оператора (или null).
  * Используется в ProfileTab (внутри StaffDetailPanel) для блока «Куратор».
  *
- * @param {number|null} callerId
  * @param {number|null} operatorUserId
  * @returns {{
  *   data: {moderator_id, first_name, last_name, alias, email, ref_code, role}|null,
@@ -14,14 +13,14 @@ import { supabase } from '../supabaseClient'
  *   reload: () => void,
  * }}
  */
-export function useOperatorCurator(callerId, operatorUserId) {
+export function useOperatorCurator(operatorUserId) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    if (!operatorUserId || !callerId) {
+    if (!operatorUserId) {
       setData(null)
       return
     }
@@ -30,7 +29,6 @@ export function useOperatorCurator(callerId, operatorUserId) {
     setError(null)
     supabase
       .rpc('get_operator_curator', {
-        p_caller_id: callerId,
         p_operator_id: operatorUserId,
       })
       .then(({ data: rows, error: err }) => {
@@ -67,7 +65,7 @@ export function useOperatorCurator(callerId, operatorUserId) {
     return () => {
       cancelled = true
     }
-  }, [callerId, operatorUserId, reloadKey])
+  }, [operatorUserId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
   return { data, loading, error, reload }

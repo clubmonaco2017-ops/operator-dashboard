@@ -6,10 +6,9 @@ import { invalidateUserTeamMembership } from './useUserTeamMembership.js'
  * Кураторство: список операторов под куратором + actions
  * setCurator (один) и bulkAssign (много на текущего модератора).
  *
- * @param {number|null} callerId
  * @param {number|null} moderatorId
  */
-export function useCuratorship(callerId, moderatorId) {
+export function useCuratorship(moderatorId) {
   const [operators, setOperators] = useState([])
   const [loading, setLoading] = useState(false)
   const [mutating, setMutating] = useState(false)
@@ -17,14 +16,13 @@ export function useCuratorship(callerId, moderatorId) {
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    if (!callerId || !moderatorId) return
+    if (!moderatorId) return
     let cancelled = false
     setLoading(true)
     setError(null)
 
     supabase
       .rpc('list_curated_operators', {
-        p_caller_id: callerId,
         p_moderator_id: moderatorId,
       })
       .then(({ data, error: err }) => {
@@ -43,7 +41,7 @@ export function useCuratorship(callerId, moderatorId) {
     return () => {
       cancelled = true
     }
-  }, [callerId, moderatorId, reloadKey])
+  }, [moderatorId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 
@@ -53,7 +51,6 @@ export function useCuratorship(callerId, moderatorId) {
       setMutating(true)
       try {
         const { error: err } = await supabase.rpc('set_operator_curator', {
-          p_caller_id: callerId,
           p_operator_id: operatorId,
           p_new_moderator_id: newModeratorId,
         })
@@ -69,7 +66,7 @@ export function useCuratorship(callerId, moderatorId) {
         setMutating(false)
       }
     },
-    [callerId, reload],
+    [reload],
   )
 
   const bulkAssign = useCallback(
@@ -78,7 +75,6 @@ export function useCuratorship(callerId, moderatorId) {
       setMutating(true)
       try {
         const { error: err } = await supabase.rpc('bulk_assign_curated_operators', {
-          p_caller_id: callerId,
           p_moderator_id: moderatorId,
           p_operator_ids: operatorIds,
         })
@@ -94,7 +90,7 @@ export function useCuratorship(callerId, moderatorId) {
         setMutating(false)
       }
     },
-    [callerId, moderatorId, reload],
+    [moderatorId, reload],
   )
 
   return { operators, setCurator, bulkAssign, mutating, loading, error, reload }

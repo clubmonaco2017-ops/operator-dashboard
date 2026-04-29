@@ -10,13 +10,12 @@ import { Button } from '@/components/ui/button'
  * Блок «Курирует операторов» в карточке модератора.
  * Виден admin/superadmin (всегда) или самому модератору.
  */
-export function CuratedOperatorsBlock({ callerId, user, staff }) {
+export function CuratedOperatorsBlock({ user, staff }) {
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
   const isSelf = user?.id === staff?.id
   const canSee = isAdmin || isSelf
 
   const { operators, loading, error, reload } = useCuratorship(
-    canSee ? callerId : null,
     canSee ? staff.id : null,
   )
   const [expanded, setExpanded] = useState(true)
@@ -134,7 +133,6 @@ export function CuratedOperatorsBlock({ callerId, user, staff }) {
 
       {reassignFor != null && (
         <ChangeCuratorModal
-          callerId={callerId}
           operatorId={reassignFor}
           currentCuratorId={staff.id}
           onClose={() => setReassignFor(null)}
@@ -146,7 +144,6 @@ export function CuratedOperatorsBlock({ callerId, user, staff }) {
       )}
       {addOpen && (
         <AddCuratedOperatorsModal
-          callerId={callerId}
           moderatorId={staff.id}
           onClose={() => setAddOpen(false)}
           onAdded={() => {

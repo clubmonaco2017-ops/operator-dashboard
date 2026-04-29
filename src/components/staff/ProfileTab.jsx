@@ -69,11 +69,11 @@ export function ProfileTab() {
       {row.role === 'operator' && (
         <>
           <TeamMembershipBlock callerId={user.id} user={user} staff={row} />
-          <CuratorBlock callerId={user.id} user={user} staff={row} />
+          <CuratorBlock user={user} staff={row} />
         </>
       )}
       {row.role === 'moderator' && (
-        <CuratedOperatorsBlock callerId={user.id} user={user} staff={row} />
+        <CuratedOperatorsBlock user={user} staff={row} />
       )}
     </>
   )

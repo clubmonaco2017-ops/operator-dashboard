@@ -10,13 +10,12 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
  * Required-replacement (D-9): без опции «без куратора».
  *
  * @param {object} props
- * @param {number} props.callerId
  * @param {number} props.operatorId
  * @param {number|null} props.currentCuratorId
  * @param {function} props.onClose
  * @param {function} props.onChanged
  */
-export function ChangeCuratorModal({ callerId, operatorId, currentCuratorId, onClose, onChanged }) {
+export function ChangeCuratorModal({ operatorId, currentCuratorId, onClose, onChanged }) {
   const [moderators, setModerators] = useState([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
@@ -55,7 +54,6 @@ export function ChangeCuratorModal({ callerId, operatorId, currentCuratorId, onC
     setError(null)
     try {
       const { error: err } = await supabase.rpc('set_operator_curator', {
-        p_caller_id: callerId,
         p_operator_id: operatorId,
         p_new_moderator_id: selected,
       })

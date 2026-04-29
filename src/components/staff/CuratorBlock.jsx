@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button'
  * Блок «Куратор» в карточке оператора.
  * Назначить — admin/superadmin; сменить — admin/superadmin или текущий куратор.
  */
-export function CuratorBlock({ callerId, user, staff }) {
-  const { data, loading, error, reload } = useOperatorCurator(callerId, staff.id)
+export function CuratorBlock({ user, staff }) {
+  const { data, loading, error, reload } = useOperatorCurator(staff.id)
   const [open, setOpen] = useState(false)
 
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
@@ -76,7 +76,6 @@ export function CuratorBlock({ callerId, user, staff }) {
 
       {open && (
         <ChangeCuratorModal
-          callerId={callerId}
           operatorId={staff.id}
           currentCuratorId={data?.moderator_id ?? null}
           onClose={() => setOpen(false)}
