@@ -1,45 +1,28 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Modal, InputField, TextArea, Toast } from '../components/ui'
+import { adminFetch } from '../lib/adminFetch.js'
 
 async function agencyApi(action, params = {}) {
-  const res = await fetch('/api/admin/agencies', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, ...params }),
-  })
-  const json = await res.json()
-  if (!res.ok || json.error) return { data: null, error: { message: json.error || 'Unknown error' } }
-  return { data: json.data, error: null }
+  return adminFetch('/api/admin/agencies', { action, ...params })
 }
 
-async function fetchPlatformsList(callerId) {
-  const res = await fetch('/api/admin/platforms', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'list', caller_id: callerId }),
-  })
-  const json = await res.json()
-  return json.data || []
+async function fetchPlatformsList() {
+  const { data } = await adminFetch('/api/admin/platforms', { action: 'list' })
+  return data || []
 }
 
-async function uploadLogo(callerId, file) {
+async function uploadLogo(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = async () => {
       const base64 = reader.result.split(',')[1]
-      const res = await fetch('/api/admin/upload-logo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          caller_id: callerId,
-          file: base64,
-          filename: file.name,
-          content_type: file.type,
-        }),
+      const { data, error } = await adminFetch('/api/admin/upload-logo', {
+        file: base64,
+        filename: file.name,
+        content_type: file.type,
       })
-      const json = await res.json()
-      if (!res.ok || json.error) reject(new Error(json.error || 'Upload failed'))
-      else resolve(json.data.url)
+      if (error) reject(new Error(error.message || 'Upload failed'))
+      else resolve(data.url)
     }
     reader.onerror = () => reject(new Error('File read error'))
     reader.readAsDataURL(file)
@@ -103,7 +86,7 @@ function ContactFields({ contacts, onChange }) {
   )
 }
 
-function AgencyModal({ agency, platforms, onClose, onSaved, onDeleted, callerId }) {
+function AgencyModal({ agency, platforms, onClose, onSaved, onDeleted }) {
   const isEdit = !!agency?.id
   const [form, setForm] = useState({
     platform_id: agency?.platform_id || platforms[0]?.id || '',
@@ -124,7 +107,7 @@ function AgencyModal({ agency, platforms, onClose, onSaved, onDeleted, callerId 
     if (!file) return
     setUploading(true)
     try {
-      const url = await uploadLogo(callerId, file)
+      const url = await uploadLogo(file)
       setForm(f => ({ ...f, logo_url: url }))
     } catch (err) {
       setError(err.message)
@@ -139,7 +122,6 @@ function AgencyModal({ agency, platforms, onClose, onSaved, onDeleted, callerId 
     setSubmitting(true)
 
     const payload = {
-      caller_id: callerId,
       ...form,
       contacts: form.contacts.filter(c => c.name || c.phone || c.email),
     }
@@ -156,7 +138,7 @@ function AgencyModal({ agency, platforms, onClose, onSaved, onDeleted, callerId 
   const handleDelete = async () => {
     if (!window.confirm(`Удалить агентство "${agency.name}"?`)) return
     setSubmitting(true)
-    const { error: err } = await agencyApi('delete', { caller_id: callerId, id: agency.id })
+    const { error: err } = await agencyApi('delete', { id: agency.id })
     setSubmitting(false)
     if (err) setError(err.message)
     else { onDeleted(); onClose() }
@@ -263,8 +245,7 @@ function AgencyModal({ agency, platforms, onClose, onSaved, onDeleted, callerId 
   )
 }
 
-export default function AgenciesSection({ currentUser }) {
-  const callerId = currentUser?.id
+export default function AgenciesSection() {
   const [agencies, setAgencies] = useState([])
   const [platforms, setPlatforms] = useState([])
   const [loading, setLoading] = useState(true)
@@ -278,14 +259,14 @@ export default function AgenciesSection({ currentUser }) {
     setLoading(true)
     setError(null)
     const [agRes, plRes] = await Promise.all([
-      agencyApi('list', { caller_id: callerId }),
-      fetchPlatformsList(callerId),
+      agencyApi('list'),
+      fetchPlatformsList(),
     ])
     setLoading(false)
     if (agRes.error) setError(agRes.error.message)
     else setAgencies(agRes.data || [])
     setPlatforms(plRes)
-  }, [callerId])
+  }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -358,7 +339,6 @@ export default function AgenciesSection({ currentUser }) {
         <AgencyModal
           agency={editTarget.id ? editTarget : null}
           platforms={platforms}
-          callerId={callerId}
           onClose={() => setEditTarget(null)}
           onSaved={() => { showToast(editTarget.id ? 'Агентство обновлено' : 'Агентство создано'); fetchData() }}
           onDeleted={() => { showToast('Агентство удалено'); fetchData() }}

@@ -1,15 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Modal, InputField, Toast } from './components/ui'
+import { adminFetch } from './lib/adminFetch.js'
 
 async function adminApi(endpoint, body = {}) {
-  const res = await fetch(`/api/admin/${endpoint}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  const json = await res.json()
-  if (!res.ok || json.error) return { data: null, error: { message: json.error || 'Unknown error' } }
-  return { data: json.data, error: null }
+  return adminFetch(`/api/admin/${endpoint}`, body)
 }
 
 const PERMISSIONS_CONFIG = [
@@ -56,7 +50,7 @@ function PermissionsCheckboxes({ permissions, onChange }) {
 }
 
 // ── Create User Modal ─────────────────────────────────────────────────────────
-function CreateUserModal({ onClose, onCreated, callerId }) {
+function CreateUserModal({ onClose, onCreated }) {
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -72,7 +66,6 @@ function CreateUserModal({ onClose, onCreated, callerId }) {
     setError(null)
     setSubmitting(true)
     const { error: err } = await adminApi('create-user', {
-      caller_id: callerId,
       email: form.email.trim(),
       password: form.password,
       role: form.role,
@@ -151,7 +144,7 @@ function CreateUserModal({ onClose, onCreated, callerId }) {
 }
 
 // ── Change Password Modal ─────────────────────────────────────────────────────
-function ChangePasswordModal({ user, onClose, onDone, callerId }) {
+function ChangePasswordModal({ user, onClose, onDone }) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -166,7 +159,6 @@ function ChangePasswordModal({ user, onClose, onDone, callerId }) {
     setError(null)
     setSubmitting(true)
     const { error: err } = await adminApi('update-password', {
-      caller_id: callerId,
       user_id: user.id,
       new_password: password,
     })
@@ -220,7 +212,7 @@ function ChangePasswordModal({ user, onClose, onDone, callerId }) {
 }
 
 // ── Edit Permissions Modal ────────────────────────────────────────────────────
-function EditPermissionsModal({ user, onClose, onDone, callerId }) {
+function EditPermissionsModal({ user, onClose, onDone }) {
   const [permissions, setPermissions] = useState(user.permissions || {})
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
@@ -230,7 +222,6 @@ function EditPermissionsModal({ user, onClose, onDone, callerId }) {
     setError(null)
     setSubmitting(true)
     const { error: err } = await adminApi('update-permissions', {
-      caller_id: callerId,
       user_id: user.id,
       permissions,
     })
@@ -264,8 +255,7 @@ function EditPermissionsModal({ user, onClose, onDone, callerId }) {
 }
 
 // ── Main AdminPanel ───────────────────────────────────────────────────────────
-export default function AdminPanel({ currentUser }) {
-  const callerId = currentUser?.id
+export default function AdminPanel() {
   const [users, setUsers] = useState([])
   const [loadingUsers, setLoadingUsers] = useState(true)
   const [fetchError, setFetchError] = useState(null)
@@ -283,21 +273,21 @@ export default function AdminPanel({ currentUser }) {
   const fetchUsers = useCallback(async () => {
     setLoadingUsers(true)
     setFetchError(null)
-    const { data, error } = await adminApi('list-users', { caller_id: callerId })
+    const { data, error } = await adminApi('list-users')
     setLoadingUsers(false)
     if (error) {
       setFetchError(error.message)
     } else {
       setUsers(data || [])
     }
-  }, [callerId])
+  }, [])
 
   useEffect(() => { fetchUsers() }, [fetchUsers])
 
   const handleDeactivate = async (user) => {
     if (!window.confirm(`Деактивировать пользователя ${user.email}?`)) return
     setDeactivating(user.id)
-    const { error } = await adminApi('deactivate-user', { caller_id: callerId, user_id: user.id })
+    const { error } = await adminApi('deactivate-user', { user_id: user.id })
     setDeactivating(null)
     if (error) {
       alert('Ошибка: ' + error.message)
@@ -425,14 +415,12 @@ export default function AdminPanel({ currentUser }) {
       {/* Modals */}
       {showCreate && (
         <CreateUserModal
-          callerId={callerId}
           onClose={() => setShowCreate(false)}
           onCreated={() => { showToast('Пользователь создан'); fetchUsers() }}
         />
       )}
       {passwordTarget && (
         <ChangePasswordModal
-          callerId={callerId}
           user={passwordTarget}
           onClose={() => setPasswordTarget(null)}
           onDone={() => showToast('Пароль обновлён')}
@@ -440,7 +428,6 @@ export default function AdminPanel({ currentUser }) {
       )}
       {permTarget && (
         <EditPermissionsModal
-          callerId={callerId}
           user={permTarget}
           onClose={() => setPermTarget(null)}
           onDone={() => { showToast('Права обновлены'); fetchUsers() }}
