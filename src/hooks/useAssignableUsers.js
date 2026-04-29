@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 /**
  * Список пользователей, которым caller может назначать задачи
@@ -10,6 +11,7 @@ import { supabase } from '../supabaseClient'
  * @param {string} [search]
  */
 export function useAssignableUsers(callerId, search = '') {
+  const { activeAgencyId } = useAgencyContext()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -24,6 +26,7 @@ export function useAssignableUsers(callerId, search = '') {
     supabase
       .rpc('list_assignable_users', {
         p_search: search ?? '',
+        p_agency_id: activeAgencyId,
       })
       .then(({ data, error: err }) => {
         if (cancelled) return
@@ -41,7 +44,7 @@ export function useAssignableUsers(callerId, search = '') {
     return () => {
       cancelled = true
     }
-  }, [callerId, search, reloadKey])
+  }, [callerId, search, activeAgencyId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 

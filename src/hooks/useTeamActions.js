@@ -13,13 +13,14 @@ export function useTeamActions(callerId) {
   const [error, setError] = useState(null)
 
   const createTeam = useCallback(
-    async ({ name, leadUserId }) => {
+    async ({ name, leadUserId, agencyId }) => {
       setLoading(true)
       setError(null)
       try {
         const { data, error: err } = await supabase.rpc('create_team', {
           p_name: name,
           p_lead_user_id: leadUserId,
+          p_agency_id: agencyId,
         })
         if (err) throw new Error(err.message)
         return data // new team id

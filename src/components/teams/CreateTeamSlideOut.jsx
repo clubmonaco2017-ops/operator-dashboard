@@ -3,6 +3,7 @@ import { Check, Loader2 } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useTeamActions } from '../../hooks/useTeamActions.js'
 import { validateTeamName, formatLeadRole } from '../../lib/teams.js'
+import { useAgencyContext } from '../../lib/agencyContext.jsx'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -25,6 +26,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
   const isMobile = useIsMobile()
   const { createTeam } = useTeamActions(callerId)
+  const { activeAgencyId } = useAgencyContext()
 
   const [name, setName] = useState('')
   const [leadUserId, setLeadUserId] = useState('')
@@ -109,6 +111,7 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
       const newId = await createTeam({
         name: name.trim(),
         leadUserId: Number(leadUserId),
+        agencyId: activeAgencyId,
       })
       onCreated?.(newId)
     } catch (err) {
