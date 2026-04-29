@@ -108,7 +108,6 @@ export function StaffDetailPanel({ callerId, user, refCode, onChanged, onBack })
     setDelSubmitting(true)
     setDelError(null)
     const { error: err } = await supabase.rpc('request_deletion', {
-      p_caller_id: user.id,
       p_target_user: row.id,
       p_reason: reason,
     })

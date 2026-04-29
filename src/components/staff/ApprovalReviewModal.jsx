@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { supabase } from '../../supabaseClient'
-import { useAuth } from '../../useAuth.jsx'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 
 export function ApprovalReviewModal({ request, onClose, onDone }) {
-  const { user } = useAuth()
   const [note, setNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
@@ -13,7 +11,7 @@ export function ApprovalReviewModal({ request, onClose, onDone }) {
   const call = async (rpc) => {
     setSubmitting(true); setError(null)
     const { error: err } = await supabase.rpc(rpc, {
-      p_caller_id: user.id, p_request_id: request.id, p_note: note || null,
+      p_request_id: request.id, p_note: note || null,
     })
     setSubmitting(false)
     if (err) { setError(err.message); return }
