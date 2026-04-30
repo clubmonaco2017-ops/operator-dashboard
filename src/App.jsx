@@ -29,8 +29,16 @@ import {
 import { isSuperadmin } from './lib/permissions.js'
 
 export default function App() {
-  const { user, signOut } = useAuth()
+  const { user, loading, signOut } = useAuth()
   const navigate = useNavigate()
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+        Загрузка…
+      </div>
+    )
+  }
 
   if (!user) {
     return (
