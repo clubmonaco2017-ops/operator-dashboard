@@ -712,6 +712,8 @@ GRANT EXECUTE ON FUNCTION public.list_tasks(text, text, text, uuid) TO authentic
 -- 10. get_task_detail — T.3
 -- ============================================================
 
+DROP FUNCTION IF EXISTS public.get_task_detail(integer);
+
 CREATE OR REPLACE FUNCTION public.get_task_detail(
   p_task_id integer
 ) RETURNS TABLE (
