@@ -71,7 +71,7 @@ export function TeamListPage() {
     </div>
   )
 
-  const filtersNode = !isZeroEmpty ? (
+  const filtersNode = (!loading && !isZeroEmpty) ? (
     <TeamFilterChips value={active} onChange={setActive} />
   ) : null
 

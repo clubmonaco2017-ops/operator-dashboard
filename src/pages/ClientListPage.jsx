@@ -111,7 +111,7 @@ export function ClientListPage() {
     </div>
   )
 
-  const filtersNode = !isZeroEmpty ? (
+  const filtersNode = (!loading && !isZeroEmpty) ? (
     <ClientFilterChips
       value={filters}
       onChange={setFilters}

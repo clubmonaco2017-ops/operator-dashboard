@@ -83,7 +83,7 @@ export function StaffListPage() {
     </div>
   )
 
-  const filtersNode = !isZeroEmpty ? (
+  const filtersNode = (!loading && !isZeroEmpty) ? (
     <StaffFilterChips counts={counts} value={role} onChange={setRole} />
   ) : null
 

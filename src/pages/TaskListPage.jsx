@@ -145,7 +145,7 @@ export function TaskListPage() {
   const filtersNode = (
     <div className="flex flex-col gap-3">
       <TaskBoxTabs box={box} hasViewAll={hasViewAll} />
-      {!isZeroEmpty && (
+      {!loading && !isZeroEmpty && (
         <TaskFilterChips
           status={status}
           deadlineFilter={deadlineFilter}
