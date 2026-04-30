@@ -110,7 +110,7 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
       return
     }
     setSubmitting(false)
-    onCreated?.(detail[0].ref_code)
+    onCreated?.(detail[0].out_ref_code)
   }
 
   return (
