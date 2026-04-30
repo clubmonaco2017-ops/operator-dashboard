@@ -56,6 +56,22 @@ export function ProfileTab() {
         <Field label="Email" value={email} onChange={setEmail} type="email" disabled={!canEdit} required />
         <ReadOnly label={<>Реф-код <Lock size={12} className="ml-1 inline opacity-60" /></>} value={row.ref_code} mono />
         <ReadOnly label={<>Роль <Lock size={12} className="ml-1 inline opacity-60" /></>} value={row.role} />
+        {row.role === 'admin' ? (
+          <ReadOnly
+            label={<>Агентства <Lock size={12} className="ml-1 inline opacity-60" /></>}
+            value="Настраиваются на /admin/multi-agency"
+          />
+        ) : row.role === 'superadmin' ? (
+          <ReadOnly
+            label={<>Агентство <Lock size={12} className="ml-1 inline opacity-60" /></>}
+            value="Все (глобальный доступ)"
+          />
+        ) : (
+          <ReadOnly
+            label={<>Агентство <Lock size={12} className="ml-1 inline opacity-60" /></>}
+            value={row.agency_name ?? '—'}
+          />
+        )}
         {error && <p className="text-sm text-[var(--danger-ink)] sm:col-span-2" role="alert">{error}</p>}
         {canEdit && (
           <div className="sm:col-span-2">
