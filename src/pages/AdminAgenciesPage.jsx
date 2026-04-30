@@ -19,7 +19,20 @@ export default function AdminAgenciesPage() {
       setError(e.message)
       setAgencies([])
     } else {
-      setAgencies(data ?? [])
+      setAgencies(
+        (data ?? []).map((r) => ({
+          id: r.out_id,
+          name: r.out_name,
+          platform_id: r.out_platform_id,
+          platform_name: r.out_platform_name,
+          is_active: r.out_is_active,
+          admin_count: r.out_admin_count,
+          user_count: r.out_user_count,
+          client_count: r.out_client_count,
+          team_count: r.out_team_count,
+          created_at: r.out_created_at,
+        }))
+      )
     }
     setLoading(false)
   }, [])
