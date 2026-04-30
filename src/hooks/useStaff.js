@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 export function useStaff(callerId, refCode) {
-  const { activeAgencyId } = useAgencyContext()
   const [row, setRow] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -14,8 +12,11 @@ export function useStaff(callerId, refCode) {
     let cancelled = false
     setLoading(true)
     setError(null)
+    // Combined view (p_agency_id = null) — detail-resolve по ref_code не должен
+    // зависеть от activeAgencyId switcher'а: цель найти сотрудника во всех
+    // агентствах, доступных пользователю.
     supabase
-      .rpc('list_staff', { p_agency_id: activeAgencyId })
+      .rpc('list_staff', { p_agency_id: null })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {
@@ -37,7 +38,7 @@ export function useStaff(callerId, refCode) {
     return () => {
       cancelled = true
     }
-  }, [callerId, refCode, activeAgencyId, reloadKey])
+  }, [callerId, refCode, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
   return { row, loading, error, reload }
