@@ -4,12 +4,13 @@ import { supabase } from '../../supabaseClient'
 import { defaultPermissions } from '../../lib/defaultPermissions.js'
 import { permissionGroups } from '../../lib/permissionGroups.js'
 import { useAgencyContext } from '../../lib/agencyContext.jsx'
+import { useAuth } from '../../useAuth.jsx'
 import AgencySelect from '../AgencySelect.jsx'
 import { RefCodePreview } from './RefCodePreview.jsx'
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useIsMobile } from '@/hooks/use-mobile'
 
-const ROLES = [
+const ALL_ROLES = [
   { value: 'admin',     label: 'Администратор' },
   { value: 'moderator', label: 'Модератор' },
   { value: 'teamlead',  label: 'Тим Лидер' },
@@ -19,6 +20,11 @@ const ROLES = [
 export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
   const isMobile = useIsMobile()
   const { activeAgencyId, availableAgencies } = useAgencyContext()
+  const { user } = useAuth()
+  const isCallerSuperadmin = user?.role === 'superadmin'
+  const ROLES = isCallerSuperadmin
+    ? ALL_ROLES
+    : ALL_ROLES.filter((r) => r.value !== 'admin')
   const [role, setRole] = useState('moderator')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
