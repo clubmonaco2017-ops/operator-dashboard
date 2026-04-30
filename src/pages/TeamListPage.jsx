@@ -25,8 +25,8 @@ export function TeamListPage() {
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
   const [agencyFilter, setAgencyFilter] = useState(null)
-  const { isMultiAgency, activeAgencyId } = useAgencyContext()
-  const effectiveAgencyId = agencyFilter !== null ? agencyFilter : activeAgencyId
+  const { isMultiAgency } = useAgencyContext()
+  const effectiveAgencyId = agencyFilter
 
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
   const { rows, loading, error, reload } = useTeamList(user?.id, {

@@ -80,8 +80,8 @@ export function TaskListPage() {
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
   const [agencyFilter, setAgencyFilter] = useState(null)
-  const { isMultiAgency, activeAgencyId } = useAgencyContext()
-  const effectiveAgencyId = agencyFilter !== null ? agencyFilter : activeAgencyId
+  const { isMultiAgency } = useAgencyContext()
+  const effectiveAgencyId = agencyFilter
 
   const canCreate = hasPermission(user, 'create_tasks')
   const hasViewAll = hasPermission(user, 'view_all_tasks')

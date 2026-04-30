@@ -26,8 +26,8 @@ export function StaffListPage() {
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
   const [agencyFilter, setAgencyFilter] = useState(null)
-  const { isMultiAgency, activeAgencyId } = useAgencyContext()
-  const effectiveAgencyId = agencyFilter !== null ? agencyFilter : activeAgencyId
+  const { isMultiAgency } = useAgencyContext()
+  const effectiveAgencyId = agencyFilter
 
   const { rows, counts, loading, error, reload } = useStaffList(user?.id, {
     agencyId: effectiveAgencyId,

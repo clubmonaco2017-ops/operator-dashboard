@@ -30,10 +30,10 @@ export function ClientListPage() {
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
   const [agencyFilter, setAgencyFilter] = useState(null)
-  const { isMultiAgency, activeAgencyId } = useAgencyContext()
+  const { isMultiAgency } = useAgencyContext()
 
-  // Per-page override beats context's activeAgencyId. null = combined view.
-  const effectiveAgencyId = agencyFilter !== null ? agencyFilter : activeAgencyId
+  // null = combined view across user's accessible agencies. uuid = narrow.
+  const effectiveAgencyId = agencyFilter
 
   const { rows, counts, loading, error, reload } = useClientList(user?.id, {
     ...filters,
