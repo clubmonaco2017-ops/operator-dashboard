@@ -175,7 +175,7 @@ BEGIN
     AND (
       (p_agency_id IS NOT NULL AND t.agency_id = p_agency_id)
       OR
-      (p_agency_id IS NULL AND t.agency_id IN (SELECT agency_id FROM accessible_agencies(v_caller_id)))
+      (p_agency_id IS NULL AND t.agency_id IN (SELECT acc.agency_id FROM accessible_agencies(v_caller_id) acc))
     )
     AND (
       v_role IN ('superadmin','admin','teamlead','moderator')
@@ -955,7 +955,7 @@ BEGIN
     AND (
       (p_agency_id IS NOT NULL AND t.agency_id = p_agency_id)
       OR
-      (p_agency_id IS NULL AND t.agency_id IN (SELECT agency_id FROM accessible_agencies(v_caller_id)))
+      (p_agency_id IS NULL AND t.agency_id IN (SELECT acc.agency_id FROM accessible_agencies(v_caller_id) acc))
     )
   ORDER BY t.name;
 END $$;
@@ -1047,7 +1047,7 @@ BEGIN
         -- NULL agency (admin/superadmin who cross agencies).
         u.agency_id IS NULL
         OR (p_agency_id IS NOT NULL AND u.agency_id = p_agency_id)
-        OR (p_agency_id IS NULL AND u.agency_id IN (SELECT agency_id FROM accessible_agencies(v_caller_id)))
+        OR (p_agency_id IS NULL AND u.agency_id IN (SELECT acc.agency_id FROM accessible_agencies(v_caller_id) acc))
       )
   )
   SELECT c.id, c.name, c.role, c.ref_code, c.alias, c.eligibility_reason, c.agency_id
@@ -1122,7 +1122,7 @@ BEGIN
     AND (
       (p_agency_id IS NOT NULL AND u.agency_id = p_agency_id)
       OR
-      (p_agency_id IS NULL AND u.agency_id IN (SELECT agency_id FROM accessible_agencies(v_caller_id)))
+      (p_agency_id IS NULL AND u.agency_id IN (SELECT acc.agency_id FROM accessible_agencies(v_caller_id) acc))
     )
   ORDER BY lower(COALESCE(
              NULLIF(trim(COALESCE(u.first_name, '') || ' ' || COALESCE(u.last_name, '')), ''),
@@ -1202,7 +1202,7 @@ BEGIN
     AND (
       (p_agency_id IS NOT NULL AND u.agency_id = p_agency_id)
       OR
-      (p_agency_id IS NULL AND u.agency_id IN (SELECT agency_id FROM accessible_agencies(v_caller_id)))
+      (p_agency_id IS NULL AND u.agency_id IN (SELECT acc.agency_id FROM accessible_agencies(v_caller_id) acc))
     )
   ORDER BY lower(COALESCE(
              NULLIF(trim(COALESCE(u.first_name, '') || ' ' || COALESCE(u.last_name, '')), ''),

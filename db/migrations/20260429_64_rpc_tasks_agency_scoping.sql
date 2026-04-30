@@ -682,7 +682,7 @@ BEGIN
         (p_agency_id IS NOT NULL AND au.agency_id = p_agency_id)
         OR
         (p_agency_id IS NULL AND (
-          au.agency_id IN (SELECT agency_id FROM accessible_agencies(v_caller_id))
+          au.agency_id IN (SELECT acc.agency_id FROM accessible_agencies(v_caller_id) acc)
           OR (au.agency_id IS NULL AND has_permission(v_caller_id, 'view_all_tasks'))
         ))
       )
@@ -874,7 +874,7 @@ BEGIN
        AND (
          (p_agency_id IS NOT NULL AND u.agency_id = p_agency_id)
          OR (p_agency_id IS NULL AND (
-           u.agency_id IN (SELECT agency_id FROM accessible_agencies(v_caller_id))
+           u.agency_id IN (SELECT acc.agency_id FROM accessible_agencies(v_caller_id) acc)
            OR u.agency_id IS NULL
          ))
        );
