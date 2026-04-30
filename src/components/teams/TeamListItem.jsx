@@ -11,15 +11,18 @@ import { pluralizeClients } from '../../lib/clients.js'
  * @param {boolean} props.isActive — этот item открыт в detail
  * @param {object|null} props.user — текущий user
  */
-export function TeamListItem({ team, isActive, user }) {
+export function TeamListItem({ team, isActive, user, showAgency = false }) {
   const archived = !team.is_active
   const canEdit = canEditTeam(user, team)
   const leadLine = team.lead_user_id
     ? `${formatLeadRole(team.lead_role)} ${team.lead_name ?? ''}`.trim()
     : 'Без лида'
-  const countsLine = `${pluralizeOperators(team.members_count ?? 0)} · ${pluralizeClients(
+  const baseCounts = `${pluralizeOperators(team.members_count ?? 0)} · ${pluralizeClients(
     team.clients_count ?? 0,
   )}`
+  const countsLine = showAgency && team.agency_name
+    ? `${baseCounts} · ${team.agency_name}`
+    : baseCounts
 
   return (
     <Link

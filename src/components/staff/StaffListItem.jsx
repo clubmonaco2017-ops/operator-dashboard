@@ -7,7 +7,7 @@ function initialsOf(firstName, lastName) {
   )
 }
 
-export function StaffListItem({ row, isActive }) {
+export function StaffListItem({ row, isActive, showAgency = false }) {
   const archived = !row.is_active
   const initials = initialsOf(row.first_name, row.last_name) || '?'
   return (
@@ -65,6 +65,11 @@ export function StaffListItem({ row, isActive }) {
         <div className="mt-0.5 truncate text-xs text-muted-foreground">
           {row.email}
         </div>
+        {showAgency && row.agency_name && (
+          <div className="mt-0.5 truncate text-[11px] text-[var(--fg4)]">
+            {row.agency_name}
+          </div>
+        )}
       </div>
 
       <span

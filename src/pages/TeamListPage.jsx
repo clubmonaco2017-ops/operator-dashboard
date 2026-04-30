@@ -12,6 +12,8 @@ import { TeamDetailPanel } from '../components/teams/TeamDetailPanel.jsx'
 import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
 import { Button } from '@/components/ui/button'
 import { useSectionTitle } from '../hooks/useSectionTitle.jsx'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
+import AgencyFilterDropdown from '../components/AgencyFilterDropdown.jsx'
 
 export function TeamListPage() {
   const { user } = useAuth()
@@ -22,9 +24,16 @@ export function TeamListPage() {
   const [active, setActive] = useState('active')
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [agencyFilter, setAgencyFilter] = useState(null)
+  const { isMultiAgency, activeAgencyId } = useAgencyContext()
+  const effectiveAgencyId = agencyFilter !== null ? agencyFilter : activeAgencyId
 
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin'
-  const { rows, loading, error, reload } = useTeamList(user?.id, { active, search })
+  const { rows, loading, error, reload } = useTeamList(user?.id, {
+    active,
+    search,
+    agencyId: effectiveAgencyId,
+  })
 
   const hasSearch = search.trim().length > 0
   const hasActiveFilter = active !== 'active'
@@ -51,12 +60,15 @@ export function TeamListPage() {
   ) : null
 
   const searchNode = (
-    <SearchInput
-      placeholder="Поиск по названию или лиду…"
-      value={search}
-      onChange={setSearch}
-      ariaLabel="Поиск команд по названию или лиду"
-    />
+    <div className="flex flex-col gap-2">
+      <SearchInput
+        placeholder="Поиск по названию или лиду…"
+        value={search}
+        onChange={setSearch}
+        ariaLabel="Поиск команд по названию или лиду"
+      />
+      <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
+    </div>
   )
 
   const filtersNode = !isZeroEmpty ? (
@@ -79,7 +91,7 @@ export function TeamListPage() {
       onClearActive={() => setActive('active')}
     />
   ) : (
-    <TeamList rows={rows} selectedId={selectedId} user={user} />
+    <TeamList rows={rows} selectedId={selectedId} user={user} showAgency={isMultiAgency} />
   )
 
   return (

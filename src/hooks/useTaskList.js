@@ -11,10 +11,13 @@ import { useAgencyContext } from '../lib/agencyContext.jsx'
  * @param {'inbox'|'outbox'|'all'} [opts.box]   — default 'inbox'
  * @param {'pending'|'in_progress'|'done'|'cancelled'|'overdue'|'all'} [opts.status] — default 'all'
  * @param {string} [opts.search]
+ * @param {string|null} [opts.agencyId] — per-page override; when undefined falls
+ *   back to AgencyContext.activeAgencyId.
  */
 export function useTaskList(callerId, opts = {}) {
-  const { box = 'inbox', status = 'all', search = '' } = opts
+  const { box = 'inbox', status = 'all', search = '', agencyId } = opts
   const { activeAgencyId } = useAgencyContext()
+  const effectiveAgencyId = agencyId !== undefined ? agencyId : activeAgencyId
 
   const [debouncedSearch, setDebouncedSearch] = useState(search)
   const [rows, setRows] = useState([])
@@ -39,7 +42,7 @@ export function useTaskList(callerId, opts = {}) {
         p_box: box,
         p_status: status,
         p_search: debouncedSearch ?? '',
-        p_agency_id: activeAgencyId,
+        p_agency_id: effectiveAgencyId,
       })
       .then(({ data, error: err }) => {
         if (cancelled) return
@@ -57,7 +60,7 @@ export function useTaskList(callerId, opts = {}) {
     return () => {
       cancelled = true
     }
-  }, [callerId, box, status, debouncedSearch, activeAgencyId, reloadKey])
+  }, [callerId, box, status, debouncedSearch, effectiveAgencyId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 

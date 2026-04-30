@@ -4,6 +4,8 @@ import { useAuth } from '../useAuth.jsx'
 import { useClientList } from '../hooks/useClientList.js'
 import { usePlatforms } from '../hooks/usePlatforms.js'
 import { useAgencies } from '../hooks/useAgencies.js'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
+import AgencyFilterDropdown from '../components/AgencyFilterDropdown.jsx'
 import { ClientList } from '../components/clients/ClientList.jsx'
 import { ClientFilterChips } from '../components/clients/ClientFilterChips.jsx'
 import { EmptyZero } from '../components/clients/EmptyZero.jsx'
@@ -27,9 +29,15 @@ export function ClientListPage() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [agencyFilter, setAgencyFilter] = useState(null)
+  const { isMultiAgency, activeAgencyId } = useAgencyContext()
+
+  // Per-page override beats context's activeAgencyId. null = combined view.
+  const effectiveAgencyId = agencyFilter !== null ? agencyFilter : activeAgencyId
 
   const { rows, counts, loading, error, reload } = useClientList(user?.id, {
     ...filters,
+    agencyId: effectiveAgencyId,
     search,
   })
   const { rows: platforms } = usePlatforms()
@@ -92,12 +100,15 @@ export function ClientListPage() {
   ) : null
 
   const searchNode = (
-    <SearchInput
-      placeholder="Поиск по name / alias…"
-      value={search}
-      onChange={setSearch}
-      ariaLabel="Поиск клиентов"
-    />
+    <div className="flex flex-col gap-2">
+      <SearchInput
+        placeholder="Поиск по name / alias…"
+        value={search}
+        onChange={setSearch}
+        ariaLabel="Поиск клиентов"
+      />
+      <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
+    </div>
   )
 
   const filtersNode = !isZeroEmpty ? (
@@ -123,7 +134,13 @@ export function ClientListPage() {
       onClearSearch={() => setSearch('')}
     />
   ) : (
-    <ClientList rows={rows} selectedId={clientId} loading={loading} error={error} />
+    <ClientList
+      rows={rows}
+      selectedId={clientId}
+      loading={loading}
+      error={error}
+      showAgency={isMultiAgency}
+    />
   )
 
   return (

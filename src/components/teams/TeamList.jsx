@@ -8,7 +8,7 @@ import { TeamListItem } from './TeamListItem.jsx'
  * @param {number|null} props.selectedId — id выбранной команды
  * @param {object|null} props.user — текущий пользователь (для canEditTeam → бейдж «Только просмотр»)
  */
-export function TeamList({ rows, selectedId, user }) {
+export function TeamList({ rows, selectedId, user, showAgency = false }) {
   return (
     <ul className="flex flex-col py-1">
       {rows.map((team) => (
@@ -17,6 +17,7 @@ export function TeamList({ rows, selectedId, user }) {
             team={team}
             isActive={team.id === selectedId}
             user={user}
+            showAgency={showAgency}
           />
         </li>
       ))}

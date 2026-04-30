@@ -7,10 +7,12 @@ import { initials, pluralizeFiles } from '../../lib/clients.js'
  * @param {object} props.client — row из list_clients
  * @param {boolean} props.isActive — этот item открыт в detail
  */
-export function ClientListItem({ client, isActive }) {
+export function ClientListItem({ client, isActive, showAgency = true }) {
   const archived = !client.is_active
   const placement = client.platform_name || ''
-  const placementWithAgency = client.agency_name ? `${placement} · ${client.agency_name}` : placement || '—'
+  const placementWithAgency = showAgency && client.agency_name
+    ? `${placement} · ${client.agency_name}`
+    : placement || '—'
   return (
     <Link
       to={`/clients/${client.id}`}

@@ -21,6 +21,8 @@ import { CreateTaskSlideOut } from '../components/tasks/CreateTaskSlideOut.jsx'
 import { TaskDetailPanel } from '../components/tasks/TaskDetailPanel.jsx'
 import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/index.js'
 import { Button } from '@/components/ui/button'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
+import AgencyFilterDropdown from '../components/AgencyFilterDropdown.jsx'
 
 const DEFAULT_STATUS = 'all'
 const DEFAULT_DEADLINE = 'all'
@@ -77,6 +79,9 @@ export function TaskListPage() {
   const [deadlineFilter, setDeadlineFilter] = useState(DEFAULT_DEADLINE)
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [agencyFilter, setAgencyFilter] = useState(null)
+  const { isMultiAgency, activeAgencyId } = useAgencyContext()
+  const effectiveAgencyId = agencyFilter !== null ? agencyFilter : activeAgencyId
 
   const canCreate = hasPermission(user, 'create_tasks')
   const hasViewAll = hasPermission(user, 'view_all_tasks')
@@ -85,6 +90,7 @@ export function TaskListPage() {
     box,
     status,
     search,
+    agencyId: effectiveAgencyId,
   })
 
   const displayRows = useMemo(
@@ -125,12 +131,15 @@ export function TaskListPage() {
   ) : null
 
   const searchNode = (
-    <SearchInput
-      placeholder="Поиск по задаче, автору или исполнителю…"
-      value={search}
-      onChange={setSearch}
-      ariaLabel="Поиск задач"
-    />
+    <div className="flex flex-col gap-2">
+      <SearchInput
+        placeholder="Поиск по задаче, автору или исполнителю…"
+        value={search}
+        onChange={setSearch}
+        ariaLabel="Поиск задач"
+      />
+      <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
+    </div>
   )
 
   const filtersNode = (
@@ -167,7 +176,7 @@ export function TaskListPage() {
       onClearFilters={clearFilters}
     />
   ) : (
-    <TaskList rows={displayRows} selectedId={selectedId} basePath={basePath} />
+    <TaskList rows={displayRows} selectedId={selectedId} basePath={basePath} showAgency={isMultiAgency} />
   )
 
   return (
