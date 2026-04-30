@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -27,6 +28,7 @@ function Logo() {
 
 export default function LoginPage() {
   const { signIn } = useAuth()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -50,7 +52,9 @@ export default function LoginPage() {
       }
       return
     }
-    // session set by AuthProvider; navigation happens via auth-aware Router (App.jsx).
+    // After successful login send user to dashboard regardless of where the
+    // login form was rendered (e.g. they were on /staff and logged out).
+    navigate('/', { replace: true })
   }
 
   return (

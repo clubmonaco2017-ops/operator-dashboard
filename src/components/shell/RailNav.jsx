@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   Bell,
   CheckSquare,
@@ -57,6 +57,11 @@ function RailItem({ to, end, icon, label, badge }) {
 
 export function RailNav({ className = '' }) {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+  const handleLogout = async () => {
+    navigate('/', { replace: true })
+    await signOut()
+  }
   const { has: hasTeamMembership } = useUserTeamMembership(user?.id)
 
   const canSeeStaff = hasPermission(user, 'create_users')
@@ -104,7 +109,7 @@ export function RailNav({ className = '' }) {
         />
       )}
       <ThemeToggle />
-      <UserMenuDropdown user={user} onLogout={signOut} />
+      <UserMenuDropdown user={user} onLogout={handleLogout} />
     </aside>
   )
 }
