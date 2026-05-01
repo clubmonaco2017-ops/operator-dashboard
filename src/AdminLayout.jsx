@@ -46,7 +46,7 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
               </svg>
             </div>
             <div className="min-w-0">
-              <h1 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">Аккаунт</h1>
+              <h1 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">Настройки</h1>
               <p className="text-xs text-slate-400 truncate">{currentUser?.email}</p>
             </div>
           </div>
