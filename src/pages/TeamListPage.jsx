@@ -60,19 +60,19 @@ export function TeamListPage() {
   ) : null
 
   const searchNode = (
-    <div className="flex flex-col gap-2">
-      <SearchInput
-        placeholder="Поиск по названию или лиду…"
-        value={search}
-        onChange={setSearch}
-        ariaLabel="Поиск команд по названию или лиду"
-      />
-      <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
-    </div>
+    <SearchInput
+      placeholder="Поиск по названию или лиду…"
+      value={search}
+      onChange={setSearch}
+      ariaLabel="Поиск команд по названию или лиду"
+    />
   )
 
   const filtersNode = (!loading && !isZeroEmpty) ? (
-    <TeamFilterChips value={active} onChange={setActive} />
+    <div className="flex flex-wrap items-center gap-1.5">
+      <TeamFilterChips value={active} onChange={setActive} />
+      <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
+    </div>
   ) : null
 
   const listBody = error ? (

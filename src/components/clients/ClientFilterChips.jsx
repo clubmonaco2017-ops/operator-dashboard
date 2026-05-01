@@ -1,4 +1,5 @@
 import { Globe, Briefcase, X } from 'lucide-react'
+import { useAgencyContext } from '../../lib/agencyContext.jsx'
 
 /**
  * Filter chips для master-списка.
@@ -17,6 +18,7 @@ import { Globe, Briefcase, X } from 'lucide-react'
  */
 export function ClientFilterChips({ value, onChange, platforms, agencies, counts }) {
   const set = (patch) => onChange({ ...value, ...patch })
+  const { isMultiAgency } = useAgencyContext()
 
   const activeChanged = value.active !== 'active'
   const platformChanged = value.platformId !== null
@@ -70,25 +72,27 @@ export function ClientFilterChips({ value, onChange, platforms, agencies, counts
         </select>
       </Chip>
 
-      {/* Agency */}
-      <Chip
-        active={agencyChanged}
-        onClear={agencyChanged ? () => set({ agencyId: null }) : null}
-      >
-        <Briefcase size={12} />
-        <select
-          value={value.agencyId ?? ''}
-          onChange={(e) => set({ agencyId: e.target.value || null })}
-          className="cursor-pointer bg-transparent text-xs outline-none"
+      {/* Agency — только для multi-agency users */}
+      {isMultiAgency && (
+        <Chip
+          active={agencyChanged}
+          onClear={agencyChanged ? () => set({ agencyId: null }) : null}
         >
-          <option value="">Агентство все</option>
-          {agencies.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name}
-            </option>
-          ))}
-        </select>
-      </Chip>
+          <Briefcase size={12} />
+          <select
+            value={value.agencyId ?? ''}
+            onChange={(e) => set({ agencyId: e.target.value || null })}
+            className="cursor-pointer bg-transparent text-xs outline-none"
+          >
+            <option value="">Агентство все</option>
+            {agencies.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
+            ))}
+          </select>
+        </Chip>
+      )}
     </div>
   )
 }

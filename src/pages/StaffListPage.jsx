@@ -72,19 +72,19 @@ export function StaffListPage() {
   ) : null
 
   const searchNode = (
-    <div className="flex flex-col gap-2">
-      <SearchInput
-        placeholder="Поиск по имени, email, реф-коду…"
-        value={search}
-        onChange={setSearch}
-        ariaLabel="Поиск сотрудников"
-      />
-      <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
-    </div>
+    <SearchInput
+      placeholder="Поиск по имени, email, реф-коду…"
+      value={search}
+      onChange={setSearch}
+      ariaLabel="Поиск сотрудников"
+    />
   )
 
   const filtersNode = (!loading && !isZeroEmpty) ? (
-    <StaffFilterChips counts={counts} value={role} onChange={setRole} />
+    <div className="flex flex-wrap items-center gap-1.5">
+      <StaffFilterChips counts={counts} value={role} onChange={setRole} />
+      <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
+    </div>
   ) : null
 
   const listBody = error ? (

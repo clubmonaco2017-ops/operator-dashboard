@@ -131,27 +131,27 @@ export function TaskListPage() {
   ) : null
 
   const searchNode = (
-    <div className="flex flex-col gap-2">
-      <SearchInput
-        placeholder="Поиск по задаче, автору или исполнителю…"
-        value={search}
-        onChange={setSearch}
-        ariaLabel="Поиск задач"
-      />
-      <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
-    </div>
+    <SearchInput
+      placeholder="Поиск по задаче, автору или исполнителю…"
+      value={search}
+      onChange={setSearch}
+      ariaLabel="Поиск задач"
+    />
   )
 
   const filtersNode = (
     <div className="flex flex-col gap-3">
       <TaskBoxTabs box={box} hasViewAll={hasViewAll} />
       {!loading && !isZeroEmpty && (
-        <TaskFilterChips
-          status={status}
-          deadlineFilter={deadlineFilter}
-          onStatusChange={setStatus}
-          onDeadlineChange={setDeadlineFilter}
-        />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <TaskFilterChips
+            status={status}
+            deadlineFilter={deadlineFilter}
+            onStatusChange={setStatus}
+            onDeadlineChange={setDeadlineFilter}
+          />
+          <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
+        </div>
       )}
     </div>
   )
