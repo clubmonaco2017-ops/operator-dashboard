@@ -37,8 +37,9 @@ BEGIN
     PERFORM assert_agency_access(v_caller_id, p_agency_id);
   END IF;
 
-  -- Superadmin: глобальный обзор без фильтра по агентству
-  IF v_caller_role = 'superadmin' AND p_agency_id IS NULL THEN
+  -- Superadmin: ВСЕГДА unfiltered global view (orphaned refcodes тоже видны).
+  -- Параметр p_agency_id игнорируем — superadmin кросс-агентский по spec.
+  IF v_caller_role = 'superadmin' THEN
     RETURN QUERY
     WITH expanded AS (
       SELECT
