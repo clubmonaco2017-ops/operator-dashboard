@@ -5,7 +5,14 @@ import SetPasswordPage from './SetPasswordPage.jsx'
 import { AppShell } from './components/shell/AppShell.jsx'
 import { AdminShell } from './components/admin-shell/index.js'
 import PlatformsSection from './sections/PlatformsSection'
-import AdminAgenciesPage from './pages/AdminAgenciesPage'
+import {
+  AgencyListPage,
+  AgencyDetailRoute,
+  AgencyDetailEmpty,
+} from './pages/AgencyListPage.jsx'
+import { AgencyBrandingTab } from './components/agencies/AgencyBrandingTab.jsx'
+import { AgencyContactsTab } from './components/agencies/AgencyContactsTab.jsx'
+import { AgencyAdminsTab } from './components/agencies/AgencyAdminsTab.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { StaffListPage, StaffDetailRoute, StaffDetailEmpty } from './pages/StaffListPage.jsx'
 import { ProfileTab } from './components/staff/ProfileTab.jsx'
@@ -90,7 +97,15 @@ export default function App() {
           <Route path="/admin" element={<AdminShell />}>
             <Route index element={<Navigate to="platforms" replace />} />
             <Route path="platforms/*" element={<PlatformsSection />} />
-            <Route path="agencies/*" element={<AdminAgenciesPage />} />
+            <Route path="agencies" element={<AgencyListPage />}>
+              <Route index element={<AgencyDetailEmpty />} />
+              <Route path=":agencyId" element={<AgencyDetailRoute />}>
+                <Route index element={<Navigate to="branding" replace />} />
+                <Route path="branding" element={<AgencyBrandingTab />} />
+                <Route path="contacts" element={<AgencyContactsTab />} />
+                <Route path="admins" element={<AgencyAdminsTab />} />
+              </Route>
+            </Route>
             <Route path="*" element={<Navigate to="/admin/platforms" replace />} />
           </Route>
         )}
