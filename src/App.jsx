@@ -91,6 +91,7 @@ export default function App() {
             <Route index element={<Navigate to="platforms" replace />} />
             <Route path="platforms/*" element={<PlatformsSection />} />
             <Route path="agencies/*" element={<AdminAgenciesPage />} />
+            <Route path="*" element={<Navigate to="/admin/platforms" replace />} />
           </Route>
         )}
       </Route>
