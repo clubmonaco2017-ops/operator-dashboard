@@ -25,9 +25,11 @@ export function AgencyProvider({ children }) {
   }, [availableAgencies])
 
   const setActiveAgency = (id) => {
-    if (!availableAgencies.some((a) => a.id === id)) return
+    // null = «Все агентства» (combined view) — допустимое значение для superadmin
+    if (id !== null && !availableAgencies.some((a) => a.id === id)) return
     setActiveAgencyIdState(id)
-    localStorage.setItem(STORAGE_KEY, id)
+    if (id === null) localStorage.removeItem(STORAGE_KEY)
+    else localStorage.setItem(STORAGE_KEY, id)
   }
 
   const value = useMemo(
