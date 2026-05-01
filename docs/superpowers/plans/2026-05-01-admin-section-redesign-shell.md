@@ -78,14 +78,12 @@ Expected output:
 
 - [ ] **Step 5: Baseline tests + build**
 
-Run: `pnpm install --frozen-lockfile`
-Run: `pnpm test --run`
-Expected: всё зелёное (number-of-tests baseline зафиксировать в голове / черновике).
+Run: `npm ci`
+Run: `npm run test:run`
+Expected baseline: **19 failed / 322 total** в 5 файлах (LoginPage 10, UserMenuDropdown 4, CreateStaffSlideOut 3, AgencyFilterDropdown 1, defaultPermissions 1) + 3 файла с file-level crashes (useAuth, AgencySwitcher, cardRegistry). Это pre-existing на main; user явно акцептовал proceed на этом baseline (вариант C). После наших изменений набор failures должен остаться **ровно тем же** — никаких новых регрессов.
 
-Run: `pnpm build`
+Run: `npm run build`
 Expected: clean build, no errors.
-
-Если baseline красный — починить main отдельным PR'ом до старта этого subplan'а.
 
 ---
 
@@ -184,7 +182,7 @@ describe('AdminShell', () => {
 
 - [ ] **Step 3: Запустить тесты — все 5 должны упасть с «module not found»**
 
-Run: `pnpm test --run src/components/admin-shell/AdminShell.test.jsx`
+Run: `npm run test:run -- src/components/admin-shell/AdminShell.test.jsx`
 
 Expected: 5 failed; ошибка вида `Failed to resolve import "./AdminShell.jsx"` или `Cannot find module`.
 
@@ -245,26 +243,26 @@ export function AdminShell() {
 
 - [ ] **Step 5: Запустить тесты — все 5 должны пройти**
 
-Run: `pnpm test --run src/components/admin-shell/AdminShell.test.jsx`
+Run: `npm run test:run -- src/components/admin-shell/AdminShell.test.jsx`
 
 Expected: 5 passed.
 
 Если что-то падает:
 - «Cannot resolve `@/lib/utils`» → проверить, что `vite.config.js` имеет `@` alias на `src` (имеет — используется во всех shell-компонентах). Если alias не работает в этом тестовом окружении — заменить на относительный путь `../../lib/utils.js`. Проверить наличие файла `src/lib/utils.js` (должен экспортировать `cn`).
-- «Cannot resolve `lucide-react`» → пакет должен быть в dependencies (используется в RailNav). Если нет — `pnpm add lucide-react`.
+- «Cannot resolve `lucide-react`» → пакет должен быть в dependencies (используется в RailNav). Если нет — `npm install lucide-react`.
 - Тест на `aria-current` падает → убедиться, что `NavLink` импортирован из `react-router-dom` (v6 проставляет этот атрибут автоматически, когда callback `className` отрабатывает с `isActive=true`).
 
 - [ ] **Step 6: Прогнать lint**
 
-Run: `pnpm lint src/components/admin-shell/`
+Run: `npm run lint -- src/components/admin-shell/`
 
 Expected: без ошибок.
 
 - [ ] **Step 7: Прогнать полный test suite — нет регрессий**
 
-Run: `pnpm test --run`
+Run: `npm run test:run`
 
-Expected: предыдущий baseline + 5 новых passes.
+Expected: ровно те же 19 pre-existing failures (LoginPage 10 + UserMenuDropdown 4 + CreateStaffSlideOut 3 + AgencyFilterDropdown 1 + defaultPermissions 1) + 3 file-level crashes; **+5 новых passes** в AdminShell.test.jsx. Никаких новых failures.
 
 - [ ] **Step 8: Commit**
 
@@ -436,9 +434,9 @@ import AdminAgenciesPage from './pages/AdminAgenciesPage'
 
 - [ ] **Step 5: Запустить полный test suite**
 
-Run: `pnpm test --run`
+Run: `npm run test:run`
 
-Expected: всё зелёное. Если App.jsx где-то использовался в тестах с моком на `AdminLayout` — найти и обновить. (Pre-flight grep в Task 0 показал, что `AdminLayout` нет в тестах. Если что-то всплыло — проверить grep шире.)
+Expected: те же 19 pre-existing failures + 5 AdminShell passes. Никаких новых failures от App.jsx изменений. Если App.jsx где-то использовался в тестах с моком на `AdminLayout` — найти и обновить. (Pre-flight grep в Task 0 показал, что `AdminLayout` нет в тестах. Если что-то всплыло — проверить grep шире.)
 
 - [ ] **Step 6: Подтвердить отсутствие ссылок на `AdminLayout` перед удалением файла**
 
@@ -452,14 +450,14 @@ Run: `git rm src/AdminLayout.jsx`
 
 - [ ] **Step 8: Build + lint sanity**
 
-Run: `pnpm build`
+Run: `npm run build`
 Expected: clean build.
 
-Run: `pnpm lint`
+Run: `npm run lint`
 Expected: без новых ошибок (особенно «unused import» — должно быть чисто).
 
-Run: `pnpm test --run`
-Expected: всё зелёное.
+Run: `npm run test:run`
+Expected: те же 19 pre-existing failures + 5 AdminShell passes.
 
 - [ ] **Step 9: Commit**
 
@@ -477,7 +475,7 @@ git commit -m "feat(admin): wire AdminShell into AppShell; remove AdminLayout ov
 
 - [ ] **Step 1: Запустить dev-сервер**
 
-Run: `pnpm dev`
+Run: `npm run dev`
 
 Открыть http://localhost:5173 (или на каком порту запустится).
 
@@ -560,12 +558,12 @@ Expected: всё работает как до этого subplan'а (regression 
 
 Run (в последовательности):
 ```bash
-pnpm test --run
-pnpm build
-pnpm lint
+npm run test:run
+npm run build
+npm run lint
 ```
 
-Expected: всё зелёное.
+Expected: те же 19 pre-existing failures + 5 AdminShell passes (никаких новых регрессов); clean build; без новых lint-ошибок.
 
 - [ ] **Step 2: Обновить memory `project_ds_rollout_roadmap.md`**
 
@@ -631,7 +629,7 @@ Plan: `docs/superpowers/plans/2026-05-01-admin-section-redesign-shell.md`
 - [ ] Переход из /admin в /clients (через RailNav) работает без артефактов.
 - [ ] Non-superadmin → /admin → редирект на `/`.
 - [ ] Legacy секции (create / edit / archive агентства, CRUD платформы) — без регрессий.
-- [ ] `pnpm test --run`, `pnpm build`, `pnpm lint` — зелёные.
+- [ ] `npm run test:run` (5 новых AdminShell passes; 19 pre-existing failures на main без изменений), `npm run build`, `npm run lint` — зелёные.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
