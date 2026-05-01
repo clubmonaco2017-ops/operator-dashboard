@@ -13,6 +13,8 @@ import { MasterDetailLayout, ListPane, SearchInput } from '../components/shell/i
 import { Button } from '@/components/ui/button'
 import { hasPermission } from '../lib/permissions.js'
 import { useSectionTitle } from '../hooks/useSectionTitle.jsx'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
+import AgencyFilterDropdown from '../components/AgencyFilterDropdown.jsx'
 
 export function StaffListPage() {
   const { user } = useAuth()
@@ -23,8 +25,13 @@ export function StaffListPage() {
   const [role, setRole] = useState('all')
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [agencyFilter, setAgencyFilter] = useState(null)
+  const { isMultiAgency } = useAgencyContext()
+  const effectiveAgencyId = agencyFilter
 
-  const { rows, counts, loading, error, reload } = useStaffList(user?.id)
+  const { rows, counts, loading, error, reload } = useStaffList(user?.id, {
+    agencyId: effectiveAgencyId,
+  })
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -65,15 +72,18 @@ export function StaffListPage() {
   ) : null
 
   const searchNode = (
-    <SearchInput
-      placeholder="Поиск по имени, email, реф-коду…"
-      value={search}
-      onChange={setSearch}
-      ariaLabel="Поиск сотрудников"
-    />
+    <div className="flex flex-col gap-2">
+      <SearchInput
+        placeholder="Поиск по имени, email, реф-коду…"
+        value={search}
+        onChange={setSearch}
+        ariaLabel="Поиск сотрудников"
+      />
+      <AgencyFilterDropdown value={agencyFilter} onChange={setAgencyFilter} />
+    </div>
   )
 
-  const filtersNode = !isZeroEmpty ? (
+  const filtersNode = (!loading && !isZeroEmpty) ? (
     <StaffFilterChips counts={counts} value={role} onChange={setRole} />
   ) : null
 
@@ -93,7 +103,7 @@ export function StaffListPage() {
       onClearRole={() => setRole('all')}
     />
   ) : (
-    <StaffList rows={filtered} selectedRefCode={refCode ?? null} />
+    <StaffList rows={filtered} selectedRefCode={refCode ?? null} showAgency={isMultiAgency} />
   )
 
   return (

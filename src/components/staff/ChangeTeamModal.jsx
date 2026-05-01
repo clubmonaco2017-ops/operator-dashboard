@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import { invalidateUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
+import { useAgencyContext } from '../../lib/agencyContext.jsx'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
@@ -15,6 +16,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
  * @param {function} props.onChanged
  */
 export function ChangeTeamModal({ callerId, operatorId, currentTeamId, onClose, onChanged }) {
+  const { activeAgencyId } = useAgencyContext()
   const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
@@ -25,7 +27,7 @@ export function ChangeTeamModal({ callerId, operatorId, currentTeamId, onClose, 
     let cancelled = false
     setLoading(true)
     supabase
-      .rpc('list_active_teams_for_assignment', {})
+      .rpc('list_active_teams_for_assignment', { p_agency_id: activeAgencyId })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {
@@ -41,7 +43,7 @@ export function ChangeTeamModal({ callerId, operatorId, currentTeamId, onClose, 
     return () => {
       cancelled = true
     }
-  }, [callerId, currentTeamId])
+  }, [callerId, currentTeamId, activeAgencyId])
 
   async function handleSubmit() {
     if (submitting || selected == null) return

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 /**
  * Операторы без команды (через RPC list_unassigned_operators).
@@ -8,6 +9,7 @@ import { supabase } from '../supabaseClient'
  * @param {string} [search]
  */
 export function useUnassignedOperators(search = '') {
+  const { activeAgencyId } = useAgencyContext()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -21,6 +23,7 @@ export function useUnassignedOperators(search = '') {
     supabase
       .rpc('list_unassigned_operators', {
         p_search: search || null,
+        p_agency_id: activeAgencyId,
       })
       .then(({ data, error: err }) => {
         if (cancelled) return
@@ -38,7 +41,7 @@ export function useUnassignedOperators(search = '') {
     return () => {
       cancelled = true
     }
-  }, [search, reloadKey])
+  }, [search, activeAgencyId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 

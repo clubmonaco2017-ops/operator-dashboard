@@ -7,8 +7,9 @@ import { supabase } from '../supabaseClient'
  *
  * @param {number|null} callerId
  * @param {string} [search]
+ * @param {string|null} [agencyId] — uuid агентства; null = combined view across accessible agencies
  */
-export function useUnassignedClients(callerId, search = '') {
+export function useUnassignedClients(callerId, search = '', agencyId = null) {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -22,6 +23,7 @@ export function useUnassignedClients(callerId, search = '') {
 
     supabase
       .rpc('list_unassigned_clients', {
+        p_agency_id: agencyId,
         p_search: search || null,
       })
       .then(({ data, error: err }) => {
@@ -40,7 +42,7 @@ export function useUnassignedClients(callerId, search = '') {
     return () => {
       cancelled = true
     }
-  }, [callerId, search, reloadKey])
+  }, [callerId, search, agencyId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 

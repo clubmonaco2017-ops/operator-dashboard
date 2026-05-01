@@ -29,8 +29,20 @@ import {
 import { isSuperadmin } from './lib/permissions.js'
 
 export default function App() {
-  const { user, signOut } = useAuth()
+  const { user, loading, signOut } = useAuth()
   const navigate = useNavigate()
+
+  // Show loader only on the initial mount (no user yet). Subsequent profile
+  // refreshes (tab focus, token rotation) keep the rendered tree mounted —
+  // otherwise filters / open dialogs / scroll positions reset every time the
+  // window loses focus.
+  if (loading && !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+        Загрузка…
+      </div>
+    )
+  }
 
   if (!user) {
     return (

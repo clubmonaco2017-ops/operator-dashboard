@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 const TZ = 'Europe/Kiev'
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
@@ -19,6 +20,7 @@ const DATA_START = { date: '2026-04-04', hour: 0 }
  * }}
  */
 export function useDashboardData({ from, to }) {
+  const { activeAgencyId } = useAgencyContext()
   const [rows, setRows] = useState([])
   const [operatorMap, setOperatorMap] = useState({})
   const [loading, setLoading] = useState(true)
@@ -48,6 +50,7 @@ export function useDashboardData({ from, to }) {
             p_from: from,
             p_to: to,
             p_tz: TZ,
+            p_agency_id: activeAgencyId,
           }),
         ])
 
@@ -97,7 +100,7 @@ export function useDashboardData({ from, to }) {
     return () => {
       cancelled = true
     }
-  }, [from, to, version])
+  }, [from, to, version, activeAgencyId])
 
   const reload = useCallback(() => setVersion((v) => v + 1), [])
 
@@ -121,6 +124,7 @@ export function useDashboardData({ from, to }) {
  * / «Нет данных» when teamMap is empty.
  */
 export function useTeamMembershipsMap(callerId) {
+  const { activeAgencyId } = useAgencyContext()
   const [teamMap, setTeamMap] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -138,6 +142,7 @@ export function useTeamMembershipsMap(callerId) {
       try {
         const { data: teams, error: teamsErr } = await supabase.rpc('list_teams', {
           p_active: 'active',
+          p_agency_id: activeAgencyId,
         })
         if (cancelled) return
         if (teamsErr) throw teamsErr
@@ -172,7 +177,7 @@ export function useTeamMembershipsMap(callerId) {
     return () => {
       cancelled = true
     }
-  }, [callerId])
+  }, [callerId, activeAgencyId])
 
   return { teamMap, loading, error }
 }

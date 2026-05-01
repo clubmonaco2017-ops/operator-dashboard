@@ -12,8 +12,11 @@ export function useStaff(callerId, refCode) {
     let cancelled = false
     setLoading(true)
     setError(null)
+    // Combined view (p_agency_id = null) — detail-resolve по ref_code не должен
+    // зависеть от activeAgencyId switcher'а: цель найти сотрудника во всех
+    // агентствах, доступных пользователю.
     supabase
-      .rpc('list_staff')
+      .rpc('list_staff', { p_agency_id: null })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {

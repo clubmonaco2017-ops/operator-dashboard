@@ -3,11 +3,14 @@ import { Loader2 } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { defaultPermissions } from '../../lib/defaultPermissions.js'
 import { permissionGroups } from '../../lib/permissionGroups.js'
+import { useAgencyContext } from '../../lib/agencyContext.jsx'
+import { useAuth } from '../../useAuth.jsx'
+import AgencySelect from '../AgencySelect.jsx'
 import { RefCodePreview } from './RefCodePreview.jsx'
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useIsMobile } from '@/hooks/use-mobile'
 
-const ROLES = [
+const ALL_ROLES = [
   { value: 'admin',     label: 'Администратор' },
   { value: 'moderator', label: 'Модератор' },
   { value: 'teamlead',  label: 'Тим Лидер' },
@@ -16,6 +19,12 @@ const ROLES = [
 
 export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
   const isMobile = useIsMobile()
+  const { activeAgencyId, availableAgencies } = useAgencyContext()
+  const { user } = useAuth()
+  const isCallerSuperadmin = user?.role === 'superadmin'
+  const ROLES = isCallerSuperadmin
+    ? ALL_ROLES
+    : ALL_ROLES.filter((r) => r.value !== 'admin')
   const [role, setRole] = useState('moderator')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -23,9 +32,15 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [perms, setPerms] = useState(() => new Set(defaultPermissions('moderator')))
+  const [agencyId, setAgencyId] = useState(activeAgencyId)
+  const [adminAgencyIds, setAdminAgencyIds] = useState(
+    activeAgencyId ? [activeAgencyId] : [],
+  )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const firstNameRef = useRef(null)
+
+  const isAdminRole = role === 'admin'
 
   useEffect(() => {
     firstNameRef.current?.focus()
@@ -45,14 +60,25 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
     })
   }
 
+  function toggleAdminAgency(id) {
+    setAdminAgencyIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    )
+  }
+
+  const agencySelectionValid = isAdminRole
+    ? adminAgencyIds.length > 0
+    : Boolean(agencyId)
+
   const canSubmit = useMemo(() => {
     return (
       firstName.trim() &&
       lastName.trim() &&
       email.trim() &&
-      password.length >= 6
+      password.length >= 6 &&
+      agencySelectionValid
     )
-  }, [firstName, lastName, email, password])
+  }, [firstName, lastName, email, password, agencySelectionValid])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -60,7 +86,9 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
     setSubmitting(true)
     setError(null)
 
-    const { data: newId, error: rpcError } = await supabase.rpc('create_staff', {
+    // For non-admin roles: pin to selected agency.
+    // For admin: agency_id stays NULL, admin_agencies is populated from multi-select.
+    const rpcArgs = {
       p_email: email.trim(),
       p_password: password,
       p_role: role,
@@ -68,7 +96,10 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
       p_last_name: lastName.trim(),
       p_alias: alias.trim() || null,
       p_permissions: Array.from(perms),
-    })
+      p_agency_id: isAdminRole ? null : agencyId,
+      p_admin_agency_ids: isAdminRole ? adminAgencyIds : [],
+    }
+    const { data: newId, error: rpcError } = await supabase.rpc('create_staff', rpcArgs)
 
     if (rpcError) {
       setError(rpcError.message)
@@ -85,7 +116,7 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
       return
     }
     setSubmitting(false)
-    onCreated?.(detail[0].ref_code)
+    onCreated?.(detail[0].out_ref_code)
   }
 
   return (
@@ -122,6 +153,40 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
                 ))}
               </select>
             </Field>
+
+            {isAdminRole ? (
+              <Field
+                label="Агентства"
+                required
+                hint="Админ может вести несколько агентств. Отметь хотя бы одно."
+              >
+                {availableAgencies.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    Нет доступных агентств.
+                  </p>
+                ) : (
+                  <div className="space-y-1 rounded-md border border-border bg-card px-3 py-2 max-h-44 overflow-auto">
+                    {availableAgencies.map((a) => (
+                      <label
+                        key={a.id}
+                        className="flex items-center gap-2 text-sm py-0.5"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={adminAgencyIds.includes(a.id)}
+                          onChange={() => toggleAdminAgency(a.id)}
+                          disabled={submitting}
+                          className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-[var(--primary-ring)]"
+                        />
+                        <span className="text-foreground">{a.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </Field>
+            ) : (
+              <AgencySelect value={agencyId} onChange={setAgencyId} disabled={submitting} />
+            )}
 
             <div className="rounded-md border border-border bg-muted/40 p-3">
               <div className="mb-1 text-xs font-medium text-muted-foreground">

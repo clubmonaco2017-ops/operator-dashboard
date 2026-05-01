@@ -7,11 +7,31 @@ vi.mock('../../supabaseClient', () => ({
     rpc: vi.fn(),
   },
 }))
+const agencyMock = vi.fn(() => ({
+  availableAgencies: [{ id: 'agency-x', name: 'Test Agency' }],
+  activeAgencyId: 'agency-x',
+  activeAgency: { id: 'agency-x', name: 'Test Agency' },
+  setActiveAgency: vi.fn(),
+  isMultiAgency: false,
+}))
+vi.mock('../../lib/agencyContext.jsx', () => ({
+  useAgencyContext: () => agencyMock(),
+}))
 import { supabase } from '../../supabaseClient'
+
+const SINGLE_AGENCY_CTX = {
+  availableAgencies: [{ id: 'agency-x', name: 'Test Agency' }],
+  activeAgencyId: 'agency-x',
+  activeAgency: { id: 'agency-x', name: 'Test Agency' },
+  setActiveAgency: vi.fn(),
+  isMultiAgency: false,
+}
 
 describe('<CreateStaffSlideOut>', () => {
   beforeEach(() => {
     supabase.rpc.mockReset()
+    agencyMock.mockReset()
+    agencyMock.mockReturnValue(SINGLE_AGENCY_CTX)
   })
 
   function renderForm(overrides = {}) {
@@ -95,5 +115,75 @@ describe('<CreateStaffSlideOut>', () => {
     const initial = createUsers.checked
     fireEvent.click(createUsers)
     expect(createUsers.checked).toBe(!initial)
+  })
+
+  it('renders admin multi-select with all available agencies for admin role (multi-agency caller)', () => {
+    agencyMock.mockReturnValue({
+      availableAgencies: [
+        { id: 'a1', name: 'Alpha' },
+        { id: 'a2', name: 'Beta' },
+        { id: 'a3', name: 'Gamma' },
+      ],
+      activeAgencyId: 'a1',
+      activeAgency: { id: 'a1', name: 'Alpha' },
+      setActiveAgency: vi.fn(),
+      isMultiAgency: true,
+    })
+    renderForm()
+    const roleSelect = screen.getAllByRole('combobox')[0]
+    fireEvent.change(roleSelect, { target: { value: 'admin' } })
+    expect(screen.getByLabelText('Alpha')).toBeInTheDocument()
+    expect(screen.getByLabelText('Beta')).toBeInTheDocument()
+    expect(screen.getByLabelText('Gamma')).toBeInTheDocument()
+  })
+
+  it('submits create_staff with p_admin_agency_ids array when role is admin', async () => {
+    agencyMock.mockReturnValue({
+      availableAgencies: [
+        { id: 'a1', name: 'Alpha' },
+        { id: 'a2', name: 'Beta' },
+      ],
+      activeAgencyId: 'a1',
+      activeAgency: { id: 'a1', name: 'Alpha' },
+      setActiveAgency: vi.fn(),
+      isMultiAgency: true,
+    })
+    supabase.rpc
+      .mockResolvedValueOnce({ data: 99, error: null })
+      .mockResolvedValueOnce({ data: [{ ref_code: 'AD-IPE-099' }], error: null })
+    renderForm()
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'admin' } })
+    // toggle Beta on (Alpha already preselected from activeAgencyId)
+    fireEvent.click(screen.getByLabelText('Beta'))
+    fireEvent.change(screen.getByLabelText(/Имя/i), { target: { value: 'Иван' } })
+    fireEvent.change(screen.getByLabelText(/Фамилия/i), { target: { value: 'Петров' } })
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'i@example.com' } })
+    fireEvent.change(screen.getByLabelText(/Пароль/i), { target: { value: 'secret123' } })
+    fireEvent.click(screen.getByRole('button', { name: /Создать/i }))
+    await waitFor(() => expect(supabase.rpc).toHaveBeenCalled())
+    const [, args] = supabase.rpc.mock.calls[0]
+    expect(args.p_role).toBe('admin')
+    expect(args.p_agency_id).toBeNull()
+    expect(args.p_admin_agency_ids).toEqual(expect.arrayContaining(['a1', 'a2']))
+  })
+
+  it('disables submit for admin role when no agencies are selected', () => {
+    agencyMock.mockReturnValue({
+      availableAgencies: [
+        { id: 'a1', name: 'Alpha' },
+        { id: 'a2', name: 'Beta' },
+      ],
+      activeAgencyId: null,
+      activeAgency: null,
+      setActiveAgency: vi.fn(),
+      isMultiAgency: true,
+    })
+    renderForm()
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'admin' } })
+    fireEvent.change(screen.getByLabelText(/Имя/i), { target: { value: 'И' } })
+    fireEvent.change(screen.getByLabelText(/Фамилия/i), { target: { value: 'П' } })
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'i@example.com' } })
+    fireEvent.change(screen.getByLabelText(/Пароль/i), { target: { value: 'secret123' } })
+    expect(screen.getByRole('button', { name: /Создать/i })).toBeDisabled()
   })
 })

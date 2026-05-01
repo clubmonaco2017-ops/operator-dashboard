@@ -1,5 +1,7 @@
 const DEFAULTS = {
   admin: [
+    'create_users',
+    'manage_roles',
     'create_tasks',
     'manage_teams',
     'send_reminders',

@@ -36,7 +36,34 @@ describe('normalizeProfile', () => {
       attributes: { shift: 'ДЕНЬ' },
       timezone: 'Europe/Kiev',
       isActive: true,
+      agencyId: null,
+      availableAgencies: [],
     })
+  })
+
+  it('maps agency_id to agencyId and parses available_agencies array', () => {
+    const row = {
+      id: 9,
+      email: 'op@ex.com',
+      role: 'operator',
+      agency_id: 'a-uuid-1',
+      available_agencies: [{ id: 'a-uuid-1', name: 'Agency Alpha' }],
+    }
+    const result = normalizeProfile(row)
+    expect(result.agencyId).toBe('a-uuid-1')
+    expect(result.availableAgencies).toEqual([{ id: 'a-uuid-1', name: 'Agency Alpha' }])
+  })
+
+  it('defaults agencyId to null and availableAgencies to [] when absent', () => {
+    const row = { id: 10, email: 'x@y.z', role: 'admin' }
+    const result = normalizeProfile(row)
+    expect(result.agencyId).toBeNull()
+    expect(result.availableAgencies).toEqual([])
+  })
+
+  it('coerces non-array available_agencies to empty array', () => {
+    const row = { id: 11, email: 'x@y.z', role: 'admin', available_agencies: null }
+    expect(normalizeProfile(row).availableAgencies).toEqual([])
   })
 
   it('returns empty array for permissions when field absent', () => {

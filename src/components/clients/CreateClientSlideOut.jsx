@@ -5,6 +5,7 @@ import { supabase } from '../../supabaseClient'
 import { useClientActions } from '../../hooks/useClientActions.js'
 import { usePlatforms } from '../../hooks/usePlatforms.js'
 import { useAgencies } from '../../hooks/useAgencies.js'
+import { useAgencyContext } from '../../lib/agencyContext.jsx'
 import {
   validateName,
   validateAlias,
@@ -45,11 +46,28 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
   const { createClient } = useClientActions(callerId)
-  const { rows: platforms, loading: platformsLoading } = usePlatforms()
+  const { rows: allPlatforms, loading: platformsLoading } = usePlatforms()
+  const { availableAgencies } = useAgencyContext()
   const [form, setForm] = useState(EMPTY_FORM)
   const [avatarFile, setAvatarFile] = useState(null) // File | null
   const [avatarError, setAvatarError] = useState(null)
-  const { rows: agencies } = useAgencies({ platformId: form.platformId || null })
+  const { rows: allAgencies } = useAgencies({ platformId: form.platformId || null })
+
+  // Scope platforms to those that have at least one accessible agency
+  const platforms = useMemo(() => {
+    const accessiblePlatformIds = new Set(
+      (availableAgencies ?? []).map((a) => a.platform_id).filter(Boolean)
+    )
+    if (accessiblePlatformIds.size === 0) return allPlatforms
+    return allPlatforms.filter((p) => accessiblePlatformIds.has(p.id))
+  }, [allPlatforms, availableAgencies])
+
+  // Intersect agencies with caller's accessible set
+  const agencies = useMemo(() => {
+    const accessibleIds = new Set((availableAgencies ?? []).map((a) => a.id))
+    if (accessibleIds.size === 0) return allAgencies
+    return allAgencies.filter((a) => accessibleIds.has(a.id))
+  }, [allAgencies, availableAgencies])
 
   const [errors, setErrors] = useState({})       // { fieldKey: message }
   const [submitError, setSubmitError] = useState(null)

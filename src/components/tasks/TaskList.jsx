@@ -8,7 +8,7 @@ import { TaskListItem } from './TaskListItem.jsx'
  * @param {number|null} props.selectedId
  * @param {string} props.basePath — '/tasks' | '/tasks/outbox' | '/tasks/all'
  */
-export function TaskList({ rows, selectedId, basePath }) {
+export function TaskList({ rows, selectedId, basePath, showAgency = false }) {
   return (
     <ul className="flex flex-col py-1">
       {rows.map((task) => (
@@ -17,6 +17,7 @@ export function TaskList({ rows, selectedId, basePath }) {
             task={task}
             isActive={task.id === selectedId}
             basePath={basePath}
+            showAgency={showAgency}
           />
         </li>
       ))}

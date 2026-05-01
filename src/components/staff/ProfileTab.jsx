@@ -7,6 +7,7 @@ import { hasPermission } from '../../lib/permissions.js'
 import { TeamMembershipBlock } from './TeamMembershipBlock.jsx'
 import { CuratorBlock } from './CuratorBlock.jsx'
 import { CuratedOperatorsBlock } from './CuratedOperatorsBlock.jsx'
+import { useStaffAgencies } from '../../hooks/useStaffAgencies.js'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -22,6 +23,9 @@ export function ProfileTab() {
   const [email, setEmail] = useState(row.email ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const { rows: agencies } = useStaffAgencies(
+    row.role === 'superadmin' ? null : row.id,
+  )
 
   useEffect(() => {
     setFirstName(row.first_name ?? '')
@@ -56,6 +60,39 @@ export function ProfileTab() {
         <Field label="Email" value={email} onChange={setEmail} type="email" disabled={!canEdit} required />
         <ReadOnly label={<>Реф-код <Lock size={12} className="ml-1 inline opacity-60" /></>} value={row.ref_code} mono />
         <ReadOnly label={<>Роль <Lock size={12} className="ml-1 inline opacity-60" /></>} value={row.role} />
+        {row.role === 'superadmin' ? (
+          <ReadOnly
+            label={<>Агентство <Lock size={12} className="ml-1 inline opacity-60" /></>}
+            value="Все (глобальный доступ)"
+          />
+        ) : row.role === 'admin' ? (
+          <div className="sm:col-span-2">
+            <div className="mb-1 text-xs font-medium text-muted-foreground">
+              Агентства <Lock size={12} className="ml-1 inline opacity-60" />
+            </div>
+            {agencies.length === 0 ? (
+              <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+                Не привязан ни к одному агентству
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {agencies.map((a) => (
+                  <span
+                    key={a.id}
+                    className="inline-flex items-center rounded-md border border-border bg-background px-2 py-1 text-sm"
+                  >
+                    {a.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <ReadOnly
+            label={<>Агентство <Lock size={12} className="ml-1 inline opacity-60" /></>}
+            value={agencies[0]?.name ?? row.agency_name ?? '—'}
+          />
+        )}
         {error && <p className="text-sm text-[var(--danger-ink)] sm:col-span-2" role="alert">{error}</p>}
         {canEdit && (
           <div className="sm:col-span-2">

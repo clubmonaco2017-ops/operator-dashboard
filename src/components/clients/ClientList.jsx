@@ -10,7 +10,7 @@ import { ClientListItem } from './ClientListItem.jsx'
  * @param {boolean} props.loading
  * @param {string|null} props.error
  */
-export function ClientList({ rows, selectedId, loading, error }) {
+export function ClientList({ rows, selectedId, loading, error, showAgency = false }) {
   if (loading) {
     return <ListSkeletonWithSlowHint />
   }
@@ -31,7 +31,11 @@ export function ClientList({ rows, selectedId, loading, error }) {
     <ul className="flex flex-col py-1">
       {rows.map((client) => (
         <li key={client.id}>
-          <ClientListItem client={client} isActive={sel === client.id} />
+          <ClientListItem
+            client={client}
+            isActive={sel === client.id}
+            showAgency={showAgency}
+          />
         </li>
       ))}
     </ul>

@@ -7,12 +7,16 @@ import { StaffListItem } from './StaffListItem.jsx'
  * @param {Array} props.rows — отфильтрованный массив сотрудников
  * @param {string|null} props.selectedRefCode — ref_code выбранного сотрудника
  */
-export function StaffList({ rows, selectedRefCode }) {
+export function StaffList({ rows, selectedRefCode, showAgency = false }) {
   return (
     <ul className="flex flex-col py-1">
       {rows.map((row) => (
         <li key={row.id}>
-          <StaffListItem row={row} isActive={row.ref_code === selectedRefCode} />
+          <StaffListItem
+            row={row}
+            isActive={row.ref_code === selectedRefCode}
+            showAgency={showAgency}
+          />
         </li>
       ))}
     </ul>

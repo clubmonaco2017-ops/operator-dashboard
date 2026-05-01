@@ -9,7 +9,7 @@ import { formatDeadlineRelative } from '../../lib/tasks.js'
  * @param {boolean} props.isActive
  * @param {string} props.basePath — '/tasks' | '/tasks/outbox' | '/tasks/all'
  */
-export function TaskListItem({ task, isActive, basePath }) {
+export function TaskListItem({ task, isActive, basePath, showAgency = false }) {
   const status = task.effective_status || task.status
   const cancelled = status === 'cancelled'
   const deadlineLabel = formatDeadlineRelative(task.deadline)
@@ -18,6 +18,7 @@ export function TaskListItem({ task, isActive, basePath }) {
     `От ${task.created_by_name ?? '—'}`,
     `→ ${task.assigned_to_name ?? '—'}`,
     deadlineLabel ? `· ${deadlineLabel}` : null,
+    showAgency && task.agency_name ? `· ${task.agency_name}` : null,
   ]
     .filter(Boolean)
     .join(' ')

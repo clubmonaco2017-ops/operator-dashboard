@@ -3,6 +3,7 @@ import { AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../../supabaseClient'
 import { KpiCard } from '../KpiCard.jsx'
+import { useAgencyContext } from '../../../lib/agencyContext.jsx'
 
 /**
  * Admin-scope all-overdue count.
@@ -12,11 +13,12 @@ import { KpiCard } from '../KpiCard.jsx'
 export function OverdueAllCard({ user }) {
   const [count, setCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const { activeAgencyId } = useAgencyContext()
 
   useEffect(() => {
     let cancelled = false
     supabase
-      .rpc('count_overdue_tasks')
+      .rpc('count_overdue_tasks', { p_agency_id: activeAgencyId })
       .then(({ data }) => {
         if (cancelled) return
         setCount(Number(data ?? 0))
@@ -28,7 +30,7 @@ export function OverdueAllCard({ user }) {
     return () => {
       cancelled = true
     }
-  }, [user?.id])
+  }, [user?.id, activeAgencyId])
 
   return (
     <Link to="/tasks?filter=overdue" className="block">

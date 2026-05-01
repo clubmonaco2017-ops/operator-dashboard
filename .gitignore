@@ -27,3 +27,4 @@ dist-ssr
 # Superpowers brainstorming session artifacts (local only)
 .superpowers/
 .claude/worktrees/
+.env*.local

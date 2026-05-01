@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { invalidateUserTeamMembership } from './useUserTeamMembership.js'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 /**
  * Кураторство: список операторов под куратором + actions
@@ -9,6 +10,7 @@ import { invalidateUserTeamMembership } from './useUserTeamMembership.js'
  * @param {number|null} moderatorId
  */
 export function useCuratorship(moderatorId) {
+  const { activeAgencyId } = useAgencyContext()
   const [operators, setOperators] = useState([])
   const [loading, setLoading] = useState(false)
   const [mutating, setMutating] = useState(false)
@@ -24,6 +26,7 @@ export function useCuratorship(moderatorId) {
     supabase
       .rpc('list_curated_operators', {
         p_moderator_id: moderatorId,
+        p_agency_id: activeAgencyId,
       })
       .then(({ data, error: err }) => {
         if (cancelled) return
@@ -41,7 +44,7 @@ export function useCuratorship(moderatorId) {
     return () => {
       cancelled = true
     }
-  }, [moderatorId, reloadKey])
+  }, [moderatorId, activeAgencyId, reloadKey])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 

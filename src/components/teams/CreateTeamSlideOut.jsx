@@ -3,6 +3,8 @@ import { Check, Loader2 } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import { useTeamActions } from '../../hooks/useTeamActions.js'
 import { validateTeamName, formatLeadRole } from '../../lib/teams.js'
+import { useAgencyContext } from '../../lib/agencyContext.jsx'
+import AgencySelect from '../AgencySelect.jsx'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -25,8 +27,10 @@ import { useIsMobile } from '@/hooks/use-mobile'
 export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
   const isMobile = useIsMobile()
   const { createTeam } = useTeamActions(callerId)
+  const { activeAgencyId } = useAgencyContext()
 
   const [name, setName] = useState('')
+  const [agencyId, setAgencyId] = useState(activeAgencyId)
   const [leadUserId, setLeadUserId] = useState('')
   const [leads, setLeads] = useState([])
   const [leadsLoading, setLeadsLoading] = useState(true)
@@ -44,14 +48,14 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
     nameInputRef.current?.focus()
   }, [])
 
-  // Load lead candidates: admin/superadmin/teamlead/moderator (включаем admin/superadmin —
-  // они тоже могут вести команду, по DB-схеме (см. update_team / create_team).
+  // Load lead candidates: admin/superadmin/teamlead/moderator (admin/superadmin
+  // cross agencies via NULL agency_id; teamlead/moderator must match team agency).
   useEffect(() => {
     let cancelled = false
     setLeadsLoading(true)
     supabase
       .from('dashboard_users')
-      .select('id, first_name, last_name, alias, email, role')
+      .select('id, first_name, last_name, alias, email, role, agency_id')
       .in('role', ['superadmin', 'admin', 'teamlead', 'moderator'])
       .eq('is_active', true)
       .order('first_name')
@@ -66,6 +70,23 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
       cancelled = true
     }
   }, [])
+
+  // Reset selected lead if their agency no longer matches selected agencyId.
+  const filteredLeads = useMemo(() => {
+    if (!agencyId) return leads.filter((u) => u.role === 'admin' || u.role === 'superadmin')
+    return leads.filter(
+      (u) =>
+        u.role === 'admin' ||
+        u.role === 'superadmin' ||
+        u.agency_id === agencyId,
+    )
+  }, [leads, agencyId])
+
+  useEffect(() => {
+    if (!leadUserId) return
+    const stillValid = filteredLeads.some((u) => String(u.id) === String(leadUserId))
+    if (!stillValid) setLeadUserId('')
+  }, [filteredLeads, leadUserId])
 
   // Hotkeys — Cmd/Ctrl+Enter submit (Esc handled by Sheet primitive)
   useEffect(() => {
@@ -94,6 +115,7 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
     const next = {}
     const nameRes = validateTeamName(name)
     if (!nameRes.valid) next.name = nameRes.error
+    if (!agencyId) next.agencyId = 'Выберите агентство'
     if (!leadUserId) next.leadUserId = 'Выберите лида команды'
     setErrors(next)
     return Object.keys(next).length === 0
@@ -109,6 +131,7 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
       const newId = await createTeam({
         name: name.trim(),
         leadUserId: Number(leadUserId),
+        agencyId,
       })
       onCreated?.(newId)
     } catch (err) {
@@ -159,11 +182,18 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
               />
             </Field>
 
+            <AgencySelect value={agencyId} onChange={setAgencyId} disabled={submitting} />
+            {errors.agencyId && (
+              <span className="-mt-3 block text-xs text-[var(--danger-ink)]" role="alert">
+                {errors.agencyId}
+              </span>
+            )}
+
             <Field
               label="Лид команды"
               required
               error={errors.leadUserId}
-              hint={leadsLoading ? 'Загружаем кандидатов…' : 'Тимлид, модератор или админ'}
+              hint={leadsLoading ? 'Загружаем кандидатов…' : 'Тимлид, модератор или админ из выбранного агентства'}
             >
               <select
                 value={leadUserId}
@@ -174,7 +204,7 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
                 <option value="">
                   {leadsLoading ? 'Загрузка…' : 'Выберите лида…'}
                 </option>
-                {leads.map((u) => (
+                {filteredLeads.map((u) => (
                   <option key={u.id} value={u.id}>
                     {leadLabel(u)} — {formatLeadRole(u.role) || u.role}
                   </option>

@@ -1,18 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 /**
  * Список команд (через RPC list_teams).
  * Поиск — client-side: фильтруем уже загруженные строки по name/lead_name
  * (case-insensitive substring), без дополнительного RPC.
  *
+ * Agency scoping: передаём p_agency_id из AgencyContext (NULL = combined view
+ * по всем доступным caller'у агентствам). Optional override через opts.agencyId.
+ *
  * @param {number|null} callerId — retained as null-guard; RPC derives identity from JWT
  * @param {object} [opts]
  * @param {'active'|'archived'|'all'} [opts.active]  — default 'active'
  * @param {string} [opts.search]
+ * @param {string|null} [opts.agencyId] — override active agency (combined view if undefined)
  */
 export function useTeamList(callerId, opts = {}) {
-  const { active = 'active', search = '' } = opts
+  const { active = 'active', search = '', agencyId } = opts
+  const { activeAgencyId } = useAgencyContext()
+  const effectiveAgencyId = agencyId !== undefined ? agencyId : activeAgencyId
 
   const [allRows, setAllRows] = useState([])
   const [loading, setLoading] = useState(false)
@@ -26,7 +33,7 @@ export function useTeamList(callerId, opts = {}) {
     setError(null)
 
     supabase
-      .rpc('list_teams', { p_active: active })
+      .rpc('list_teams', { p_active: active, p_agency_id: effectiveAgencyId })
       .then(({ data, error: err }) => {
         if (cancelled) return
         if (err) {
@@ -43,7 +50,7 @@ export function useTeamList(callerId, opts = {}) {
     return () => {
       cancelled = true
     }
-  }, [callerId, active, reloadKey])
+  }, [callerId, active, effectiveAgencyId, reloadKey])
 
   const rows = useMemo(() => {
     const q = String(search ?? '').trim().toLowerCase()
