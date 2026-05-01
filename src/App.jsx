@@ -1,9 +1,11 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './useAuth.jsx'
 import LoginPage from './LoginPage.jsx'
 import SetPasswordPage from './SetPasswordPage.jsx'
-import AdminLayout from './AdminLayout.jsx'
 import { AppShell } from './components/shell/AppShell.jsx'
+import { AdminShell } from './components/admin-shell/index.js'
+import PlatformsSection from './sections/PlatformsSection'
+import AdminAgenciesPage from './pages/AdminAgenciesPage'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { StaffListPage, StaffDetailRoute, StaffDetailEmpty } from './pages/StaffListPage.jsx'
 import { ProfileTab } from './components/staff/ProfileTab.jsx'
@@ -29,8 +31,7 @@ import {
 import { isSuperadmin } from './lib/permissions.js'
 
 export default function App() {
-  const { user, loading, signOut } = useAuth()
-  const navigate = useNavigate()
+  const { user, loading } = useAuth()
 
   // Show loader only on the initial mount (no user yet). Subsequent profile
   // refreshes (tab focus, token rotation) keep the rendered tree mounted —
@@ -85,19 +86,15 @@ export default function App() {
           <Route path="all/:taskId" element={<TaskDetailRoute />} />
         </Route>
         <Route path="/notifications" element={<NotificationsPage />} />
+        {isSuperadmin(user) && (
+          <Route path="/admin" element={<AdminShell />}>
+            <Route index element={<Navigate to="platforms" replace />} />
+            <Route path="platforms/*" element={<PlatformsSection />} />
+            <Route path="agencies/*" element={<AdminAgenciesPage />} />
+            <Route path="*" element={<Navigate to="/admin/platforms" replace />} />
+          </Route>
+        )}
       </Route>
-      {isSuperadmin(user) && (
-        <Route
-          path="/admin/*"
-          element={
-            <AdminLayout
-              onClose={() => navigate('/')}
-              onLogout={signOut}
-              currentUser={user}
-            />
-          }
-        />
-      )}
       <Route path="/set-password" element={<SetPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
