@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import PlatformsSection from './sections/PlatformsSection'
-import AgenciesSection from './sections/AgenciesSection'
 import AdminAgenciesPage from './pages/AdminAgenciesPage'
 
 const SECTIONS = [
@@ -20,18 +19,6 @@ const SECTIONS = [
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
-      </svg>
-    ),
-  },
-  {
-    key: 'multi-agency',
-    label: 'Мульти-агентства',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        <path d="M21 21v-2a4 4 0 0 0-3-3.87"/>
       </svg>
     ),
   },
@@ -117,8 +104,7 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
           <Routes>
             <Route index element={<Navigate to="platforms" replace />} />
             <Route path="platforms" element={<PlatformsSection />} />
-            <Route path="agencies" element={<AgenciesSection />} />
-            <Route path="multi-agency" element={<AdminAgenciesPage />} />
+            <Route path="agencies" element={<AdminAgenciesPage />} />
             <Route path="*" element={<Navigate to="/admin/platforms" replace />} />
           </Routes>
         </div>
