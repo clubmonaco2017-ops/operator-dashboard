@@ -1,5 +1,4 @@
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import AdminPanel from './AdminPanel'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import PlatformsSection from './sections/PlatformsSection'
 import AgenciesSection from './sections/AgenciesSection'
 import ClientsSection from './sections/ClientsSection'
@@ -7,18 +6,6 @@ import OperatorsSection from './sections/OperatorsSection'
 import AdminAgenciesPage from './pages/AdminAgenciesPage'
 
 const SECTIONS = [
-  {
-    key: 'users',
-    label: 'Менеджеры',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-    ),
-  },
   {
     key: 'platforms',
     label: 'Платформы',
@@ -80,7 +67,7 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
 
   // Determine active section from URL path
   const pathSegment = location.pathname.split('/')[2] || ''
-  const activeSection = SECTIONS.find(s => s.key === pathSegment)?.key || 'users'
+  const activeSection = SECTIONS.find(s => s.key === pathSegment)?.key || SECTIONS[0]?.key
 
   return (
     <div className="fixed inset-0 z-40 bg-slate-100 dark:bg-slate-900 flex">
@@ -107,7 +94,7 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
           {SECTIONS.map(({ key, label, icon }) => (
             <button
               key={key}
-              onClick={() => navigate(key === 'users' ? '/admin' : `/admin/${key}`)}
+              onClick={() => navigate(`/admin/${key}`)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative ${
                 activeSection === key
                   ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
@@ -152,7 +139,7 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-6">
           <Routes>
-            <Route index element={<AdminPanel />} />
+            <Route index element={<Navigate to="platforms" replace />} />
             <Route path="platforms" element={<PlatformsSection />} />
             <Route path="agencies" element={<AgenciesSection />} />
             <Route path="multi-agency" element={<AdminAgenciesPage />} />
