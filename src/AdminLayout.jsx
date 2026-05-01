@@ -1,8 +1,6 @@
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import PlatformsSection from './sections/PlatformsSection'
 import AgenciesSection from './sections/AgenciesSection'
-import ClientsSection from './sections/ClientsSection'
-import OperatorsSection from './sections/OperatorsSection'
 import AdminAgenciesPage from './pages/AdminAgenciesPage'
 
 const SECTIONS = [
@@ -34,28 +32,6 @@ const SECTIONS = [
         <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         <path d="M21 21v-2a4 4 0 0 0-3-3.87"/>
-      </svg>
-    ),
-  },
-  {
-    key: 'clients',
-    label: 'Клиенты',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-    ),
-  },
-  {
-    key: 'operators',
-    label: 'Операторы',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-        <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
       </svg>
     ),
   },
@@ -143,8 +119,7 @@ export default function AdminLayout({ onClose, onLogout, currentUser }) {
             <Route path="platforms" element={<PlatformsSection />} />
             <Route path="agencies" element={<AgenciesSection />} />
             <Route path="multi-agency" element={<AdminAgenciesPage />} />
-            <Route path="clients" element={<ClientsSection />} />
-            <Route path="operators" element={<OperatorsSection />} />
+            <Route path="*" element={<Navigate to="/admin/platforms" replace />} />
           </Routes>
         </div>
       </main>
