@@ -48,7 +48,7 @@ export function AdminShell() {
           ))}
         </nav>
       </aside>
-      <main className="overflow-auto">
+      <main className="overflow-auto p-6">
         <Outlet />
       </main>
     </div>
