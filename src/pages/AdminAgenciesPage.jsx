@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient.js'
 import { useAuth } from '../useAuth.jsx'
 import AgencyTable from '../components/agencies/AgencyTable.jsx'
 import AgencyCreateModal from '../components/agencies/AgencyCreateModal.jsx'
+import AgencyDetailPanel from '../components/agencies/AgencyDetailPanel.jsx'
 
 export default function AdminAgenciesPage() {
   const { user } = useAuth()
@@ -10,6 +11,7 @@ export default function AdminAgenciesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [createOpen, setCreateOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState(null)
 
   const reload = useCallback(async () => {
     setLoading(true)
@@ -37,26 +39,19 @@ export default function AdminAgenciesPage() {
     setLoading(false)
   }, [])
 
-  useEffect(() => {
-    reload()
-  }, [reload])
+  useEffect(() => { reload() }, [reload])
 
   if (user?.role !== 'superadmin') {
-    return (
-      <div className="p-6 text-destructive">
-        Доступ только для superadmin
-      </div>
-    )
+    return <div className="p-6 text-destructive">Доступ только для superadmin</div>
   }
 
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Управление агентствами</h1>
+          <h1 className="text-2xl font-semibold">Агентства</h1>
           <p className="text-sm text-muted-foreground">
-            Создание агентств, мягкая архивация, назначение админов на агентства
-            (admin → many agencies).
+            Создание агентств, мягкая архивация, управление брендингом, контактами и админами.
           </p>
         </div>
         <button
@@ -73,15 +68,23 @@ export default function AdminAgenciesPage() {
       ) : agencies.length === 0 ? (
         <p className="text-sm text-muted-foreground">Агентств пока нет.</p>
       ) : (
-        <AgencyTable agencies={agencies} onChange={reload} />
+        <AgencyTable
+          agencies={agencies}
+          onChange={reload}
+          onSelect={(a) => setSelectedId(a.id)}
+        />
       )}
       {createOpen && (
         <AgencyCreateModal
           onClose={() => setCreateOpen(false)}
-          onCreated={() => {
-            setCreateOpen(false)
-            reload()
-          }}
+          onCreated={() => { setCreateOpen(false); reload() }}
+        />
+      )}
+      {selectedId && (
+        <AgencyDetailPanel
+          agencyId={selectedId}
+          onClose={() => setSelectedId(null)}
+          onAfterSave={reload}
         />
       )}
     </div>
