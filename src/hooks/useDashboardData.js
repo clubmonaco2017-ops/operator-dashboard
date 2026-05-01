@@ -50,6 +50,7 @@ export function useDashboardData({ from, to }) {
             p_from: from,
             p_to: to,
             p_tz: TZ,
+            p_agency_id: activeAgencyId,
           }),
         ])
 
