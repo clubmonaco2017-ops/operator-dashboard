@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -6,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { isSuperadmin } from '../../lib/permissions.js'
 
 function computeInitials(user) {
   const source = user?.alias || user?.firstName || user?.email || '?'
@@ -19,8 +21,10 @@ function computeInitials(user) {
 }
 
 export function UserMenuDropdown({ user, onLogout }) {
+  const navigate = useNavigate()
   const initials = computeInitials(user)
   const displayName = user?.alias || user?.firstName || user?.email || ''
+  const canSeeSettings = isSuperadmin(user)
 
   return (
     <DropdownMenu>
@@ -42,6 +46,9 @@ export function UserMenuDropdown({ user, onLogout }) {
           )}
         </div>
         <DropdownMenuSeparator />
+        {canSeeSettings && (
+          <DropdownMenuItem onClick={() => navigate('/admin')}>Настройки</DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={onLogout}>Выйти</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
