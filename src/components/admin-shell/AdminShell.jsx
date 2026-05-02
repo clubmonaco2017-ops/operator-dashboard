@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { Server, Building2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const SECTIONS = [
   { key: 'platforms', label: 'Платформы', icon: Server,    to: '/admin/platforms' },
@@ -27,7 +28,52 @@ function SectionLink({ to, label, icon: Icon }) {
   )
 }
 
+function MobileSectionTab({ to, label, icon: Icon }) {
+  return (
+    <NavLink
+      to={to}
+      end={false}
+      className={({ isActive }) =>
+        cn(
+          'relative flex flex-1 items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-colors',
+          isActive
+            ? 'text-foreground after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-t after:bg-primary'
+            : 'text-muted-foreground hover:text-foreground',
+        )
+      }
+    >
+      {Icon && <Icon className="h-4 w-4 shrink-0" />}
+      <span>{label}</span>
+    </NavLink>
+  )
+}
+
 export function AdminShell() {
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return (
+      <div className="flex h-full flex-col">
+        <nav
+          aria-label="Настройки"
+          className="flex shrink-0 border-b border-border bg-card"
+        >
+          {SECTIONS.map((section) => (
+            <MobileSectionTab
+              key={section.key}
+              to={section.to}
+              label={section.label}
+              icon={section.icon}
+            />
+          ))}
+        </nav>
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-[220px_1fr] h-full">
       <aside
@@ -48,7 +94,7 @@ export function AdminShell() {
           ))}
         </nav>
       </aside>
-      <main className="overflow-auto p-6">
+      <main className="overflow-auto">
         <Outlet />
       </main>
     </div>
