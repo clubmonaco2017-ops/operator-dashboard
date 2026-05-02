@@ -35,6 +35,12 @@ export function TaskListItem({ task, isActive, basePath, showAgency = false }) {
       ].join(' ')}
       aria-current={isActive ? 'true' : undefined}
     >
+      {task.is_unread && (
+        <span
+          aria-label="Непрочитанная задача"
+          className="absolute left-1 top-3 h-2 w-2 rounded-full bg-primary"
+        />
+      )}
       <StatusPill status={status} />
       <div className="min-w-0">
         <div
