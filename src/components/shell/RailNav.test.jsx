@@ -6,8 +6,8 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 vi.mock('../../useAuth.jsx', () => ({
   useAuth: vi.fn(),
 }))
-vi.mock('../../hooks/useUserOverdueCount.js', () => ({
-  useUserOverdueCount: vi.fn(),
+vi.mock('../../hooks/useUnreadTasksCount.js', () => ({
+  useUnreadTasksCount: vi.fn(),
 }))
 vi.mock('../../hooks/usePendingDeletionCount.js', () => ({
   usePendingDeletionCount: vi.fn(),
@@ -18,13 +18,13 @@ vi.mock('../../hooks/useUserTeamMembership.js', () => ({
 
 import { RailNav } from './RailNav.jsx'
 import { useAuth } from '../../useAuth.jsx'
-import { useUserOverdueCount } from '../../hooks/useUserOverdueCount.js'
+import { useUnreadTasksCount } from '../../hooks/useUnreadTasksCount.js'
 import { usePendingDeletionCount } from '../../hooks/usePendingDeletionCount.js'
 import { useUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
 
 function setup({ user, overdue = 0, pending = 0, hasTeam = false }) {
   useAuth.mockReturnValue({ user, logout: vi.fn() })
-  useUserOverdueCount.mockReturnValue({ count: overdue })
+  useUnreadTasksCount.mockReturnValue({ count: overdue })
   usePendingDeletionCount.mockReturnValue(pending)
   useUserTeamMembership.mockReturnValue({ has: hasTeam })
   return render(

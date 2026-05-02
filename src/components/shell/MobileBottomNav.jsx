@@ -3,7 +3,7 @@ import { CheckSquare, LayoutDashboard, Network, UserCircle, Users } from 'lucide
 import { useAuth } from '../../useAuth.jsx'
 import { hasPermission } from '../../lib/permissions.js'
 import { canSeeTeamsNav } from '../../lib/teams.js'
-import { useUserOverdueCount } from '../../hooks/useUserOverdueCount.js'
+import { useUnreadTasksCount } from '../../hooks/useUnreadTasksCount.js'
 import { useUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
 
 function NavItem({ to, end, icon, label, badge }) {
@@ -54,7 +54,7 @@ export function MobileBottomNav() {
   const canSeeTeams = canSeeTeamsNav(user, hasTeam)
   const canSeeTasks =
     hasPermission(user, 'view_own_tasks') || hasPermission(user, 'view_all_tasks')
-  const { count: overdue } = useUserOverdueCount(canSeeTasks ? user?.id : null)
+  const { count: unread } = useUnreadTasksCount(canSeeTasks ? user?.id : null)
 
   return (
     <nav
@@ -77,7 +77,7 @@ export function MobileBottomNav() {
           to="/tasks"
           icon={<CheckSquare size={20} />}
           label="Задачи"
-          badge={overdue}
+          badge={unread}
         />
       )}
     </nav>

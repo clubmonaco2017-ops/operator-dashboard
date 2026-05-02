@@ -16,7 +16,7 @@ import { useAuth } from '../../useAuth.jsx'
 import { hasPermission, isSuperadmin } from '../../lib/permissions.js'
 import { canSeeTeamsNav } from '../../lib/teams.js'
 import { useUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
-import { useUserOverdueCount } from '../../hooks/useUserOverdueCount.js'
+import { useUnreadTasksCount } from '../../hooks/useUnreadTasksCount.js'
 import { usePendingDeletionCount } from '../../hooks/usePendingDeletionCount.js'
 import { ThemeToggle } from './ThemeToggle.jsx'
 import { UserMenuDropdown } from './UserMenuDropdown.jsx'
@@ -71,7 +71,7 @@ export function RailNav({ className = '' }) {
     hasPermission(user, 'view_own_tasks') || hasPermission(user, 'view_all_tasks')
   const canSeeNotifications = isSuperadmin(user)
 
-  const { count: overdueCount } = useUserOverdueCount(canSeeTasks ? user?.id : null)
+  const { count: unreadCount } = useUnreadTasksCount(canSeeTasks ? user?.id : null)
   const pending = usePendingDeletionCount({ enabled: canSeeNotifications })
 
   return (
@@ -94,7 +94,7 @@ export function RailNav({ className = '' }) {
           to="/tasks"
           icon={<CheckSquare size={20} />}
           label="Задачи"
-          badge={overdueCount}
+          badge={unreadCount}
         />
       )}
 

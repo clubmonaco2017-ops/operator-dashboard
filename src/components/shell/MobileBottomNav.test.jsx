@@ -3,17 +3,17 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
 vi.mock('../../useAuth.jsx', () => ({ useAuth: vi.fn() }))
-vi.mock('../../hooks/useUserOverdueCount.js', () => ({ useUserOverdueCount: vi.fn() }))
+vi.mock('../../hooks/useUnreadTasksCount.js', () => ({ useUnreadTasksCount: vi.fn() }))
 vi.mock('../../hooks/useUserTeamMembership.js', () => ({ useUserTeamMembership: vi.fn() }))
 
 import { MobileBottomNav } from './MobileBottomNav.jsx'
 import { useAuth } from '../../useAuth.jsx'
-import { useUserOverdueCount } from '../../hooks/useUserOverdueCount.js'
+import { useUnreadTasksCount } from '../../hooks/useUnreadTasksCount.js'
 import { useUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
 
 function setup({ user, overdue = 0, hasTeam = false, path = '/' } = {}) {
   useAuth.mockReturnValue({ user })
-  useUserOverdueCount.mockReturnValue({ count: overdue })
+  useUnreadTasksCount.mockReturnValue({ count: overdue })
   useUserTeamMembership.mockReturnValue({ has: hasTeam })
   return render(
     <MemoryRouter initialEntries={[path]}>
