@@ -10,7 +10,7 @@ import { TopTeamCard } from './cards/TopTeamCard.jsx'
 import { TeamDistributionCard } from './cards/TeamDistributionCard.jsx'
 import { TeamEngagementCard } from './cards/TeamEngagementCard.jsx'
 import { OverdueAllCard } from './cards/OverdueAllCard.jsx'
-import { OverdueOwnCard } from './cards/OverdueOwnCard.jsx'
+import { TasksOwnCard } from './cards/TasksOwnCard.jsx'
 
 // Performance group (4 cards)
 export const PRODUCTION_CARDS = [
@@ -41,7 +41,7 @@ export const ANALYTICS_CARDS = [...PRODUCTION_CARDS, ...SHIFT_CARDS, ...TEAM_CAR
 // Tasks (2 cards)
 export const TASK_CARDS = [
   { id: 'overdue_all', component: OverdueAllCard, requires: 'view_all_tasks' },
-  { id: 'overdue_own', component: OverdueOwnCard, requires: 'view_own_tasks' },
+  { id: 'tasks_own', component: TasksOwnCard, requires: 'view_own_tasks' },
 ]
 
 /**
