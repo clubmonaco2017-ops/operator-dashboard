@@ -32,6 +32,9 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
   const [description, setDescription] = useState('')
   const [deadline, setDeadline] = useState('')
   const [assignedTo, setAssignedTo] = useState(null)
+  // Tracks selected assignee's agency_id (NULL for admin/superadmin) to pass
+  // explicitly to create_task RPC — RPC enforces task agency = assignee agency.
+  const [assigneeAgencyId, setAssigneeAgencyId] = useState(null)
 
   const [errors, setErrors] = useState({})
   const [submitError, setSubmitError] = useState(null)
@@ -87,8 +90,9 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
     if (errors.title) setErrors((e) => ({ ...e, title: undefined }))
   }
 
-  function setAssigneeField(value) {
+  function setAssigneeField(value, agencyId = null) {
     setAssignedTo(value)
+    setAssigneeAgencyId(agencyId)
     if (errors.assignedTo) setErrors((e) => ({ ...e, assignedTo: undefined }))
   }
 
@@ -113,6 +117,9 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
         description: description.trim() || null,
         deadline: deadline ? new Date(deadline).toISOString() : null,
         assignedTo,
+        // Explicit pass — agency must match assignee's, NOT activeAgencyId fallback.
+        // For admin/superadmin assignees (null agency) this sends null = admin task.
+        agencyId: assigneeAgencyId,
       })
       onCreated?.(newId)
     } catch (err) {
