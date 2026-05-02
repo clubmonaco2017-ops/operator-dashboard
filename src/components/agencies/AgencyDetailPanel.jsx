@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAgencyDetail } from '../../hooks/useAgencyDetail.js'
+import { supabase } from '../../supabaseClient.js'
 import { ArchiveAgencyDialog } from './ArchiveAgencyDialog.jsx'
 import { DetailEmptyHint } from './DetailEmptyHint.jsx'
 
@@ -23,6 +24,8 @@ export function AgencyDetailPanel({ onBack, onChanged }) {
   const isMobile = useIsMobile()
   const { agency, loading, error, reload } = useAgencyDetail(agencyId)
   const [archiveOpen, setArchiveOpen] = useState(false)
+  const [restoring, setRestoring] = useState(false)
+  const [restoreError, setRestoreError] = useState(null)
 
   // Determine current tab from URL last segment
   const segments = location.pathname.split('/')
@@ -50,6 +53,18 @@ export function AgencyDetailPanel({ onBack, onChanged }) {
     onChanged?.()
   }
 
+  const handleRestore = async () => {
+    setRestoring(true)
+    setRestoreError(null)
+    const { error: err } = await supabase.rpc('restore_agency', { p_agency_id: agency.id })
+    setRestoring(false)
+    if (err) {
+      setRestoreError(err.message)
+      return
+    }
+    handleAfterChange()
+  }
+
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-border px-6 py-4 space-y-3">
@@ -67,19 +82,29 @@ export function AgencyDetailPanel({ onBack, onChanged }) {
               </p>
             </div>
           </div>
-          <label className="flex shrink-0 items-center gap-2 text-sm">
-            <span className={agency.is_active ? 'text-foreground' : 'text-muted-foreground'}>
-              {agency.is_active ? 'Активно' : 'Архив'}
-            </span>
-            <Switch
-              checked={agency.is_active}
-              disabled={!agency.is_active}
-              onCheckedChange={(checked) => {
-                if (!checked && agency.is_active) setArchiveOpen(true)
-              }}
-              aria-label={agency.is_active ? 'Архивировать агентство' : 'Агентство в архиве'}
-            />
-          </label>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <label className="flex items-center gap-2 text-sm">
+              <span className={agency.is_active ? 'text-foreground' : 'text-muted-foreground'}>
+                {agency.is_active ? 'Активно' : 'Архив'}
+              </span>
+              <Switch
+                checked={agency.is_active}
+                disabled={restoring}
+                onCheckedChange={(checked) => {
+                  if (checked && !agency.is_active) handleRestore()
+                  else if (!checked && agency.is_active) setArchiveOpen(true)
+                }}
+                aria-label={
+                  agency.is_active ? 'Архивировать агентство' : 'Восстановить агентство из архива'
+                }
+              />
+            </label>
+            {restoreError && (
+              <p className="text-xs text-destructive break-words" role="alert">
+                {restoreError}
+              </p>
+            )}
+          </div>
         </div>
 
         <Tabs
@@ -107,7 +132,6 @@ export function AgencyDetailPanel({ onBack, onChanged }) {
           onArchived={() => {
             setArchiveOpen(false)
             handleAfterChange()
-            navigate('/admin/agencies')
           }}
         />
       )}
