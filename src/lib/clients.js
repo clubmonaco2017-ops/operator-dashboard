@@ -128,8 +128,22 @@ export function initials(name) {
  */
 export const FILE_LIMITS = Object.freeze({
   avatar: { maxBytes: 5 * 1024 * 1024, mimeTypes: ['image/jpeg', 'image/png', 'image/webp'] },
-  photo:  { maxBytes: 25 * 1024 * 1024, mimeTypes: ['image/jpeg', 'image/png', 'image/webp'] },
+  photo:  { maxBytes: 25 * 1024 * 1024, mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'] },
   video:  { maxBytes: 500 * 1024 * 1024, mimeTypes: ['video/mp4', 'video/webm', 'video/quicktime'] },
+  document: {
+    maxBytes: 50 * 1024 * 1024,
+    mimeTypes: [
+      'application/pdf',
+      'application/msword',                                                          // .doc
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',     // .docx
+      'application/vnd.ms-excel',                                                    // .xls
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',           // .xlsx
+      'application/zip',
+      'application/x-zip-compressed',                                                 // Windows zip
+      'application/x-rar-compressed',
+      'application/x-7z-compressed',
+    ],
+  },
 })
 
 /**

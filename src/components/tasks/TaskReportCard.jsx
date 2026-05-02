@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Pencil, Play, Upload, X } from 'lucide-react'
+import { FileArchive, FileSpreadsheet, FileText, Pencil, Play, Upload, X } from 'lucide-react'
 import { supabase } from '../../supabaseClient.js'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import {
@@ -20,7 +20,31 @@ import { Button } from '@/components/ui/button'
 const ACCEPTED_MIME = [
   ...FILE_LIMITS.photo.mimeTypes,
   ...FILE_LIMITS.video.mimeTypes,
+  ...FILE_LIMITS.document.mimeTypes,
 ]
+
+/** Determines kind from MIME for routing into FILE_LIMITS bucket. */
+function fileKindFromMime(mime) {
+  if (mime?.startsWith('video/')) return 'video'
+  if (mime?.startsWith('image/')) return 'photo'
+  return 'document'
+}
+
+/** Picks lucide icon component for a document MIME type. */
+function documentIcon(mime) {
+  if (mime === 'application/pdf') return FileText
+  if (mime?.includes('spreadsheet') || mime === 'application/vnd.ms-excel') return FileSpreadsheet
+  if (mime?.includes('word') || mime === 'application/msword') return FileText
+  if (
+    mime === 'application/zip' ||
+    mime === 'application/x-zip-compressed' ||
+    mime === 'application/x-rar-compressed' ||
+    mime === 'application/x-7z-compressed'
+  ) {
+    return FileArchive
+  }
+  return FileText
+}
 
 /**
  * Карточка «Отчёт» в TaskDetailPanel.
@@ -155,7 +179,7 @@ function ReportMediaGallery({ media }) {
   // Adapt to Lightbox shape: ensure id (use idx as fallback), bucket, type
   const items = media.map((m, i) => ({
     id: m.id ?? `media-${i}`,
-    type: m.type === 'video' ? 'video' : 'image',
+    type: m.type === 'video' ? 'video' : m.type === 'document' ? 'document' : 'image',
     bucket: m.bucket || 'task-reports',
     storage_path: m.storage_path,
     filename: m.filename,
@@ -168,6 +192,27 @@ function ReportMediaGallery({ media }) {
     created_at: m.created_at ?? null,
   }))
 
+  // Lightbox doesn't preview documents — pass only photo/video subset, remap indices
+  const lightboxItems = items
+    .map((it, originalIdx) => ({ it, originalIdx }))
+    .filter(({ it }) => it.type !== 'document')
+  const lightboxIndexMapped =
+    lightboxIndex !== null
+      ? lightboxItems.findIndex((entry) => entry.originalIdx === lightboxIndex)
+      : null
+
+  function handleOpen(idx, type) {
+    if (type === 'document') {
+      // Open document in new tab — no lightbox preview
+      const item = items[idx]
+      const url =
+        supabase.storage.from(item.bucket).getPublicUrl(item.storage_path)?.data?.publicUrl
+      if (url) window.open(url, '_blank', 'noopener,noreferrer')
+      return
+    }
+    setLightboxIndex(idx)
+  }
+
   return (
     <>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -175,18 +220,18 @@ function ReportMediaGallery({ media }) {
           <ReportMediaTile
             key={m.id}
             media={m}
-            onOpen={() => setLightboxIndex(idx)}
+            onOpen={() => handleOpen(idx, m.type)}
           />
         ))}
       </div>
-      {lightboxIndex !== null && (
+      {lightboxIndexMapped !== null && lightboxIndexMapped >= 0 && (
         <ClientLightbox
-          items={items.map((it) => ({
+          items={lightboxItems.map(({ it }) => ({
             ...it,
             // Lightbox uses item.type === 'video' for video element. 'image' or other → img.
             type: it.type === 'video' ? 'video' : 'photo',
           }))}
-          initialIndex={lightboxIndex}
+          initialIndex={lightboxIndexMapped}
           onClose={() => setLightboxIndex(null)}
         />
       )}
@@ -197,6 +242,29 @@ function ReportMediaGallery({ media }) {
 function ReportMediaTile({ media, onOpen }) {
   const url =
     supabase.storage.from(media.bucket).getPublicUrl(media.storage_path)?.data?.publicUrl ?? ''
+
+  if (media.type === 'document') {
+    const Icon = documentIcon(media.mime_type)
+    return (
+      <button
+        type="button"
+        onClick={onOpen}
+        className="group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-lg bg-muted px-3 py-4 outline-none transition-colors hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-primary"
+        style={{ aspectRatio: '4 / 3' }}
+        aria-label={`Открыть: ${media.filename}`}
+        title={media.filename}
+      >
+        <Icon size={32} className="text-[var(--fg2)]" />
+        <span className="line-clamp-2 w-full break-all text-center text-xs font-medium text-foreground">
+          {media.filename}
+        </span>
+        <span className="text-[10px] text-[var(--fg4)]">
+          {formatFileSize(media.size_bytes)}
+        </span>
+      </button>
+    )
+  }
+
   return (
     <button
       type="button"
@@ -285,8 +353,9 @@ function ReportForm({
 
       for (let i = 0; i < queue.length; i++) {
         const f = queue[i]
-        const isVideo = f.type.startsWith('video/')
-        const kind = isVideo ? 'video' : 'photo'
+        const kind = fileKindFromMime(f.type)
+        const isVideo = kind === 'video'
+        const isDocument = kind === 'document'
         setUploading((u) =>
           u
             ? {
@@ -326,14 +395,15 @@ function ReportForm({
             }))
             dims = { width: meta.width, height: meta.height }
             durationMs = meta.durationMs
-          } else {
+          } else if (!isDocument) {
+            // photo only — documents have no dimensions
             dims = await readImageDimensions(f).catch(() => ({ width: null, height: null }))
           }
 
           setMedia((m) => [
             ...m,
             {
-              type: isVideo ? 'video' : 'image',
+              type: isVideo ? 'video' : isDocument ? 'document' : 'image',
               storage_path: path,
               filename: f.name,
               size_bytes: f.size,
