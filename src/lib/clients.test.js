@@ -198,7 +198,8 @@ describe('validateFile', () => {
     expect(result.error).toMatch(/25 МБ/)
   })
   it('rejects wrong mime', () => {
-    const result = validateFile(makeFile(1024, 'image/heic'), 'photo')
+    // image/gif is not in photo.mimeTypes (jpeg/png/webp/heic/heif)
+    const result = validateFile(makeFile(1024, 'image/gif'), 'photo')
     expect(result.valid).toBe(false)
     expect(result.code).toBe('mime')
   })
