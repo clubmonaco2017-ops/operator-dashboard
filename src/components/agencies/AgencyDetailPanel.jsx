@@ -1,16 +1,10 @@
 import { useState } from 'react'
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, MoreVertical } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAgencyDetail } from '../../hooks/useAgencyDetail.js'
 import { ArchiveAgencyDialog } from './ArchiveAgencyDialog.jsx'
@@ -68,34 +62,24 @@ export function AgencyDetailPanel({ onBack, onChanged }) {
             )}
             <div className="min-w-0">
               <h1 className="truncate text-xl font-semibold">{agency.name}</h1>
-              <p className="flex items-center gap-2 truncate text-sm text-muted-foreground">
-                <span className="truncate">{agency.platform_name ?? '—'}</span>
-                <span>·</span>
-                {agency.is_active ? (
-                  <Badge variant="outline">Активно</Badge>
-                ) : (
-                  <Badge variant="secondary">Архив</Badge>
-                )}
+              <p className="truncate text-sm text-muted-foreground">
+                {agency.platform_name ?? '—'}
               </p>
             </div>
           </div>
-          {agency.is_active && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Меню действий">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onSelect={() => setArchiveOpen(true)}
-                  className="text-destructive"
-                >
-                  Архивировать
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          <label className="flex shrink-0 items-center gap-2 text-sm">
+            <span className={agency.is_active ? 'text-foreground' : 'text-muted-foreground'}>
+              {agency.is_active ? 'Активно' : 'Архив'}
+            </span>
+            <Switch
+              checked={agency.is_active}
+              disabled={!agency.is_active}
+              onCheckedChange={(checked) => {
+                if (!checked && agency.is_active) setArchiveOpen(true)
+              }}
+              aria-label={agency.is_active ? 'Архивировать агентство' : 'Агентство в архиве'}
+            />
+          </label>
         </div>
 
         <Tabs
