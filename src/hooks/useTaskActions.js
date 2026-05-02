@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { invalidateUserOverdueCount } from './useUserOverdueCount.js'
+import { invalidateUnreadTasksCount } from './useUnreadTasksCount.js'
 import { useAgencyContext } from '../lib/agencyContext.jsx'
 
 /**
@@ -25,9 +26,14 @@ export function useTaskActions(callerId) {
 
   const invalidate = useCallback(
     (otherUserId) => {
-      if (callerId != null) invalidateUserOverdueCount(callerId)
-      if (otherUserId != null && otherUserId !== callerId)
+      if (callerId != null) {
+        invalidateUserOverdueCount(callerId)
+        invalidateUnreadTasksCount(callerId)
+      }
+      if (otherUserId != null && otherUserId !== callerId) {
         invalidateUserOverdueCount(otherUserId)
+        invalidateUnreadTasksCount(otherUserId)
+      }
     },
     [callerId],
   )
