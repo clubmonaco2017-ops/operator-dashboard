@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { invalidateUnreadTasksCount } from './useUnreadTasksCount.js'
 
 /**
  * Деталь одной задачи (через RPC get_task_detail).
  * RPC возвращает TABLE — берём первую строку. Activity-лента включена в payload.
+ *
+ * Side effect: на каждом успешном load вызывает mark_task_seen для current
+ * task_id (idempotent) и инвалидирует unread counter.
  *
  * @param {number|null} callerId
  * @param {number|string|null} taskId
@@ -35,6 +39,12 @@ export function useTask(callerId, taskId) {
           setRow(null)
         } else {
           setRow(data[0])
+          // Fire-and-forget: mark task as seen, invalidate counter.
+          // Errors swallowed — UX не должен блокироваться.
+          supabase
+            .rpc('mark_task_seen', { p_task_id: id })
+            .then(() => invalidateUnreadTasksCount(callerId))
+            .catch(() => { /* ignore */ })
         }
       })
       .finally(() => {
