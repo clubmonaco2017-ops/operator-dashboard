@@ -6,8 +6,7 @@ import { validateTeamName, formatLeadRole } from '../../lib/teams.js'
 import { useAgencyContext } from '../../lib/agencyContext.jsx'
 import AgencySelect from '../AgencySelect.jsx'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { ResponsiveSlideOut } from '@/components/ui/responsive-slide-out'
 
 /**
  * Slide-out форма создания команды. Минимальная — два поля:
@@ -25,7 +24,6 @@ import { useIsMobile } from '@/hooks/use-mobile'
  * @param {function} props.onCreated — (newTeamId) => void
  */
 export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
-  const isMobile = useIsMobile()
   const { createTeam } = useTeamActions(callerId)
   const { activeAgencyId } = useAgencyContext()
 
@@ -142,123 +140,122 @@ export function CreateTeamSlideOut({ callerId, onClose, onCreated }) {
   }
 
   return (
-    <Sheet open onOpenChange={(next) => !next && !submitting && onClose()}>
-      <SheetContent
-        side={isMobile ? 'bottom' : 'right'}
-        className={`flex w-full flex-col gap-0 sm:max-w-[440px]${isMobile ? ' h-[90vh]' : ''}`}
-      >
-        <SheetHeader className="border-b border-border px-6 py-5">
-          <SheetTitle className="text-lg font-bold text-foreground">
-            Новая команда
-          </SheetTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
+    <ResponsiveSlideOut
+      open
+      onOpenChange={(next) => !next && !submitting && onClose()}
+      title={
+        <>
+          Новая команда
+          <p className="mt-1 text-xs font-normal text-muted-foreground">
             Поля со звёздочкой обязательны
           </p>
-        </SheetHeader>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleSubmit()
-          }}
-          className="flex flex-1 flex-col overflow-hidden"
-        >
-          <div className="flex-1 overflow-auto px-6 py-5 space-y-5">
-            <Field
-              label="Название команды"
-              required
-              error={errors.name}
-              hint="Например, «Команда Альфа»"
+        </>
+      }
+      desktopWidth="sm:max-w-[440px]"
+      footer={
+        <>
+          {submitError && (
+            <p
+              className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
+              role="alert"
             >
-              <input
-                ref={nameInputRef}
-                type="text"
-                value={name}
-                onChange={(e) => setNameField(e.target.value)}
-                disabled={submitting}
-                placeholder="Команда Альфа"
-                maxLength={120}
-                className={inputCls(!!errors.name)}
-              />
-            </Field>
-
-            <AgencySelect value={agencyId} onChange={setAgencyId} disabled={submitting} />
-            {errors.agencyId && (
-              <span className="-mt-3 block text-xs text-[var(--danger-ink)]" role="alert">
-                {errors.agencyId}
-              </span>
-            )}
-
-            <Field
-              label="Лид команды"
-              required
-              error={errors.leadUserId}
-              hint={leadsLoading ? 'Загружаем кандидатов…' : 'Тимлид, модератор или админ из выбранного агентства'}
+              {submitError}
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-[var(--fg4)]">
+              <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                Esc
+              </kbd>{' '}
+              закрыть ·{' '}
+              <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                ⌘↵
+              </kbd>{' '}
+              создать
+            </span>
+            <div className="flex-1" />
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => !submitting && onClose()}
+              disabled={submitting}
             >
-              <select
-                value={leadUserId}
-                onChange={(e) => setLeadField(e.target.value)}
-                disabled={submitting || leadsLoading}
-                className={selectCls(!!errors.leadUserId)}
-              >
-                <option value="">
-                  {leadsLoading ? 'Загрузка…' : 'Выберите лида…'}
-                </option>
-                {filteredLeads.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {leadLabel(u)} — {formatLeadRole(u.role) || u.role}
-                  </option>
-                ))}
-              </select>
-            </Field>
+              Отмена
+            </Button>
+            <Button
+              type="submit"
+              form="create-team-form"
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" /> Создаётся…
+                </>
+              ) : (
+                <><Check size={14} className="inline mr-1.5" />Создать команду</>
+              )}
+            </Button>
           </div>
+        </>
+      }
+    >
+      <form
+        id="create-team-form"
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSubmit()
+        }}
+        className="space-y-5"
+      >
+        <Field
+          label="Название команды"
+          required
+          error={errors.name}
+          hint="Например, «Команда Альфа»"
+        >
+          <input
+            ref={nameInputRef}
+            type="text"
+            value={name}
+            onChange={(e) => setNameField(e.target.value)}
+            disabled={submitting}
+            placeholder="Команда Альфа"
+            maxLength={120}
+            className={inputCls(!!errors.name)}
+          />
+        </Field>
 
-          <SheetFooter className="mt-0 flex-col gap-0 border-t border-border bg-muted/40 px-6 py-4">
-            {submitError && (
-              <p
-                className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
-                role="alert"
-              >
-                {submitError}
-              </p>
-            )}
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-[var(--fg4)]">
-                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                  Esc
-                </kbd>{' '}
-                закрыть ·{' '}
-                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                  ⌘↵
-                </kbd>{' '}
-                создать
-              </span>
-              <div className="flex-1" />
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => !submitting && onClose()}
-                disabled={submitting}
-              >
-                Отмена
-              </Button>
-              <Button
-                type="submit"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin" /> Создаётся…
-                  </>
-                ) : (
-                  <><Check size={14} className="inline mr-1.5" />Создать команду</>
-                )}
-              </Button>
-            </div>
-          </SheetFooter>
-        </form>
-      </SheetContent>
-    </Sheet>
+        <AgencySelect value={agencyId} onChange={setAgencyId} disabled={submitting} />
+        {errors.agencyId && (
+          <span className="-mt-3 block text-xs text-[var(--danger-ink)]" role="alert">
+            {errors.agencyId}
+          </span>
+        )}
+
+        <Field
+          label="Лид команды"
+          required
+          error={errors.leadUserId}
+          hint={leadsLoading ? 'Загружаем кандидатов…' : 'Тимлид, модератор или админ из выбранного агентства'}
+        >
+          <select
+            value={leadUserId}
+            onChange={(e) => setLeadField(e.target.value)}
+            disabled={submitting || leadsLoading}
+            className={selectCls(!!errors.leadUserId)}
+          >
+            <option value="">
+              {leadsLoading ? 'Загрузка…' : 'Выберите лида…'}
+            </option>
+            {filteredLeads.map((u) => (
+              <option key={u.id} value={u.id}>
+                {leadLabel(u)} — {formatLeadRole(u.role) || u.role}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </form>
+    </ResponsiveSlideOut>
   )
 }
 
