@@ -4,7 +4,13 @@ import LoginPage from './LoginPage.jsx'
 import SetPasswordPage from './SetPasswordPage.jsx'
 import { AppShell } from './components/shell/AppShell.jsx'
 import { AdminShell } from './components/admin-shell/index.js'
-import PlatformsSection from './sections/PlatformsSection'
+import {
+  PlatformListPage,
+  PlatformDetailRoute,
+  PlatformDetailEmpty,
+} from './pages/PlatformListPage.jsx'
+import { PlatformBrandingTab } from './components/platforms/PlatformBrandingTab.jsx'
+import { PlatformContactsTab } from './components/platforms/PlatformContactsTab.jsx'
 import {
   AgencyListPage,
   AgencyDetailRoute,
@@ -96,7 +102,14 @@ export default function App() {
         {isSuperadmin(user) && (
           <Route path="/admin" element={<AdminShell />}>
             <Route index element={<Navigate to="platforms" replace />} />
-            <Route path="platforms/*" element={<PlatformsSection />} />
+            <Route path="platforms" element={<PlatformListPage />}>
+              <Route index element={<PlatformDetailEmpty />} />
+              <Route path=":platformId" element={<PlatformDetailRoute />}>
+                <Route index element={<Navigate to="branding" replace />} />
+                <Route path="branding" element={<PlatformBrandingTab />} />
+                <Route path="contacts" element={<PlatformContactsTab />} />
+              </Route>
+            </Route>
             <Route path="agencies" element={<AgencyListPage />}>
               <Route index element={<AgencyDetailEmpty />} />
               <Route path=":agencyId" element={<AgencyDetailRoute />}>
