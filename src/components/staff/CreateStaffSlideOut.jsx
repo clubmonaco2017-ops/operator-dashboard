@@ -7,8 +7,7 @@ import { useAgencyContext } from '../../lib/agencyContext.jsx'
 import { useAuth } from '../../useAuth.jsx'
 import AgencySelect from '../AgencySelect.jsx'
 import { RefCodePreview } from './RefCodePreview.jsx'
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { ResponsiveSlideOut } from '@/components/ui/responsive-slide-out'
 
 const ALL_ROLES = [
   { value: 'admin',     label: 'Администратор' },
@@ -18,7 +17,6 @@ const ALL_ROLES = [
 ]
 
 export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
-  const isMobile = useIsMobile()
   const { activeAgencyId, availableAgencies } = useAgencyContext()
   const { user } = useAuth()
   const isCallerSuperadmin = user?.role === 'superadmin'
@@ -120,200 +118,199 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
   }
 
   return (
-    <Sheet open onOpenChange={(next) => !next && !submitting && onClose()}>
-      <SheetContent
-        side={isMobile ? 'bottom' : 'right'}
-        className={`flex w-full flex-col gap-0 sm:max-w-[480px]${isMobile ? ' h-[90vh]' : ''}`}
-      >
-        <SheetHeader className="border-b border-border px-6 py-5">
-          <SheetTitle className="text-lg font-bold text-foreground">
-            Новый сотрудник
-          </SheetTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
+    <ResponsiveSlideOut
+      open
+      onOpenChange={(next) => !next && !submitting && onClose()}
+      title={
+        <>
+          Новый сотрудник
+          <p className="mt-1 text-xs font-normal text-muted-foreground">
             Поля со звёздочкой обязательны
           </p>
-        </SheetHeader>
-
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-1 flex-col overflow-hidden"
-        >
-          <div className="flex-1 overflow-auto px-6 py-5 space-y-5">
-            <Field label="Роль" required>
-              <select
-                value={role}
-                onChange={(e) => setRoleAndPerms(e.target.value)}
-                disabled={submitting}
-                className={inputCls()}
-              >
-                {ROLES.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-
-            {isAdminRole ? (
-              <Field
-                label="Агентства"
-                required
-                hint="Админ может вести несколько агентств. Отметь хотя бы одно."
-              >
-                {availableAgencies.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    Нет доступных агентств.
-                  </p>
-                ) : (
-                  <div className="space-y-1 rounded-md border border-border bg-card px-3 py-2 max-h-44 overflow-auto">
-                    {availableAgencies.map((a) => (
-                      <label
-                        key={a.id}
-                        className="flex items-center gap-2 text-sm py-0.5"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={adminAgencyIds.includes(a.id)}
-                          onChange={() => toggleAdminAgency(a.id)}
-                          disabled={submitting}
-                          className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-[var(--primary-ring)]"
-                        />
-                        <span className="text-foreground">{a.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </Field>
-            ) : (
-              <AgencySelect value={agencyId} onChange={setAgencyId} disabled={submitting} />
-            )}
-
-            <div className="rounded-md border border-border bg-muted/40 p-3">
-              <div className="mb-1 text-xs font-medium text-muted-foreground">
-                Реф-код (предпросмотр)
-              </div>
-              <RefCodePreview role={role} firstName={firstName} lastName={lastName} />
-            </div>
-
-            <Field label="Имя" required>
-              <input
-                ref={firstNameRef}
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                disabled={submitting}
-                className={inputCls()}
-              />
-            </Field>
-
-            <Field label="Фамилия" required>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                disabled={submitting}
-                className={inputCls()}
-              />
-            </Field>
-
-            <Field label="Псевдоним">
-              <input
-                type="text"
-                value={alias}
-                onChange={(e) => setAlias(e.target.value)}
-                disabled={submitting}
-                className={inputCls()}
-              />
-            </Field>
-
-            <Field label="Email" required>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={submitting}
-                className={inputCls()}
-              />
-            </Field>
-
-            <Field label="Пароль" required hint="Минимум 6 символов">
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={submitting}
-                minLength={6}
-                className={inputCls()}
-              />
-            </Field>
-
-            <div>
-              <div className="mb-2 text-xs font-medium text-muted-foreground">
-                Права (по умолчанию для роли, можно менять)
-              </div>
-              <div className="space-y-2">
-                {permissionGroups.map((g) => (
-                  <details key={g.title} open className="rounded-md border border-border bg-card">
-                    <summary className="cursor-pointer select-none px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {g.title}
-                    </summary>
-                    <div className="space-y-1 border-t border-border px-3 py-2">
-                      {g.permissions.map((p) => (
-                        <label key={p.key} className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            checked={perms.has(p.key)}
-                            onChange={() => togglePerm(p.key)}
-                            disabled={submitting}
-                            className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-[var(--primary-ring)]"
-                          />
-                          <span className="text-foreground">{p.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </details>
-                ))}
-              </div>
-            </div>
+        </>
+      }
+      desktopWidth="sm:max-w-lg"
+      footer={
+        <>
+          {error && (
+            <p
+              className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
+              role="alert"
+            >
+              {error}
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            <div className="flex-1" />
+            <button
+              type="button"
+              onClick={() => !submitting && onClose()}
+              disabled={submitting}
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              form="create-staff-form"
+              disabled={!canSubmit || submitting}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50 inline-flex items-center"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 size={14} className="animate-spin mr-1.5" /> Создаётся…
+                </>
+              ) : (
+                'Создать'
+              )}
+            </button>
           </div>
+        </>
+      }
+    >
+      <form
+        id="create-staff-form"
+        onSubmit={handleSubmit}
+        className="space-y-5"
+      >
+        <Field label="Роль" required>
+          <select
+            value={role}
+            onChange={(e) => setRoleAndPerms(e.target.value)}
+            disabled={submitting}
+            className={inputCls()}
+          >
+            {ROLES.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+        </Field>
 
-          <SheetFooter className="mt-0 flex-col gap-0 border-t border-border bg-muted/40 px-6 py-4">
-            {error && (
-              <p
-                className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
-                role="alert"
-              >
-                {error}
+        {isAdminRole ? (
+          <Field
+            label="Агентства"
+            required
+            hint="Админ может вести несколько агентств. Отметь хотя бы одно."
+          >
+            {availableAgencies.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                Нет доступных агентств.
               </p>
+            ) : (
+              <div className="space-y-1 rounded-md border border-border bg-card px-3 py-2 max-h-44 overflow-auto">
+                {availableAgencies.map((a) => (
+                  <label
+                    key={a.id}
+                    className="flex items-center gap-2 text-sm py-0.5"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={adminAgencyIds.includes(a.id)}
+                      onChange={() => toggleAdminAgency(a.id)}
+                      disabled={submitting}
+                      className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-[var(--primary-ring)]"
+                    />
+                    <span className="text-foreground">{a.name}</span>
+                  </label>
+                ))}
+              </div>
             )}
-            <div className="flex items-center gap-3">
-              <div className="flex-1" />
-              <button
-                type="button"
-                onClick={() => !submitting && onClose()}
-                disabled={submitting}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50"
-              >
-                Отмена
-              </button>
-              <button
-                type="submit"
-                disabled={!canSubmit || submitting}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50 inline-flex items-center"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin mr-1.5" /> Создаётся…
-                  </>
-                ) : (
-                  'Создать'
-                )}
-              </button>
-            </div>
-          </SheetFooter>
-        </form>
-      </SheetContent>
-    </Sheet>
+          </Field>
+        ) : (
+          <AgencySelect value={agencyId} onChange={setAgencyId} disabled={submitting} />
+        )}
+
+        <div className="rounded-md border border-border bg-muted/40 p-3">
+          <div className="mb-1 text-xs font-medium text-muted-foreground">
+            Реф-код (предпросмотр)
+          </div>
+          <RefCodePreview role={role} firstName={firstName} lastName={lastName} />
+        </div>
+
+        <Field label="Имя" required>
+          <input
+            ref={firstNameRef}
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            disabled={submitting}
+            className={inputCls()}
+          />
+        </Field>
+
+        <Field label="Фамилия" required>
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            disabled={submitting}
+            className={inputCls()}
+          />
+        </Field>
+
+        <Field label="Псевдоним">
+          <input
+            type="text"
+            value={alias}
+            onChange={(e) => setAlias(e.target.value)}
+            disabled={submitting}
+            className={inputCls()}
+          />
+        </Field>
+
+        <Field label="Email" required>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={submitting}
+            className={inputCls()}
+          />
+        </Field>
+
+        <Field label="Пароль" required hint="Минимум 6 символов">
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={submitting}
+            minLength={6}
+            className={inputCls()}
+          />
+        </Field>
+
+        <div>
+          <div className="mb-2 text-xs font-medium text-muted-foreground">
+            Права (по умолчанию для роли, можно менять)
+          </div>
+          <div className="space-y-2">
+            {permissionGroups.map((g) => (
+              <details key={g.title} open className="rounded-md border border-border bg-card">
+                <summary className="cursor-pointer select-none px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {g.title}
+                </summary>
+                <div className="space-y-1 border-t border-border px-3 py-2">
+                  {g.permissions.map((p) => (
+                    <label key={p.key} className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={perms.has(p.key)}
+                        onChange={() => togglePerm(p.key)}
+                        disabled={submitting}
+                        className="h-4 w-4 rounded border-border text-primary focus:ring-2 focus:ring-[var(--primary-ring)]"
+                      />
+                      <span className="text-foreground">{p.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </form>
+    </ResponsiveSlideOut>
   )
 }
 

@@ -4,8 +4,7 @@ import { useTaskActions } from '../../hooks/useTaskActions.js'
 import { validateTaskTitle } from '../../lib/tasks.js'
 import { AssigneeSelector } from './AssigneeSelector.jsx'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { ResponsiveSlideOut } from '@/components/ui/responsive-slide-out'
 import {
   Dialog,
   DialogContent,
@@ -27,7 +26,6 @@ import {
  * @param {(newTaskId:number) => void} props.onCreated
  */
 export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
-  const isMobile = useIsMobile()
   const { createTask } = useTaskActions(callerId)
 
   const [title, setTitle] = useState('')
@@ -70,7 +68,7 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
     }
   }
 
-  // Hotkey: Cmd/Ctrl+Enter → submit (Esc handled by Sheet/Dialog onOpenChange)
+  // Hotkey: Cmd/Ctrl+Enter → submit (Esc handled by ResponsiveSlideOut/Dialog onOpenChange)
   useEffect(() => {
     const onKey = (e) => {
       if (confirmCloseOpen) return
@@ -126,136 +124,135 @@ export function CreateTaskSlideOut({ callerId, onClose, onCreated }) {
 
   return (
     <>
-      <Sheet open onOpenChange={(next) => !next && attemptClose()}>
-        <SheetContent
-          side={isMobile ? 'bottom' : 'right'}
-          className={`flex w-full flex-col gap-0 sm:max-w-[480px]${isMobile ? ' h-[90vh]' : ''}`}
-        >
-          <SheetHeader className="border-b border-border px-6 py-5">
-            <SheetTitle className="text-lg font-bold text-foreground">
-              Новая задача
-            </SheetTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
+      <ResponsiveSlideOut
+        open
+        onOpenChange={(next) => !next && attemptClose()}
+        title={
+          <>
+            Новая задача
+            <p className="mt-1 text-xs font-normal text-muted-foreground">
               Поля со звёздочкой обязательны
             </p>
-          </SheetHeader>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleSubmit()
-            }}
-            className="flex flex-1 flex-col overflow-hidden"
+          </>
+        }
+        desktopWidth="sm:max-w-[480px]"
+        footer={
+          <>
+            {submitError && (
+              <p
+                className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
+                role="alert"
+              >
+                {submitError}
+              </p>
+            )}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-[var(--fg4)]">
+                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                  Esc
+                </kbd>{' '}
+                закрыть ·{' '}
+                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                  ⌘↵
+                </kbd>{' '}
+                создать
+              </span>
+              <div className="flex-1" />
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={attemptClose}
+                disabled={submitting}
+              >
+                Отмена
+              </Button>
+              <Button
+                type="submit"
+                form="create-task-form"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Создаётся…
+                  </>
+                ) : (
+                  <><Check size={14} className="inline mr-1.5" />Создать задачу</>
+                )}
+              </Button>
+            </div>
+          </>
+        }
+      >
+        <form
+          id="create-task-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit()
+          }}
+          className="space-y-5"
+        >
+          <Field
+            label="Название задачи"
+            required
+            error={errors.title}
+            hint="Кратко: что нужно сделать"
           >
-            <div className="flex-1 overflow-auto px-6 py-5 space-y-5">
-            <Field
-              label="Название задачи"
-              required
-              error={errors.title}
-              hint="Кратко: что нужно сделать"
-            >
-              <input
-                ref={titleInputRef}
-                type="text"
-                value={title}
-                onChange={(e) => setTitleField(e.target.value)}
-                disabled={submitting}
-                placeholder="Например, «Прислать отчёт за неделю»"
-                maxLength={200}
-                className={inputCls(!!errors.title)}
-              />
-            </Field>
+            <input
+              ref={titleInputRef}
+              type="text"
+              value={title}
+              onChange={(e) => setTitleField(e.target.value)}
+              disabled={submitting}
+              placeholder="Например, «Прислать отчёт за неделю»"
+              maxLength={200}
+              className={inputCls(!!errors.title)}
+            />
+          </Field>
 
-            <Field
-              label="Описание"
-              error={null}
-              hint="Подробности, контекст, ожидаемый результат"
-            >
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={submitting}
-                rows={4}
-                placeholder="Опционально"
-                className={`${inputCls(false)} resize-y min-h-[88px]`}
-              />
-            </Field>
+          <Field
+            label="Описание"
+            error={null}
+            hint="Подробности, контекст, ожидаемый результат"
+          >
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={submitting}
+              rows={4}
+              placeholder="Опционально"
+              className={`${inputCls(false)} resize-y min-h-[88px]`}
+            />
+          </Field>
 
-            <Field
-              label="Дедлайн"
-              error={null}
-              hint="Опционально. Без дедлайна задача не может быть просрочена."
-            >
-              <input
-                type="datetime-local"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                disabled={submitting}
-                className={inputCls(false)}
-              />
-            </Field>
+          <Field
+            label="Дедлайн"
+            error={null}
+            hint="Опционально. Без дедлайна задача не может быть просрочена."
+          >
+            <input
+              type="datetime-local"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              disabled={submitting}
+              className={inputCls(false)}
+            />
+          </Field>
 
-            <Field
-              label="Исполнитель"
-              required
+          <Field
+            label="Исполнитель"
+            required
+            error={errors.assignedTo}
+          >
+            <AssigneeSelector
+              callerId={callerId}
+              value={assignedTo}
+              onChange={setAssigneeField}
               error={errors.assignedTo}
-            >
-              <AssigneeSelector
-                callerId={callerId}
-                value={assignedTo}
-                onChange={setAssigneeField}
-                error={errors.assignedTo}
-                disabled={submitting}
-              />
-            </Field>
-          </div>
-
-            <SheetFooter className="mt-0 flex-col gap-0 border-t border-border bg-muted/40 px-6 py-4">
-              {submitError && (
-                <p
-                  className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
-                  role="alert"
-                >
-                  {submitError}
-                </p>
-              )}
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-[var(--fg4)]">
-                  <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                    Esc
-                  </kbd>{' '}
-                  закрыть ·{' '}
-                  <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                    ⌘↵
-                  </kbd>{' '}
-                  создать
-                </span>
-                <div className="flex-1" />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={attemptClose}
-                  disabled={submitting}
-                >
-                  Отмена
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" /> Создаётся…
-                    </>
-                  ) : (
-                    <><Check size={14} className="inline mr-1.5" />Создать задачу</>
-                  )}
-                </Button>
-              </div>
-            </SheetFooter>
-          </form>
-        </SheetContent>
-      </Sheet>
+              disabled={submitting}
+            />
+          </Field>
+        </form>
+      </ResponsiveSlideOut>
 
       {confirmCloseOpen && (
         <CreateTaskCloseConfirm

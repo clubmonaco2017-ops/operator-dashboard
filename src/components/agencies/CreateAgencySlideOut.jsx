@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Loader2, X } from 'lucide-react'
 import { supabase } from '../../supabaseClient.js'
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+import { ResponsiveSlideOut } from '@/components/ui/responsive-slide-out'
 import { Button } from '@/components/ui/button'
 
 export function CreateAgencySlideOut({ onClose, onCreated }) {
@@ -80,101 +74,14 @@ export function CreateAgencySlideOut({ onClose, onCreated }) {
       : a.email
 
   return (
-    <Sheet open onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="sm:max-w-md flex flex-col">
-        <SheetHeader>
-          <SheetTitle>Новое агентство</SheetTitle>
-        </SheetHeader>
-
-        <form onSubmit={submit} onKeyDown={onKeyDown} className="flex-1 overflow-y-auto space-y-4 py-4">
-          <label className="block">
-            <span className="block mb-1 text-sm font-medium">Название</span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              autoFocus
-              className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </label>
-
-          <label className="block">
-            <span className="block mb-1 text-sm font-medium">Платформа</span>
-            <select
-              value={platformId}
-              onChange={(e) => setPlatformId(e.target.value)}
-              required
-              className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="" disabled>
-                — выбрать —
-              </option>
-              {platforms.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div>
-            <span className="block mb-1 text-sm font-medium">Админы (опционально)</span>
-            {selectedAdminIds.length > 0 && (
-              <div className="mb-2 flex flex-wrap gap-1">
-                {selectedAdminIds.map((id) => {
-                  const a = admins.find((x) => x.id === id)
-                  if (!a) return null
-                  return (
-                    <span
-                      key={id}
-                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs"
-                    >
-                      {adminLabel(a)}
-                      <button
-                        type="button"
-                        onClick={() => toggleAdmin(id)}
-                        aria-label={`Убрать ${adminLabel(a)}`}
-                        className="hover:opacity-70"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  )
-                })}
-              </div>
-            )}
-            {admins.length === 0 ? (
-              <p className="py-2 text-xs text-muted-foreground">
-                Нет admin-пользователей. Создай в /staff.
-              </p>
-            ) : (
-              <div className="max-h-40 overflow-y-auto rounded-md border border-border bg-background p-2 space-y-1">
-                {admins.map((a) => (
-                  <label
-                    key={a.id}
-                    className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedAdminIds.includes(a.id)}
-                      onChange={() => toggleAdmin(a.id)}
-                      className="h-4 w-4"
-                    />
-                    <span className="truncate">{adminLabel(a)}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {error && (
-            <p className="text-sm text-destructive break-words" role="alert">
-              {error}
-            </p>
-          )}
-        </form>
-
-        <SheetFooter>
+    <ResponsiveSlideOut
+      open
+      onOpenChange={(next) => !next && onClose()}
+      title="Новое агентство"
+      desktopWidth="sm:max-w-md"
+      onKeyDown={onKeyDown}
+      footer={
+        <>
           <Button variant="outline" onClick={onClose} disabled={submitting}>
             Отменить
           </Button>
@@ -182,8 +89,96 @@ export function CreateAgencySlideOut({ onClose, onCreated }) {
             {submitting && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
             {submitting ? 'Создаём…' : 'Создать'}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </>
+      }
+    >
+      <form onSubmit={submit} className="space-y-4">
+        <label className="block">
+          <span className="block mb-1 text-sm font-medium">Название</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            autoFocus
+            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </label>
+
+        <label className="block">
+          <span className="block mb-1 text-sm font-medium">Платформа</span>
+          <select
+            value={platformId}
+            onChange={(e) => setPlatformId(e.target.value)}
+            required
+            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="" disabled>
+              — выбрать —
+            </option>
+            {platforms.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div>
+          <span className="block mb-1 text-sm font-medium">Админы (опционально)</span>
+          {selectedAdminIds.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1">
+              {selectedAdminIds.map((id) => {
+                const a = admins.find((x) => x.id === id)
+                if (!a) return null
+                return (
+                  <span
+                    key={id}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs"
+                  >
+                    {adminLabel(a)}
+                    <button
+                      type="button"
+                      onClick={() => toggleAdmin(id)}
+                      aria-label={`Убрать ${adminLabel(a)}`}
+                      className="hover:opacity-70"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )
+              })}
+            </div>
+          )}
+          {admins.length === 0 ? (
+            <p className="py-2 text-xs text-muted-foreground">
+              Нет admin-пользователей. Создай в /staff.
+            </p>
+          ) : (
+            <div className="max-h-40 overflow-y-auto rounded-md border border-border bg-background p-2 space-y-1">
+              {admins.map((a) => (
+                <label
+                  key={a.id}
+                  className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedAdminIds.includes(a.id)}
+                    onChange={() => toggleAdmin(a.id)}
+                    className="h-4 w-4"
+                  />
+                  <span className="truncate">{adminLabel(a)}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {error && (
+          <p className="text-sm text-destructive break-words" role="alert">
+            {error}
+          </p>
+        )}
+      </form>
+    </ResponsiveSlideOut>
   )
 }
