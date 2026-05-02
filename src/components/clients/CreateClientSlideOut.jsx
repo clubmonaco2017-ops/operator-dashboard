@@ -16,8 +16,7 @@ import {
 } from '../../lib/clients.js'
 import { CreateClientCloseConfirm } from './CreateClientCloseConfirm.jsx'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { ResponsiveSlideOut } from '@/components/ui/responsive-slide-out'
 
 const EMPTY_FORM = {
   name: '',
@@ -44,7 +43,6 @@ const EMPTY_FORM = {
  */
 export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
   const navigate = useNavigate()
-  const isMobile = useIsMobile()
   const { createClient } = useClientActions(callerId)
   const { rows: allPlatforms, loading: platformsLoading } = usePlatforms()
   const { availableAgencies } = useAgencyContext()
@@ -106,7 +104,7 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
     }
   }, [form.agencyId, agencies])
 
-  // Hotkey: Cmd/Ctrl+Enter → submit (Esc handled by Sheet's onOpenChange)
+  // Hotkey: Cmd/Ctrl+Enter → submit (Esc handled by ResponsiveSlideOut's onOpenChange)
   useEffect(() => {
     const onKey = (e) => {
       if (showCloseConfirm) return
@@ -201,197 +199,196 @@ export function CreateClientSlideOut({ callerId, onClose, onCreated }) {
 
   return (
     <>
-      <Sheet open onOpenChange={(next) => !next && attemptClose()}>
-        <SheetContent
-          side={isMobile ? 'bottom' : 'right'}
-          className={`flex w-full flex-col gap-0 sm:max-w-[480px]${isMobile ? ' h-[90vh]' : ''}`}
-        >
-          <SheetHeader className="border-b border-border px-6 py-5">
-            <SheetTitle className="text-lg font-bold text-foreground">
-              Новый клиент
-            </SheetTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
+      <ResponsiveSlideOut
+        open
+        onOpenChange={(next) => !next && attemptClose()}
+        title={
+          <>
+            Новый клиент
+            <p className="mt-1 text-xs font-normal text-muted-foreground">
               Поля со звёздочкой обязательны
             </p>
-          </SheetHeader>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleSubmit()
-            }}
-            className="flex flex-1 flex-col overflow-hidden"
-          >
-            <div className="flex-1 overflow-auto px-6 py-5">
-            <AvatarDropZone
-              file={avatarFile}
-              error={avatarError}
-              onSelect={handleAvatarSelect}
-              onRemove={() => {
-                setAvatarFile(null)
-                setAvatarError(null)
-              }}
-              disabled={submitting}
-            />
-
-            <div className="mt-6 space-y-5">
-              <Field
-                label="Имя"
-                required
-                error={errors.name}
-                hint="Публичное имя на платформе"
+          </>
+        }
+        desktopWidth="sm:max-w-[480px]"
+        footer={
+          <>
+            {submitError && (
+              <p
+                className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
+                role="alert"
               >
-                <input
-                  ref={nameInputRef}
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => setField('name', e.target.value)}
-                  disabled={submitting}
-                  placeholder="например, Sofia Reign"
-                  className={inputCls(!!errors.name)}
-                />
-              </Field>
-
-              <Field
-                label="Alias"
-                error={errors.alias}
-                hint="Опционально. Используется для поиска"
+                {submitError}
+              </p>
+            )}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-[var(--fg4)]">
+                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                  Esc
+                </kbd>{' '}
+                закрыть ·{' '}
+                <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
+                  ⌘↵
+                </kbd>{' '}
+                создать
+              </span>
+              <div className="flex-1" />
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={attemptClose}
+                disabled={submitting}
               >
-                <input
-                  type="text"
-                  value={form.alias}
-                  onChange={(e) => setField('alias', e.target.value)}
-                  disabled={submitting}
-                  placeholder="@sofia.reign"
-                  className={inputCls(!!errors.alias)}
-                />
-              </Field>
-
-              <Field
-                label="Платформа"
-                required
-                error={errors.platformId}
+                Отмена
+              </Button>
+              <Button
+                type="submit"
+                form="create-client-form"
+                disabled={submitting}
               >
-                <select
-                  value={form.platformId}
-                  onChange={(e) => setField('platformId', e.target.value)}
-                  disabled={submitting || platformsLoading}
-                  className={selectCls(!!errors.platformId)}
-                >
-                  <option value="">Выберите платформу…</option>
-                  {platforms.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field
-                label="Агентство"
-                required
-                error={errors.agencyId}
-              >
-                <select
-                  value={form.agencyId}
-                  onChange={(e) => setField('agencyId', e.target.value)}
-                  disabled={submitting || !form.platformId}
-                  className={selectCls(!!errors.agencyId)}
-                >
-                  <option value="">
-                    {form.platformId ? 'Выберите агентство…' : 'Сначала выберите платформу'}
-                  </option>
-                  {agencies.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field
-                label="Описание"
-                hint="Plain text. Перенос строки сохраняется"
-              >
-                <textarea
-                  value={form.description}
-                  onChange={(e) => setField('description', e.target.value)}
-                  disabled={submitting}
-                  rows={4}
-                  placeholder="Контент, аудитория, особенности тона…"
-                  className={`${inputCls(false)} resize-y`}
-                />
-              </Field>
-
-              <section className="rounded-lg bg-muted/60 p-4">
-                <h3 className="mb-3 flex items-center gap-1.5 label-caps">
-                  <LinkIcon size={12} />
-                  Опционально · Интеграции
-                </h3>
-                <Field
-                  label="Tableau ID"
-                  error={errors.tableauId}
-                  hint="Связка с дашбордом аналитики"
-                >
-                  <input
-                    type="text"
-                    value={form.tableauId}
-                    onChange={(e) => setField('tableauId', e.target.value)}
-                    disabled={submitting}
-                    placeholder="например, TBL-2351"
-                    className={`${inputCls(!!errors.tableauId)} font-mono`}
-                  />
-                </Field>
-              </section>
+                {submitting ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Создаётся…
+                  </>
+                ) : (
+                  <><Check size={14} className="inline mr-1.5" />Создать клиента</>
+                )}
+              </Button>
             </div>
-          </div>
+          </>
+        }
+      >
+        <form
+          id="create-client-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSubmit()
+          }}
+          className="space-y-5"
+        >
+          <AvatarDropZone
+            file={avatarFile}
+            error={avatarError}
+            onSelect={handleAvatarSelect}
+            onRemove={() => {
+              setAvatarFile(null)
+              setAvatarError(null)
+            }}
+            disabled={submitting}
+          />
 
-            <SheetFooter className="mt-0 flex-col gap-0 border-t border-border bg-muted/40 px-6 py-4">
-              {submitError && (
-                <p
-                  className="mb-3 rounded-md bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger-ink)]"
-                  role="alert"
-                >
-                  {submitError}
-                </p>
-              )}
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-[var(--fg4)]">
-                  <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                    Esc
-                  </kbd>{' '}
-                  закрыть ·{' '}
-                  <kbd className="mx-0.5 rounded border border-border bg-card px-1 font-mono text-[10px]">
-                    ⌘↵
-                  </kbd>{' '}
-                  создать
-                </span>
-                <div className="flex-1" />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={attemptClose}
+          <div className="mt-6 space-y-5">
+            <Field
+              label="Имя"
+              required
+              error={errors.name}
+              hint="Публичное имя на платформе"
+            >
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={form.name}
+                onChange={(e) => setField('name', e.target.value)}
+                disabled={submitting}
+                placeholder="например, Sofia Reign"
+                className={inputCls(!!errors.name)}
+              />
+            </Field>
+
+            <Field
+              label="Alias"
+              error={errors.alias}
+              hint="Опционально. Используется для поиска"
+            >
+              <input
+                type="text"
+                value={form.alias}
+                onChange={(e) => setField('alias', e.target.value)}
+                disabled={submitting}
+                placeholder="@sofia.reign"
+                className={inputCls(!!errors.alias)}
+              />
+            </Field>
+
+            <Field
+              label="Платформа"
+              required
+              error={errors.platformId}
+            >
+              <select
+                value={form.platformId}
+                onChange={(e) => setField('platformId', e.target.value)}
+                disabled={submitting || platformsLoading}
+                className={selectCls(!!errors.platformId)}
+              >
+                <option value="">Выберите платформу…</option>
+                {platforms.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field
+              label="Агентство"
+              required
+              error={errors.agencyId}
+            >
+              <select
+                value={form.agencyId}
+                onChange={(e) => setField('agencyId', e.target.value)}
+                disabled={submitting || !form.platformId}
+                className={selectCls(!!errors.agencyId)}
+              >
+                <option value="">
+                  {form.platformId ? 'Выберите агентство…' : 'Сначала выберите платформу'}
+                </option>
+                {agencies.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field
+              label="Описание"
+              hint="Plain text. Перенос строки сохраняется"
+            >
+              <textarea
+                value={form.description}
+                onChange={(e) => setField('description', e.target.value)}
+                disabled={submitting}
+                rows={4}
+                placeholder="Контент, аудитория, особенности тона…"
+                className={`${inputCls(false)} resize-y`}
+              />
+            </Field>
+
+            <section className="rounded-lg bg-muted/60 p-4">
+              <h3 className="mb-3 flex items-center gap-1.5 label-caps">
+                <LinkIcon size={12} />
+                Опционально · Интеграции
+              </h3>
+              <Field
+                label="Tableau ID"
+                error={errors.tableauId}
+                hint="Связка с дашбордом аналитики"
+              >
+                <input
+                  type="text"
+                  value={form.tableauId}
+                  onChange={(e) => setField('tableauId', e.target.value)}
                   disabled={submitting}
-                >
-                  Отмена
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" /> Создаётся…
-                    </>
-                  ) : (
-                    <><Check size={14} className="inline mr-1.5" />Создать клиента</>
-                  )}
-                </Button>
-              </div>
-            </SheetFooter>
-          </form>
-        </SheetContent>
-      </Sheet>
+                  placeholder="например, TBL-2351"
+                  className={`${inputCls(!!errors.tableauId)} font-mono`}
+                />
+              </Field>
+            </section>
+          </div>
+        </form>
+      </ResponsiveSlideOut>
 
       {showCloseConfirm && (
         <CreateClientCloseConfirm
