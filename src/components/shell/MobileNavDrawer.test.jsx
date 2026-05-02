@@ -17,7 +17,7 @@ function setup({
   theme = 'system',
   setTheme = vi.fn(),
 } = {}) {
-  useAuth.mockReturnValue({ user, logout: onLogout })
+  useAuth.mockReturnValue({ user, signOut: onLogout })
   useTheme.mockReturnValue([theme, setTheme])
   return render(
     <MemoryRouter>

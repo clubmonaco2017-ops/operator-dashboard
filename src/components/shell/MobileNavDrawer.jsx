@@ -39,7 +39,7 @@ function computeInitials(user) {
  * MobileShell при route change, backdrop tap, swipe-left, Esc).
  */
 export function MobileNavDrawer({ open, onOpenChange }) {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   const [theme, setTheme] = useTheme()
 
   const displayName = user?.alias || user?.firstName || user?.email || ''
@@ -128,7 +128,7 @@ export function MobileNavDrawer({ open, onOpenChange }) {
         >
           <button
             type="button"
-            onClick={logout}
+            onClick={signOut}
             aria-label="Выйти"
             className="min-h-11 w-full flex items-center gap-3 px-3 rounded-md text-sm text-[var(--danger-ink)] hover:bg-[var(--danger)]/10 transition-colors"
           >
