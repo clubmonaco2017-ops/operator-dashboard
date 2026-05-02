@@ -3,8 +3,12 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { RailNav } from './RailNav.jsx'
 import { MobileShell } from './MobileShell.jsx'
+import { useAuth } from '../../useAuth.jsx'
+import { useTaskRealtimeSync } from '../../hooks/useTaskRealtimeSync.js'
 
 export function AppShell() {
+  const { user } = useAuth()
+  useTaskRealtimeSync(user?.id ?? null)
   const isMobile = useIsMobile()
   if (isMobile) {
     return <MobileShell />

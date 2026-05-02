@@ -23,6 +23,9 @@ vi.mock('../../hooks/useTheme.js', () => ({
 vi.mock('@/hooks/use-mobile', () => ({
   useIsMobile: vi.fn(),
 }))
+vi.mock('../../hooks/useTaskRealtimeSync.js', () => ({
+  useTaskRealtimeSync: vi.fn(),
+}))
 
 import { AppShell } from './AppShell.jsx'
 import { useIsMobile } from '@/hooks/use-mobile'
