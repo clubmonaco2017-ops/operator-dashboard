@@ -23,14 +23,25 @@ export function AgencyListItem({ agency, isActive }) {
           : 'border-l-transparent hover:bg-muted/60',
       ].join(' ')}
     >
-      <div
-        className={[
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary',
-          archived && 'opacity-60',
-        ].filter(Boolean).join(' ')}
-      >
-        {initial}
-      </div>
+      {agency.logo_url ? (
+        <img
+          src={agency.logo_url}
+          alt=""
+          className={[
+            'h-9 w-9 shrink-0 rounded-full bg-muted object-cover',
+            archived && 'opacity-60',
+          ].filter(Boolean).join(' ')}
+        />
+      ) : (
+        <div
+          className={[
+            'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary',
+            archived && 'opacity-60',
+          ].filter(Boolean).join(' ')}
+        >
+          {initial}
+        </div>
+      )}
       <div className="min-w-0 flex-1">
         <p
           className={[

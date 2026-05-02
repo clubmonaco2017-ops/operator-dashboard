@@ -24,6 +24,7 @@ export function useAgencyList() {
           name: r.out_name,
           platform_id: r.out_platform_id,
           platform_name: r.out_platform_name,
+          logo_url: r.out_logo_url,
           is_active: r.out_is_active,
           admin_count: r.out_admin_count,
           user_count: r.out_user_count,
