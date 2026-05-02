@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { FileArchive, FileSpreadsheet, FileText, Pencil, Play, Upload, X } from 'lucide-react'
+import { FileArchive, FileSpreadsheet, FileText, Music, Pencil, Play, Upload, X } from 'lucide-react'
 import { supabase } from '../../supabaseClient.js'
 import { useTaskActions } from '../../hooks/useTaskActions.js'
 import {
@@ -21,17 +21,20 @@ const ACCEPTED_MIME = [
   ...FILE_LIMITS.photo.mimeTypes,
   ...FILE_LIMITS.video.mimeTypes,
   ...FILE_LIMITS.document.mimeTypes,
+  ...FILE_LIMITS.audio.mimeTypes,
 ]
 
 /** Determines kind from MIME for routing into FILE_LIMITS bucket. */
 function fileKindFromMime(mime) {
   if (mime?.startsWith('video/')) return 'video'
   if (mime?.startsWith('image/')) return 'photo'
+  if (mime?.startsWith('audio/')) return 'audio'
   return 'document'
 }
 
-/** Picks lucide icon component for a document MIME type. */
-function documentIcon(mime) {
+/** Picks lucide icon component for a document/audio MIME type. */
+function fileIconForMime(mime) {
+  if (mime?.startsWith('audio/')) return Music
   if (mime === 'application/pdf') return FileText
   if (mime?.includes('spreadsheet') || mime === 'application/vnd.ms-excel') return FileSpreadsheet
   if (mime?.includes('word') || mime === 'application/msword') return FileText
@@ -179,7 +182,14 @@ function ReportMediaGallery({ media }) {
   // Adapt to Lightbox shape: ensure id (use idx as fallback), bucket, type
   const items = media.map((m, i) => ({
     id: m.id ?? `media-${i}`,
-    type: m.type === 'video' ? 'video' : m.type === 'document' ? 'document' : 'image',
+    type:
+      m.type === 'video'
+        ? 'video'
+        : m.type === 'document'
+          ? 'document'
+          : m.type === 'audio'
+            ? 'audio'
+            : 'image',
     bucket: m.bucket || 'task-reports',
     storage_path: m.storage_path,
     filename: m.filename,
@@ -192,18 +202,18 @@ function ReportMediaGallery({ media }) {
     created_at: m.created_at ?? null,
   }))
 
-  // Lightbox doesn't preview documents — pass only photo/video subset, remap indices
+  // Lightbox doesn't preview documents/audio — pass only photo/video subset, remap indices
   const lightboxItems = items
     .map((it, originalIdx) => ({ it, originalIdx }))
-    .filter(({ it }) => it.type !== 'document')
+    .filter(({ it }) => it.type !== 'document' && it.type !== 'audio')
   const lightboxIndexMapped =
     lightboxIndex !== null
       ? lightboxItems.findIndex((entry) => entry.originalIdx === lightboxIndex)
       : null
 
   function handleOpen(idx, type) {
-    if (type === 'document') {
-      // Open document in new tab — no lightbox preview
+    if (type === 'document' || type === 'audio') {
+      // Open in new tab — browser plays audio natively, downloads document
       const item = items[idx]
       const url =
         supabase.storage.from(item.bucket).getPublicUrl(item.storage_path)?.data?.publicUrl
@@ -243,8 +253,8 @@ function ReportMediaTile({ media, onOpen }) {
   const url =
     supabase.storage.from(media.bucket).getPublicUrl(media.storage_path)?.data?.publicUrl ?? ''
 
-  if (media.type === 'document') {
-    const Icon = documentIcon(media.mime_type)
+  if (media.type === 'document' || media.type === 'audio') {
+    const Icon = fileIconForMime(media.mime_type)
     return (
       <button
         type="button"
@@ -356,6 +366,8 @@ function ReportForm({
         const kind = fileKindFromMime(f.type)
         const isVideo = kind === 'video'
         const isDocument = kind === 'document'
+        const isAudio = kind === 'audio'
+        const isFileAttachment = isDocument || isAudio
         setUploading((u) =>
           u
             ? {
@@ -395,15 +407,21 @@ function ReportForm({
             }))
             dims = { width: meta.width, height: meta.height }
             durationMs = meta.durationMs
-          } else if (!isDocument) {
-            // photo only — documents have no dimensions
+          } else if (!isFileAttachment) {
+            // photo only — documents/audio have no image dimensions
             dims = await readImageDimensions(f).catch(() => ({ width: null, height: null }))
           }
 
           setMedia((m) => [
             ...m,
             {
-              type: isVideo ? 'video' : isDocument ? 'document' : 'image',
+              type: isVideo
+                ? 'video'
+                : isAudio
+                  ? 'audio'
+                  : isDocument
+                    ? 'document'
+                    : 'image',
               storage_path: path,
               filename: f.name,
               size_bytes: f.size,

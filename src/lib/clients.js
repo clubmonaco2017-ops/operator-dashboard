@@ -144,6 +144,20 @@ export const FILE_LIMITS = Object.freeze({
       'application/x-7z-compressed',
     ],
   },
+  audio: {
+    maxBytes: 100 * 1024 * 1024,
+    mimeTypes: [
+      'audio/mpeg',        // .mp3
+      'audio/mp4',         // .m4a (iPhone voice memos)
+      'audio/x-m4a',       // .m4a alternative
+      'audio/ogg',         // .ogg, .oga
+      'audio/wav',
+      'audio/x-wav',
+      'audio/webm',        // .weba
+      'audio/aac',
+      'audio/flac',
+    ],
+  },
 })
 
 /**
