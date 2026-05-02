@@ -37,7 +37,7 @@ function userInitials(name) {
  * @param {object} props
  * @param {number|null} props.callerId
  * @param {number|null} props.value — id выбранного user
- * @param {(id:number|null) => void} props.onChange
+ * @param {(id:number|null, agencyId?:string|null) => void} props.onChange — second arg = assignee's agency_id (null for admin/superadmin)
  * @param {string} [props.error]
  * @param {boolean} [props.disabled]
  */
@@ -65,7 +65,7 @@ export function AssigneeSelector({ callerId, value, onChange, error, disabled })
   }, [value, rows, selectedSnapshot])
 
   function handleSelect(option) {
-    onChange(option.id)
+    onChange(option.id, option.agency_id ?? null)
     setOpen(false)
   }
 
