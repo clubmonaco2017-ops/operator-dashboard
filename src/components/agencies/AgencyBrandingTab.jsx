@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Eye, EyeOff, ImagePlus, Loader2 } from 'lucide-react'
 import { supabase } from '../../supabaseClient.js'
@@ -38,6 +38,7 @@ export function AgencyBrandingTab() {
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const fileInputRef = useRef(null)
 
   // Hydrate when switching to a different agency
   useEffect(() => {
@@ -114,21 +115,28 @@ export function AgencyBrandingTab() {
               <ImagePlus className="h-5 w-5" aria-hidden="true" />
             </div>
           )}
-          <label className="cursor-pointer">
-            <Button asChild size="sm" variant="outline" disabled={uploading || saving}>
-              <span>
-                {uploading && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                {uploading ? 'Загрузка…' : 'Выбрать файл'}
-              </span>
-            </Button>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleLogoUpload}
-              className="hidden"
-              disabled={uploading || saving}
-            />
-          </label>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading || saving}
+          >
+            {uploading && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+            {uploading ? 'Загрузка…' : 'Выбрать файл'}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              handleLogoUpload(e)
+              // Reset value so picking the same file twice still triggers onChange
+              e.target.value = ''
+            }}
+            className="hidden"
+            disabled={uploading || saving}
+          />
         </div>
       </section>
 
