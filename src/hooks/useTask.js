@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { invalidateUnreadTasksCount } from './useUnreadTasksCount.js'
+import { invalidateUserTaskList } from './useTaskList.js'
 
 /**
  * Деталь одной задачи (через RPC get_task_detail).
@@ -43,7 +44,10 @@ export function useTask(callerId, taskId) {
           // Errors swallowed — UX не должен блокироваться.
           supabase
             .rpc('mark_task_seen', { p_task_id: id })
-            .then(() => invalidateUnreadTasksCount(callerId))
+            .then(() => {
+              invalidateUnreadTasksCount(callerId)
+              invalidateUserTaskList()
+            })
             .catch(() => { /* ignore */ })
         }
       })
