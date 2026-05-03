@@ -10,6 +10,7 @@ import { TopTeamCard } from './cards/TopTeamCard.jsx'
 import { TeamDistributionCard } from './cards/TeamDistributionCard.jsx'
 import { TeamEngagementCard } from './cards/TeamEngagementCard.jsx'
 import { TasksOwnCard } from './cards/TasksOwnCard.jsx'
+import { NotificationsOwnCard } from './cards/NotificationsOwnCard.jsx'
 
 // Performance group (4 cards)
 export const PRODUCTION_CARDS = [
@@ -37,9 +38,10 @@ export const TEAM_CARDS = [
 // Combined analytics (11 cards) — convenience for whole-section iteration
 export const ANALYTICS_CARDS = [...PRODUCTION_CARDS, ...SHIFT_CARDS, ...TEAM_CARDS]
 
-// Tasks (1 card — unified for all roles)
+// Tasks (2 cards — unified for all roles)
 export const TASK_CARDS = [
   { id: 'tasks_own', component: TasksOwnCard, requires: 'view_own_tasks' },
+  { id: 'notifications_own', component: NotificationsOwnCard, requires: null },
 ]
 
 /**
