@@ -43,6 +43,20 @@ describe('verifyWebhook', () => {
     expect(r).toEqual({ ok: false, reason: 'missing-fields' })
   })
 
+  it('rejects with reason="missing-fields" when created_at is absent', () => {
+    const body = JSON.stringify({ source: 'x', row_id: 1 })
+    const sig = sign(body)
+    const r = verifyWebhook({ rawBody: body, signature: sig, secret: SECRET, now: Date.now() })
+    expect(r).toEqual({ ok: false, reason: 'missing-fields' })
+  })
+
+  it('rejects with reason="missing-fields" when created_at is unparseable', () => {
+    const body = JSON.stringify({ source: 'x', row_id: 1, created_at: 'not-a-date' })
+    const sig = sign(body)
+    const r = verifyWebhook({ rawBody: body, signature: sig, secret: SECRET, now: Date.now() })
+    expect(r).toEqual({ ok: false, reason: 'missing-fields' })
+  })
+
   it('rejects with reason="stale" when created_at older than 5 min', () => {
     const stale = new Date(Date.now() - (FIVE_MINUTES_MS + 1000)).toISOString()
     const body = JSON.stringify({ source: 'x', row_id: 1, created_at: stale })

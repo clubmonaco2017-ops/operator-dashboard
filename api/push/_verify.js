@@ -27,8 +27,16 @@ export function verifyWebhook({ rawBody, signature, secret, now }) {
     return { ok: false, reason: 'missing-fields' }
   }
 
-  const ts = payload.created_at ? Date.parse(payload.created_at) : NaN
-  if (!Number.isFinite(ts) || (now - ts) > FIVE_MINUTES_MS || (ts - now) > FIVE_MINUTES_MS) {
+  if (!payload.created_at) {
+    return { ok: false, reason: 'missing-fields' }
+  }
+
+  const ts = Date.parse(payload.created_at)
+  if (!Number.isFinite(ts)) {
+    return { ok: false, reason: 'missing-fields' }
+  }
+
+  if ((now - ts) > FIVE_MINUTES_MS || (ts - now) > FIVE_MINUTES_MS) {
     return { ok: false, reason: 'stale' }
   }
 

@@ -4,11 +4,13 @@ import { getSupabaseAdmin } from '../admin/_supabase.js'
 import { verifyWebhook } from './_verify.js'
 import { renderPushPayload } from './_render.js'
 
-webpush.setVapidDetails(
-  'mailto:' + (process.env.VAPID_CONTACT_EMAIL || 'admin@example.com'),
-  process.env.VITE_VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY,
-)
+try {
+  webpush.setVapidDetails(
+    'mailto:' + (process.env.VAPID_CONTACT_EMAIL || 'admin@example.com'),
+    process.env.VITE_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY,
+  )
+} catch { /* surfaces later in webpush.sendNotification() on first use */ }
 
 async function readRawBody(req) {
   if (typeof req.text === 'function') return await req.text()

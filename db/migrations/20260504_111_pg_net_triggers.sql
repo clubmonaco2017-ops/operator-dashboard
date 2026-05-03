@@ -5,6 +5,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pg_net;  -- creates schema `net`; preinstalled on Supabase
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;  -- ensures extensions.hmac resolves on fresh databases
 
 CREATE OR REPLACE FUNCTION public.enqueue_push_event() RETURNS trigger
 LANGUAGE plpgsql

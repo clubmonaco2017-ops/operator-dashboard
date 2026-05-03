@@ -6,7 +6,7 @@ function getVapidPublicKey() {
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_VAPID_PUBLIC_KEY) {
     return import.meta.env.VITE_VAPID_PUBLIC_KEY
   }
-  return process.env?.VITE_VAPID_PUBLIC_KEY || ''
+  return (typeof process !== 'undefined' ? process.env?.VITE_VAPID_PUBLIC_KEY : '') || ''
 }
 
 export function getPushState() {

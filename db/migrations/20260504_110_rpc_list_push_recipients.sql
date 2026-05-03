@@ -42,7 +42,7 @@ BEGIN
             (u.role = 'admin' AND EXISTS (
               SELECT 1 FROM admin_agencies aa
                 JOIN dashboard_users a ON a.id = v_task_row.assigned_to
-               WHERE aa.admin_user_id = u.id
+               WHERE aa.admin_id = u.id
                  AND aa.agency_id = a.agency_id))
          OR -- everyone else: the assignee or creator personally
             (u.role IN ('lead', 'mod', 'operator')
@@ -64,10 +64,11 @@ BEGIN
        AND (
             u.role = 'superadmin'
          OR (u.role = 'admin' AND tm.agency_id IN (
-              SELECT agency_id FROM admin_agencies WHERE admin_user_id = u.id))
+              SELECT agency_id FROM admin_agencies WHERE admin_id = u.id))
          OR (u.role IN ('lead', 'mod', 'operator') AND (
-              EXISTS (SELECT 1 FROM team_members mem
-                       WHERE mem.team_id = tm.id AND mem.user_id = u.id)))
+              tm.lead_user_id = u.id
+              OR EXISTS (SELECT 1 FROM team_members mem
+                          WHERE mem.team_id = tm.id AND mem.operator_id = u.id)))
        );
 
   ELSIF p_source = 'staff_activity' THEN
@@ -86,7 +87,7 @@ BEGIN
          OR (u.role = 'admin' AND EXISTS (
               SELECT 1 FROM admin_agencies aa
                 JOIN dashboard_users target ON target.id = v_target_id
-               WHERE aa.admin_user_id = u.id
+               WHERE aa.admin_id = u.id
                  AND aa.agency_id = target.agency_id))
          OR (u.role IN ('lead', 'mod', 'operator') AND u.id = v_target_id)
        );
