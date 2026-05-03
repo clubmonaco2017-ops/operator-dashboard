@@ -5,11 +5,14 @@ import { hasPermission } from './permissions.js'
 describe('defaultPermissions', () => {
   it('returns admin defaults', () => {
     expect(defaultPermissions('admin')).toEqual([
+      'create_users',
+      'manage_roles',
       'create_tasks',
       'manage_teams',
       'send_reminders',
       'view_all_revenue',
       'view_all_tasks',
+      'view_own_tasks',
       'manage_clients',
       'assign_team_clients',
     ])

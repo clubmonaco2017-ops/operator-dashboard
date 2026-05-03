@@ -9,7 +9,6 @@ import { BestShiftCard } from './cards/BestShiftCard.jsx'
 import { TopTeamCard } from './cards/TopTeamCard.jsx'
 import { TeamDistributionCard } from './cards/TeamDistributionCard.jsx'
 import { TeamEngagementCard } from './cards/TeamEngagementCard.jsx'
-import { OverdueAllCard } from './cards/OverdueAllCard.jsx'
 import { TasksOwnCard } from './cards/TasksOwnCard.jsx'
 
 // Performance group (4 cards)
@@ -38,9 +37,8 @@ export const TEAM_CARDS = [
 // Combined analytics (11 cards) — convenience for whole-section iteration
 export const ANALYTICS_CARDS = [...PRODUCTION_CARDS, ...SHIFT_CARDS, ...TEAM_CARDS]
 
-// Tasks (2 cards)
+// Tasks (1 card — unified for all roles)
 export const TASK_CARDS = [
-  { id: 'overdue_all', component: OverdueAllCard, requires: 'view_all_tasks' },
   { id: 'tasks_own', component: TasksOwnCard, requires: 'view_own_tasks' },
 ]
 
