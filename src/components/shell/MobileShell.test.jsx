@@ -11,8 +11,8 @@ vi.mock('../../useAuth.jsx', () => ({
 vi.mock('../../hooks/useUserOverdueCount.js', () => ({
   useUserOverdueCount: () => ({ count: 0 }),
 }))
-vi.mock('../../hooks/usePendingDeletionCount.js', () => ({
-  usePendingDeletionCount: () => 0,
+vi.mock('../../hooks/useNotificationsUnseenCount.js', () => ({
+  useNotificationsUnseenCount: () => 0,
 }))
 vi.mock('../../hooks/useUserTeamMembership.js', () => ({
   useUserTeamMembership: () => ({ has: false }),

@@ -3,23 +3,23 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
 vi.mock('../../useAuth.jsx', () => ({ useAuth: vi.fn() }))
-vi.mock('../../hooks/usePendingDeletionCount.js', () => ({
-  usePendingDeletionCount: vi.fn(),
+vi.mock('../../hooks/useNotificationsUnseenCount.js', () => ({
+  useNotificationsUnseenCount: vi.fn(),
 }))
 
 import { MobileTopBar } from './MobileTopBar.jsx'
 import { SectionTitleProvider, useSectionTitle } from '../../hooks/useSectionTitle.jsx'
 import { useAuth } from '../../useAuth.jsx'
-import { usePendingDeletionCount } from '../../hooks/usePendingDeletionCount.js'
+import { useNotificationsUnseenCount } from '../../hooks/useNotificationsUnseenCount.js'
 
 function TitleSetter({ title, backTo }) {
   useSectionTitle(title, { backTo })
   return null
 }
 
-function renderAt(path, { user, pending = 0, title = null, backTo = null, onMenuClick = vi.fn() }) {
+function renderAt(path, { user, unseen = 0, title = null, backTo = null, onMenuClick = vi.fn() }) {
   useAuth.mockReturnValue({ user })
-  usePendingDeletionCount.mockReturnValue(pending)
+  useNotificationsUnseenCount.mockReturnValue(unseen)
   return render(
     <MemoryRouter initialEntries={[path]}>
       <SectionTitleProvider>
@@ -74,28 +74,23 @@ describe('<MobileTopBar>', () => {
     expect(onMenuClick).toHaveBeenCalledTimes(1)
   })
 
-  it('shows notifications icon for superadmin only', () => {
-    renderAt('/tasks', { user: { role: 'superadmin' }, title: 'Задачи', pending: 0 })
+  it('shows notifications icon for any logged-in user', () => {
+    renderAt('/tasks', { user: { role: 'operator' }, title: 'Задачи', unseen: 0 })
     expect(screen.getByLabelText('Оповещения')).toBeInTheDocument()
   })
 
-  it('hides notifications icon for non-superadmin', () => {
-    renderAt('/tasks', { user: { role: 'admin' }, title: 'Задачи', pending: 0 })
-    expect(screen.queryByLabelText('Оповещения')).toBeNull()
-  })
-
-  it('shows pending count badge on notifications icon', () => {
-    renderAt('/tasks', { user: { role: 'superadmin' }, title: 'Задачи', pending: 7 })
+  it('shows unseen count badge on notifications icon', () => {
+    renderAt('/tasks', { user: { role: 'operator' }, title: 'Задачи', unseen: 7 })
     expect(screen.getByText('7')).toBeInTheDocument()
   })
 
-  it('shows "99+" when pending count exceeds 99', () => {
-    renderAt('/tasks', { user: { role: 'superadmin' }, title: 'Задачи', pending: 142 })
+  it('shows "99+" when unseen count exceeds 99', () => {
+    renderAt('/tasks', { user: { role: 'superadmin' }, title: 'Задачи', unseen: 142 })
     expect(screen.getByText('99+')).toBeInTheDocument()
   })
 
-  it('hides badge when pending count is 0', () => {
-    renderAt('/tasks', { user: { role: 'superadmin' }, title: 'Задачи', pending: 0 })
+  it('hides badge when unseen count is 0', () => {
+    renderAt('/tasks', { user: { role: 'superadmin' }, title: 'Задачи', unseen: 0 })
     expect(screen.queryByText('0')).toBeNull()
   })
 })

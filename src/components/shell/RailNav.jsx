@@ -13,11 +13,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useAuth } from '../../useAuth.jsx'
-import { hasPermission, isSuperadmin } from '../../lib/permissions.js'
+import { hasPermission } from '../../lib/permissions.js'
 import { canSeeTeamsNav } from '../../lib/teams.js'
 import { useUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
 import { useUnreadTasksCount } from '../../hooks/useUnreadTasksCount.js'
-import { usePendingDeletionCount } from '../../hooks/usePendingDeletionCount.js'
+import { useNotificationsUnseenCount } from '../../hooks/useNotificationsUnseenCount.js'
 import { ThemeToggle } from './ThemeToggle.jsx'
 import { UserMenuDropdown } from './UserMenuDropdown.jsx'
 
@@ -69,10 +69,10 @@ export function RailNav({ className = '' }) {
   const canSeeTeams = canSeeTeamsNav(user, hasTeamMembership)
   const canSeeTasks =
     hasPermission(user, 'view_own_tasks') || hasPermission(user, 'view_all_tasks')
-  const canSeeNotifications = isSuperadmin(user)
+  const canSeeNotifications = !!user
 
   const { count: unreadCount } = useUnreadTasksCount(canSeeTasks ? user?.id : null)
-  const pending = usePendingDeletionCount({ enabled: canSeeNotifications })
+  const unseen = useNotificationsUnseenCount(user?.id)
 
   return (
     <aside
@@ -105,7 +105,7 @@ export function RailNav({ className = '' }) {
           to="/notifications"
           icon={<Bell size={20} />}
           label="Оповещения"
-          badge={pending}
+          badge={unseen}
         />
       )}
       <ThemeToggle />

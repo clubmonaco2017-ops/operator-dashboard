@@ -9,8 +9,8 @@ vi.mock('../../useAuth.jsx', () => ({
 vi.mock('../../hooks/useUnreadTasksCount.js', () => ({
   useUnreadTasksCount: vi.fn(),
 }))
-vi.mock('../../hooks/usePendingDeletionCount.js', () => ({
-  usePendingDeletionCount: vi.fn(),
+vi.mock('../../hooks/useNotificationsUnseenCount.js', () => ({
+  useNotificationsUnseenCount: vi.fn(),
 }))
 vi.mock('../../hooks/useUserTeamMembership.js', () => ({
   useUserTeamMembership: vi.fn(),
@@ -19,13 +19,13 @@ vi.mock('../../hooks/useUserTeamMembership.js', () => ({
 import { RailNav } from './RailNav.jsx'
 import { useAuth } from '../../useAuth.jsx'
 import { useUnreadTasksCount } from '../../hooks/useUnreadTasksCount.js'
-import { usePendingDeletionCount } from '../../hooks/usePendingDeletionCount.js'
+import { useNotificationsUnseenCount } from '../../hooks/useNotificationsUnseenCount.js'
 import { useUserTeamMembership } from '../../hooks/useUserTeamMembership.js'
 
-function setup({ user, overdue = 0, pending = 0, hasTeam = false }) {
+function setup({ user, overdue = 0, unseen = 0, hasTeam = false }) {
   useAuth.mockReturnValue({ user, logout: vi.fn() })
   useUnreadTasksCount.mockReturnValue({ count: overdue })
-  usePendingDeletionCount.mockReturnValue(pending)
+  useNotificationsUnseenCount.mockReturnValue(unseen)
   useUserTeamMembership.mockReturnValue({ has: hasTeam })
   return render(
     <MemoryRouter>
@@ -74,14 +74,22 @@ describe('<RailNav>', () => {
     expect(screen.getByText('99+')).toBeInTheDocument()
   })
 
-  it('hides Notifications icon for non-superadmin', () => {
-    setup({ user: { id: 1, role: 'admin', permissions: ['create_users'] } })
-    expect(screen.queryByLabelText('Оповещения')).toBeNull()
+  it('shows Notifications icon for any logged-in user', () => {
+    setup({ user: { id: 1, role: 'operator', permissions: ['view_own_tasks'] } })
+    expect(screen.getByLabelText('Оповещения')).toBeInTheDocument()
   })
 
   it('shows Notifications icon for superadmin', () => {
     setup({ user: { id: 1, role: 'superadmin' } })
     expect(screen.getByLabelText('Оповещения')).toBeInTheDocument()
+  })
+
+  it('shows unseen count badge on Notifications icon when unseen > 0', () => {
+    setup({
+      user: { id: 1, role: 'operator', permissions: ['view_own_tasks'] },
+      unseen: 4,
+    })
+    expect(screen.getByText('4')).toBeInTheDocument()
   })
 
   it('renders UserMenuDropdown trigger at the bottom', () => {

@@ -5,10 +5,12 @@ import { RailNav } from './RailNav.jsx'
 import { MobileShell } from './MobileShell.jsx'
 import { useAuth } from '../../useAuth.jsx'
 import { useTaskRealtimeSync } from '../../hooks/useTaskRealtimeSync.js'
+import { useNotificationsRealtimeSync } from '../../hooks/useNotificationsRealtimeSync.js'
 
 export function AppShell() {
   const { user } = useAuth()
   useTaskRealtimeSync(user?.id ?? null)
+  useNotificationsRealtimeSync(user?.id ?? null)
   const isMobile = useIsMobile()
   if (isMobile) {
     return <MobileShell />

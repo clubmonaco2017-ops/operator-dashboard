@@ -1,8 +1,7 @@
 import { ArrowLeft, Bell, Menu } from 'lucide-react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../useAuth.jsx'
-import { isSuperadmin } from '../../lib/permissions.js'
-import { usePendingDeletionCount } from '../../hooks/usePendingDeletionCount.js'
+import { useNotificationsUnseenCount } from '../../hooks/useNotificationsUnseenCount.js'
 import { useSectionTitleValue } from '../../hooks/useSectionTitle.jsx'
 
 const ROUTE_TO_TITLE = {
@@ -30,7 +29,7 @@ function deriveFallbackTitle(pathname) {
  *   - default: hamburger (☰) — calls onMenuClick to open the drawer.
  *   - when context has backTo: ← back-arrow that navigates to that path.
  * Right side:
- *   - 🔔 (only for superadmin) with optional pending-count badge.
+ *   - 🔔 (any logged-in user) with unseen-count badge.
  *     Tap navigates to /notifications.
  *
  * Title from useSectionTitleValue(); falls back to a route-derived label.
@@ -40,10 +39,10 @@ export function MobileTopBar({ onMenuClick }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const pending = usePendingDeletionCount({ enabled: isSuperadmin(user) })
+  const unseen = useNotificationsUnseenCount(user?.id)
 
   const title = ctxTitle || deriveFallbackTitle(location.pathname)
-  const showNotifications = isSuperadmin(user)
+  const showNotifications = !!user
 
   return (
     <header
@@ -81,12 +80,12 @@ export function MobileTopBar({ onMenuClick }) {
           className="relative min-h-11 min-w-11 inline-flex items-center justify-center rounded-md text-foreground hover:bg-muted transition-colors"
         >
           <Bell size={22} />
-          {pending > 0 && (
+          {unseen > 0 && (
             <span
               className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-[var(--danger)] text-white text-[10px] font-bold rounded-full px-1 ring-2 ring-card flex items-center justify-center tabular"
-              aria-label={`${pending} непрочитанных`}
+              aria-label={`${unseen} непрочитанных`}
             >
-              {pending > 99 ? '99+' : pending}
+              {unseen > 99 ? '99+' : unseen}
             </span>
           )}
         </NavLink>
