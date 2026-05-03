@@ -111,8 +111,11 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signOut = useCallback(async () => {
-    // Fix 1: clear authError on deliberate logout so a re-login starts clean
     setAuthError(null)
+    try {
+      const { disablePush } = await import('./lib/pushClient.js')
+      await disablePush()
+    } catch { /* best-effort; never block logout */ }
     await supabase.auth.signOut()
   }, [])
 

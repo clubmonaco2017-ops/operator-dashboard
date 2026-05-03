@@ -9,6 +9,8 @@ import { useSectionTitle } from '../hooks/useSectionTitle.jsx'
 import { NotificationRow } from '../components/notifications/NotificationRow.jsx'
 import { targetForNotification } from '../lib/notificationMessages.js'
 import { ApprovalReviewModal } from '../components/staff/ApprovalReviewModal.jsx'
+import { PushPromptBanner } from '../components/notifications/PushPromptBanner.jsx'
+import { PushSettingsCard } from '../components/notifications/PushSettingsCard.jsx'
 
 export function NotificationsPage() {
   useSectionTitle('Оповещения')
@@ -41,6 +43,7 @@ export function NotificationsPage() {
     <div className="p-4 sm:p-6">
       <div className="mx-auto max-w-3xl">
         <h1 className="mb-4 text-2xl font-bold text-foreground">Оповещения</h1>
+        <PushPromptBanner />
 
         {loading && <p className="text-sm text-muted-foreground">Загрузка…</p>}
         {error && <p className="text-sm text-destructive" role="alert">Ошибка: {error}</p>}
@@ -66,6 +69,10 @@ export function NotificationsPage() {
             onDone={() => { reloadDeletions(); invalidateUserNotifications() }}
           />
         )}
+
+        <div className="mt-6">
+          <PushSettingsCard />
+        </div>
       </div>
     </div>
   )
