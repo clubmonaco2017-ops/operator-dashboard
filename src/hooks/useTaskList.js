@@ -2,6 +2,24 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { useAgencyContext } from '../lib/agencyContext.jsx'
 
+// Module-level subscriber set — for realtime/external invalidation.
+// Mirrors useUnreadTasksCount / useUserOverdueCount pattern.
+const subscribers = new Set()
+
+function notifyAll() {
+  subscribers.forEach((cb) => {
+    try { cb() } catch { /* swallow per-subscriber errors */ }
+  })
+}
+
+/**
+ * Trigger a reload across all mounted useTaskList instances.
+ * Called from useTaskRealtimeSync on relevant task_activity events.
+ */
+export function invalidateUserTaskList() {
+  notifyAll()
+}
+
 /**
  * Список задач (через RPC list_tasks).
  * Поиск дебаунсится 300мс, чтобы не дёргать RPC на каждый keystroke.
@@ -24,12 +42,22 @@ export function useTaskList(callerId, opts = {}) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [version, setVersion] = useState(0)
 
   // 300мс debounce для поиска.
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300)
     return () => clearTimeout(t)
   }, [search])
+
+  // Subscribe to module-level invalidation (realtime triggers).
+  useEffect(() => {
+    const cb = () => setVersion((v) => v + 1)
+    subscribers.add(cb)
+    return () => {
+      subscribers.delete(cb)
+    }
+  }, [])
 
   useEffect(() => {
     if (!callerId) return
@@ -60,7 +88,7 @@ export function useTaskList(callerId, opts = {}) {
     return () => {
       cancelled = true
     }
-  }, [callerId, box, status, debouncedSearch, effectiveAgencyId, reloadKey])
+  }, [callerId, box, status, debouncedSearch, effectiveAgencyId, reloadKey, version])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 
