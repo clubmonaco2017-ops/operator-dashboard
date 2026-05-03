@@ -1,9 +1,10 @@
-import { CheckSquare, Network, Trash2 } from 'lucide-react'
+import { CheckSquare, Network, Trash2, UserCog } from 'lucide-react'
 import { formatNotificationMessage } from '../../lib/notificationMessages.js'
 
 const ICONS = {
   task_activity: CheckSquare,
   team_activity: Network,
+  staff_activity: UserCog,
   deletion_request: Trash2,
 }
 

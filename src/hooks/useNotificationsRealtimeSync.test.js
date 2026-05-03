@@ -21,7 +21,7 @@ beforeEach(() => {
 })
 
 describe('useNotificationsRealtimeSync', () => {
-  it('subscribes to two channels (team_activity + deletion_requests) and cleans up', () => {
+  it('subscribes to three channels (team + deletion + staff) and cleans up', () => {
     const subscribe = vi.fn().mockReturnThis()
     const on = vi.fn().mockReturnThis()
     const fakeChannel = { on, subscribe }
@@ -31,12 +31,13 @@ describe('useNotificationsRealtimeSync', () => {
 
     const { unmount } = renderHook(() => useNotificationsRealtimeSync(42))
 
-    expect(supabase.channel).toHaveBeenCalledTimes(2)
+    expect(supabase.channel).toHaveBeenCalledTimes(3)
     expect(supabase.channel).toHaveBeenCalledWith('team-activity-notifs-42')
     expect(supabase.channel).toHaveBeenCalledWith('deletion-requests-notifs-42')
+    expect(supabase.channel).toHaveBeenCalledWith('staff-activity-notifs-42')
 
     unmount()
-    expect(supabase.removeChannel).toHaveBeenCalledTimes(2)
+    expect(supabase.removeChannel).toHaveBeenCalledTimes(3)
   })
 
   it('invalidates notifications + counter on event', () => {

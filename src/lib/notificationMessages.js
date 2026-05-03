@@ -7,6 +7,23 @@ const TASK_TEMPLATES = {
   deadline_changed:  ({ actor, label }) => `${actor} изменил${ending(actor)} дедлайн в задаче «${label}»`,
 }
 
+const STAFF_TEMPLATES = {
+  user_created:                       ({ actor, label }) => `${actor} создал${ending(actor)} сотрудника ${label}`,
+  curator_assigned:                   ({ actor, label }) => `${actor} назначил${ending(actor)} куратора для ${label}`,
+  curator_changed:                    ({ actor, label }) => `${actor} сменил${ending(actor)} куратора для ${label}`,
+  removed_curatorships_as_moderator:  ({ actor, label }) => `${actor} снял${ending(actor)} ${label} как модератора-куратора`,
+  removed_curatorships_as_operator:   ({ actor, label }) => `${actor} снял${ending(actor)} ${label} как оператора-куратора`,
+  removed_team_memberships:           ({ actor, label }) => `${actor} убрал${ending(actor)} ${label} из команд`,
+  user_archived_with_cascade:         ({ actor, label }) => `${actor} архивировал${ending(actor)} ${label}`,
+  user_reactivated:                   ({ actor, label }) => `${actor} восстановил${ending(actor)} ${label}`,
+  task_deleted: ({ actor, label, payload }) => {
+    const title = payload?.title
+    return title
+      ? `${actor} удалил${ending(actor)} задачу «${title}» (исполнитель: ${label})`
+      : `${actor} удалил${ending(actor)} задачу исполнителя ${label}`
+  },
+}
+
 const TEAM_TEMPLATES = {
   team_created:      ({ actor, label }) => `${actor} создал${ending(actor)} команду «${label}»`,
   team_renamed:      ({ actor, label }) => `${actor} переименовал${ending(actor)} команду в «${label}»`,
@@ -37,11 +54,12 @@ export function formatNotificationMessage(n) {
     return `Запрос на удаление: ${label}`
   }
 
-  const templates = n.source === 'task_activity' ? TASK_TEMPLATES
-                  : n.source === 'team_activity' ? TEAM_TEMPLATES
+  const templates = n.source === 'task_activity'  ? TASK_TEMPLATES
+                  : n.source === 'team_activity'  ? TEAM_TEMPLATES
+                  : n.source === 'staff_activity' ? STAFF_TEMPLATES
                   : null
   const tmpl = templates?.[n.event_type]
-  if (tmpl) return tmpl({ actor, label })
+  if (tmpl) return tmpl({ actor, label, payload: n.payload || {} })
 
   return `${actor} выполнил${ending(actor)} действие в «${label}»`
 }
@@ -50,6 +68,7 @@ export function targetForNotification(n) {
   switch (n.source) {
     case 'task_activity': return `/tasks?id=${n.entity_id}`
     case 'team_activity': return `/teams?id=${n.entity_id}`
+    case 'staff_activity': return '/staff'
     case 'deletion_request': return null
     default: return null
   }

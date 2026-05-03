@@ -45,9 +45,24 @@ export function useNotificationsRealtimeSync(userId) {
       )
       .subscribe()
 
+    const staffCh = supabase
+      .channel(`staff-activity-notifs-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'staff_activity',
+          filter: `actor_id=neq.${userId}`,
+        },
+        fire,
+      )
+      .subscribe()
+
     return () => {
       supabase.removeChannel(teamCh)
       supabase.removeChannel(delCh)
+      supabase.removeChannel(staffCh)
     }
   }, [userId])
 }
