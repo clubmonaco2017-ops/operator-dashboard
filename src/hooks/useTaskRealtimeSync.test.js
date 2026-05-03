@@ -13,10 +13,18 @@ vi.mock('./useUnreadTasksCount.js', () => ({
 vi.mock('./useTaskList.js', () => ({
   invalidateUserTaskList: vi.fn(),
 }))
+vi.mock('./useNotifications.js', () => ({
+  invalidateUserNotifications: vi.fn(),
+}))
+vi.mock('./useNotificationsUnseenCount.js', () => ({
+  invalidateNotificationsUnseenCount: vi.fn(),
+}))
 
 import { supabase } from '../supabaseClient'
 import { invalidateUnreadTasksCount } from './useUnreadTasksCount.js'
 import { invalidateUserTaskList } from './useTaskList.js'
+import { invalidateUserNotifications } from './useNotifications.js'
+import { invalidateNotificationsUnseenCount } from './useNotificationsUnseenCount.js'
 import { useTaskRealtimeSync } from './useTaskRealtimeSync.js'
 
 beforeEach(() => {
@@ -24,6 +32,8 @@ beforeEach(() => {
   supabase.removeChannel.mockReset()
   invalidateUnreadTasksCount.mockReset()
   invalidateUserTaskList.mockReset()
+  invalidateUserNotifications.mockReset()
+  invalidateNotificationsUnseenCount.mockReset()
 })
 
 describe('useTaskRealtimeSync', () => {
@@ -71,5 +81,7 @@ describe('useTaskRealtimeSync', () => {
 
     expect(invalidateUnreadTasksCount).toHaveBeenCalledWith(42)
     expect(invalidateUserTaskList).toHaveBeenCalled()
+    expect(invalidateUserNotifications).toHaveBeenCalled()
+    expect(invalidateNotificationsUnseenCount).toHaveBeenCalledWith(42)
   })
 })

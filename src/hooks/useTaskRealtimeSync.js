@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import { invalidateUnreadTasksCount } from './useUnreadTasksCount.js'
 import { invalidateUserTaskList } from './useTaskList.js'
+import { invalidateUserNotifications } from './useNotifications.js'
+import { invalidateNotificationsUnseenCount } from './useNotificationsUnseenCount.js'
 
 /**
  * Subscribes to task_activity INSERT events via Supabase Realtime.
@@ -30,6 +32,8 @@ export function useTaskRealtimeSync(userId) {
         () => {
           invalidateUnreadTasksCount(userId)
           invalidateUserTaskList()
+          invalidateUserNotifications()
+          invalidateNotificationsUnseenCount(userId)
         },
       )
       .subscribe()
