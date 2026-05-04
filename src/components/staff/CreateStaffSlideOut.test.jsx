@@ -7,6 +7,9 @@ vi.mock('../../supabaseClient', () => ({
     rpc: vi.fn(),
   },
 }))
+vi.mock('../../lib/adminFetch', () => ({
+  adminFetch: vi.fn(),
+}))
 const agencyMock = vi.fn(() => ({
   availableAgencies: [{ id: 'agency-x', name: 'Test Agency' }],
   activeAgencyId: 'agency-x',
@@ -18,6 +21,7 @@ vi.mock('../../lib/agencyContext.jsx', () => ({
   useAgencyContext: () => agencyMock(),
 }))
 import { supabase } from '../../supabaseClient'
+import { adminFetch } from '../../lib/adminFetch'
 
 const SINGLE_AGENCY_CTX = {
   availableAgencies: [{ id: 'agency-x', name: 'Test Agency' }],
@@ -30,6 +34,7 @@ const SINGLE_AGENCY_CTX = {
 describe('<CreateStaffSlideOut>', () => {
   beforeEach(() => {
     supabase.rpc.mockReset()
+    adminFetch.mockReset()
     agencyMock.mockReset()
     agencyMock.mockReturnValue(SINGLE_AGENCY_CTX)
   })
@@ -73,9 +78,11 @@ describe('<CreateStaffSlideOut>', () => {
   })
 
   it('calls onCreated with refCode on successful submit', async () => {
-    supabase.rpc
-      .mockResolvedValueOnce({ data: 42, error: null }) // create_staff returns user_id
-      .mockResolvedValueOnce({ data: [{ ref_code: 'OP-IPE-042' }], error: null }) // get_staff_detail
+    adminFetch.mockResolvedValueOnce({ data: { id: 42 }, error: null })
+    supabase.rpc.mockResolvedValueOnce({
+      data: [{ out_ref_code: 'OP-IPE-042' }],
+      error: null,
+    })
     const { props } = renderForm()
     fireEvent.change(screen.getByLabelText(/Имя/i), { target: { value: 'Иван' } })
     fireEvent.change(screen.getByLabelText(/Фамилия/i), { target: { value: 'Петров' } })
@@ -86,14 +93,17 @@ describe('<CreateStaffSlideOut>', () => {
   })
 
   it('shows error alert on RPC failure', async () => {
-    supabase.rpc.mockResolvedValueOnce({ data: null, error: { message: 'email уже занят' } })
+    adminFetch.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'email already exists' },
+    })
     renderForm()
     fireEvent.change(screen.getByLabelText(/Имя/i), { target: { value: 'Иван' } })
     fireEvent.change(screen.getByLabelText(/Фамилия/i), { target: { value: 'Петров' } })
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'i@example.com' } })
     fireEvent.change(screen.getByLabelText(/Пароль/i), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: /Создать/i }))
-    await screen.findByText(/email уже занят/)
+    await screen.findByText(/Этот email уже используется/)
   })
 
   it('resets permissions when role changes', () => {
@@ -148,9 +158,11 @@ describe('<CreateStaffSlideOut>', () => {
       setActiveAgency: vi.fn(),
       isMultiAgency: true,
     })
-    supabase.rpc
-      .mockResolvedValueOnce({ data: 99, error: null })
-      .mockResolvedValueOnce({ data: [{ ref_code: 'AD-IPE-099' }], error: null })
+    adminFetch.mockResolvedValueOnce({ data: { id: 99 }, error: null })
+    supabase.rpc.mockResolvedValueOnce({
+      data: [{ out_ref_code: 'AD-IPE-099' }],
+      error: null,
+    })
     renderForm()
     fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'admin' } })
     // toggle Beta on (Alpha already preselected from activeAgencyId)
@@ -160,8 +172,9 @@ describe('<CreateStaffSlideOut>', () => {
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'i@example.com' } })
     fireEvent.change(screen.getByLabelText(/Пароль/i), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: /Создать/i }))
-    await waitFor(() => expect(supabase.rpc).toHaveBeenCalled())
-    const [, args] = supabase.rpc.mock.calls[0]
+    await waitFor(() => expect(adminFetch).toHaveBeenCalled())
+    const [path, args] = adminFetch.mock.calls[0]
+    expect(path).toBe('/api/admin/create-staff')
     expect(args.p_role).toBe('admin')
     expect(args.p_agency_id).toBeNull()
     expect(args.p_admin_agency_ids).toEqual(expect.arrayContaining(['a1', 'a2']))

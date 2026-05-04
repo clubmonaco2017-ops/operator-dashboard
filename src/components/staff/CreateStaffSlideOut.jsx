@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
+import { adminFetch } from '../../lib/adminFetch'
 import { defaultPermissions } from '../../lib/defaultPermissions.js'
 import { permissionGroups } from '../../lib/permissionGroups.js'
 import { useAgencyContext } from '../../lib/agencyContext.jsx'
@@ -15,6 +16,15 @@ const ALL_ROLES = [
   { value: 'teamlead',  label: 'Тим Лидер' },
   { value: 'operator',  label: 'Оператор' },
 ]
+
+function mapCreateStaffError(message) {
+  if (!message) return 'Не удалось создать сотрудника. Попробуйте ещё раз.'
+  if (/email already exists/i.test(message)) return 'Этот email уже используется'
+  if (/forbidden/i.test(message)) return 'Нет прав на создание пользователей'
+  // RPC validation messages (22-prefixed codes) come through verbatim and are
+  // already user-readable for the operator/admin/agency cases.
+  return message
+}
 
 export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
   const { activeAgencyId, availableAgencies } = useAgencyContext()
@@ -97,13 +107,17 @@ export function CreateStaffSlideOut({ callerId, onClose, onCreated }) {
       p_agency_id: isAdminRole ? null : agencyId,
       p_admin_agency_ids: isAdminRole ? adminAgencyIds : [],
     }
-    const { data: newId, error: rpcError } = await supabase.rpc('create_staff', rpcArgs)
+    const { data: createRes, error: createErr } = await adminFetch(
+      '/api/admin/create-staff',
+      rpcArgs,
+    )
 
-    if (rpcError) {
-      setError(rpcError.message)
+    if (createErr) {
+      setError(mapCreateStaffError(createErr.message))
       setSubmitting(false)
       return
     }
+    const newId = createRes.id
 
     const { data: detail, error: detailErr } = await supabase.rpc('get_staff_detail', {
       p_user_id: newId,
