@@ -1,6 +1,9 @@
 // api/admin/create-staff.js
+import { createClient } from '@supabase/supabase-js'
 import { verifyCaller, Unauthorized } from './_auth.js'
 import { getSupabaseAdmin } from './_supabase.js'
+
+const SUPABASE_URL = 'https://akpddaqpggktefkdecrl.supabase.co'
 
 const REQUIRED_FIELDS = [
   'p_email',
@@ -62,8 +65,19 @@ export default async function handler(req, res) {
     return send(res, 500, { error: 'auth-create failed: missing user id' })
   }
 
+  // RPC must run under the caller's JWT so current_dashboard_user_id()
+  // resolves to the dashboard_users row linked to auth.uid(). The
+  // service-role admin client (sb) has auth.uid() = NULL and would trip
+  // the RPC's `IF v_caller_id IS NULL THEN RAISE 'unauthorized'` guard.
+  const anonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  const authHeader = req.headers?.authorization || req.headers?.Authorization
+  const userClient = createClient(SUPABASE_URL, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { headers: { Authorization: authHeader } },
+  })
+
   const rpcArgs = { ...body, p_auth_user_id: authUserId }
-  const { data: rpcData, error: rpcErr } = await sb.rpc('create_staff', rpcArgs)
+  const { data: rpcData, error: rpcErr } = await userClient.rpc('create_staff', rpcArgs)
 
   if (rpcErr) {
     const { error: delErr } = await sb.auth.admin.deleteUser(authUserId)

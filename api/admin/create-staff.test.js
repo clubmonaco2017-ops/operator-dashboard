@@ -15,10 +15,17 @@ vi.mock('./_auth.js', () => ({
 }))
 
 vi.mock('./_supabase.js', () => ({
+  // Service-role admin client: only auth.admin.* in this handler.
   getSupabaseAdmin: () => ({
     auth: { admin: { createUser: mockCreateUser, deleteUser: mockDeleteUser } },
-    rpc: mockRpc,
   }),
+}))
+
+// JWT-bound user client: createClient is called inline in the handler to
+// run the RPC under the caller's identity (so current_dashboard_user_id()
+// resolves correctly inside the RPC).
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: () => ({ rpc: mockRpc }),
 }))
 
 // Import AFTER mocks so the module picks them up.
