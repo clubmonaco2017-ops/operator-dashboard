@@ -106,6 +106,21 @@ describe('<CreateStaffSlideOut>', () => {
     await screen.findByText(/Этот email уже используется/)
   })
 
+  it('translates 23502 agency_id required error to Russian', async () => {
+    adminFetch.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'agency_id is required for role operator' },
+    })
+    renderForm()
+    fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'operator' } })
+    fireEvent.change(screen.getByLabelText(/Имя/i), { target: { value: 'Иван' } })
+    fireEvent.change(screen.getByLabelText(/Фамилия/i), { target: { value: 'Петров' } })
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'i@example.com' } })
+    fireEvent.change(screen.getByLabelText(/Пароль/i), { target: { value: 'secret123' } })
+    fireEvent.click(screen.getByRole('button', { name: /Создать/i }))
+    await screen.findByText(/Не выбрано агентство для этой роли/)
+  })
+
   it('resets permissions when role changes', () => {
     renderForm()
     // The role select is the only <select> (combobox) in the form

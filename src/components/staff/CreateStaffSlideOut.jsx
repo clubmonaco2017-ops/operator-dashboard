@@ -20,9 +20,16 @@ const ALL_ROLES = [
 function mapCreateStaffError(message) {
   if (!message) return 'Не удалось создать сотрудника. Попробуйте ещё раз.'
   if (/email already exists/i.test(message)) return 'Этот email уже используется'
-  if (/forbidden/i.test(message)) return 'Нет прав на создание пользователей'
-  // RPC validation messages (22-prefixed codes) come through verbatim and are
-  // already user-readable for the operator/admin/agency cases.
+  if (/^forbidden:/i.test(message)) return 'Нет прав на создание пользователей'
+  if (/^agency_id is required for role/i.test(message)) {
+    return 'Не выбрано агентство для этой роли'
+  }
+  if (/^agency_id must be NULL for admin role/i.test(message)) {
+    return 'Для роли «Администратор» используйте множественный выбор агентств'
+  }
+  // 422 fallback: any other RPC validation message comes through verbatim.
+  // Most are user-actionable (e.g. role-specific). Add specific branches above
+  // when a recurring case warrants its own translation.
   return message
 }
 
